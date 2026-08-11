@@ -4,10 +4,11 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://andikaputra.vercel.app',
-
   adapter: vercel(),
-
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ['sanitize-html'],
+    },
   },
 });
