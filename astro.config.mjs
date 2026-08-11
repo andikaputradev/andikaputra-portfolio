@@ -3,7 +3,7 @@ import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://wahyuandikaputra.dev',
+  site: 'https://andikaputra.vercel.app',
 
   adapter: vercel(),
 
