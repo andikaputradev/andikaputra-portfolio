@@ -3,23 +3,14 @@ import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://andikaputra.vercel.app',
+  site: 'https://wahyuandikaputra.dev',
 
   adapter: vercel(),
 
   vite: {
     plugins: [tailwindcss()],
     ssr: {
-      noExternal: [
-        'sanitize-html',
-        'escape-string-regexp',
-        'htmlparser2',
-        'domhandler',
-        'domutils',
-        'entities',
-        'is-plain-object',
-        'parse-srcset',
-      ],
+      noExternal: true,
     },
   },
 });
