@@ -1,0 +1,291 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+export const prerender = false;
+
+const twoFactorEnabled = Boolean((Astro.locals.admin as { twoFactorEnabled?: boolean } | null)?.twoFactorEnabled);
+---
+
+<AdminLayout title="Keamanan">
+  <section class="security-card surface border-subtle">
+    <h2>Autentikasi Dua Faktor (TOTP)</h2>
+
+    {twoFactorEnabled ? (
+      <div id="backup-codes-flow">
+        <p class="status-ok">2FA aktif untuk akun ini.</p>
+
+        <div id="regenerate-intro">
+          <p class="field__hint">
+            Kode backup memungkinkan login darurat jika Anda kehilangan akses ke aplikasi
+            authenticator. <strong>Men-generate ulang akan membatalkan seluruh kode backup lama
+            secara permanen</strong> — pastikan kode sebelumnya (jika ada) tidak sedang
+            dibutuhkan sebelum melanjutkan.
+          </p>
+          <form id="regenerate-form">
+            <div class="field">
+              <label for="regenerate-password">Kata sandi</label>
+              <input
+                type="password"
+                id="regenerate-password"
+                name="password"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+            <p id="regenerate-error" role="alert"></p>
+            <button type="submit">Generate Ulang Kode Backup</button>
+          </form>
+        </div>
+
+        <div id="backup-codes-reveal" hidden>
+          <p class="field__hint backup-codes-warning">
+            Simpan kode ini di tempat aman sekarang — <strong>tidak akan ditampilkan lagi</strong>
+            setelah halaman ini ditutup atau dimuat ulang. Setiap kode hanya berlaku sekali pakai.
+          </p>
+          <ul id="new-backup-codes" class="backup-codes"></ul>
+          <button type="button" id="copy-backup-codes">Salin Semua Kode</button>
+          <p id="copy-feedback" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    ) : (
+      <div id="enable-2fa-flow">
+        <p class="field__hint">
+          Masukkan kata sandi Anda untuk memulai aktivasi 2FA. Anda akan mendapatkan URI TOTP
+          untuk dimasukkan manual ke aplikasi authenticator (Google Authenticator, 1Password,
+          Authy, dll), lalu kode backup yang wajib disimpan di tempat aman.
+        </p>
+        <form id="enable-form">
+          <div class="field">
+            <label for="confirm-password">Kata sandi</label>
+            <input type="password" id="confirm-password" name="password" required autocomplete="current-password" />
+          </div>
+          <p id="enable-error" role="alert"></p>
+          <button type="submit">Mulai Aktivasi</button>
+        </form>
+
+        <div id="totp-setup" hidden>
+          <p class="field__hint">Masukkan URI berikut secara manual di aplikasi authenticator Anda:</p>
+          <code id="totp-uri" class="totp-uri"></code>
+
+          <p class="field__hint backup-codes-label">Simpan kode backup berikut di tempat aman:</p>
+          <ul id="backup-codes" class="backup-codes"></ul>
+
+          <div class="field">
+            <label for="verify-code">Kode dari authenticator (verifikasi)</label>
+            <input type="text" id="verify-code" inputmode="numeric" pattern="[0-9]{6}" required />
+          </div>
+          <p id="verify-error" role="alert"></p>
+          <button type="button" id="verify-btn">Konfirmasi & Aktifkan</button>
+        </div>
+      </div>
+    )}
+  </section>
+</AdminLayout>
+
+<script>
+  const enableForm = document.getElementById('enable-form') as HTMLFormElement | null;
+  const enableError = document.getElementById('enable-error') as HTMLElement | null;
+  const totpSetup = document.getElementById('totp-setup') as HTMLElement | null;
+  const totpUriEl = document.getElementById('totp-uri') as HTMLElement | null;
+  const backupCodesEl = document.getElementById('backup-codes') as HTMLElement | null;
+  const verifyBtn = document.getElementById('verify-btn') as HTMLButtonElement | null;
+  const verifyError = document.getElementById('verify-error') as HTMLElement | null;
+
+  enableForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (enableError) enableError.textContent = '';
+    const formData = new FormData(enableForm);
+
+    const res = await fetch('/api/auth/two-factor/enable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: formData.get('password') }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      if (enableError) enableError.textContent = data.message ?? 'Kata sandi salah';
+      return;
+    }
+
+    if (totpUriEl) totpUriEl.textContent = data.totpURI ?? '';
+    if (backupCodesEl && Array.isArray(data.backupCodes)) {
+      backupCodesEl.innerHTML = '';
+      for (const code of data.backupCodes) {
+        const li = document.createElement('li');
+        li.textContent = code;
+        backupCodesEl.appendChild(li);
+      }
+    }
+
+    enableForm.hidden = true;
+    if (totpSetup) totpSetup.hidden = false;
+  });
+
+  verifyBtn?.addEventListener('click', async () => {
+    if (verifyError) verifyError.textContent = '';
+    const codeInput = document.getElementById('verify-code') as HTMLInputElement | null;
+
+    const res = await fetch('/api/auth/two-factor/verify-totp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: codeInput?.value }),
+    });
+
+    if (!res.ok) {
+      if (verifyError) verifyError.textContent = 'Kode tidak valid';
+      return;
+    }
+
+    window.location.reload();
+  });
+
+  const regenerateForm = document.getElementById('regenerate-form') as HTMLFormElement | null;
+  const regenerateError = document.getElementById('regenerate-error') as HTMLElement | null;
+  const regenerateIntro = document.getElementById('regenerate-intro') as HTMLElement | null;
+  const backupCodesReveal = document.getElementById('backup-codes-reveal') as HTMLElement | null;
+  const newBackupCodesEl = document.getElementById('new-backup-codes') as HTMLElement | null;
+  const copyBackupCodesBtn = document.getElementById('copy-backup-codes') as HTMLButtonElement | null;
+  const copyFeedback = document.getElementById('copy-feedback') as HTMLElement | null;
+
+  regenerateForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (regenerateError) regenerateError.textContent = '';
+    const formData = new FormData(regenerateForm);
+
+    const res = await fetch('/api/auth/two-factor/generate-backup-codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: formData.get('password') }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      if (regenerateError) regenerateError.textContent = data.message ?? 'Kata sandi salah';
+      return;
+    }
+
+    if (newBackupCodesEl && Array.isArray(data.backupCodes)) {
+      newBackupCodesEl.innerHTML = '';
+      for (const code of data.backupCodes) {
+        const li = document.createElement('li');
+        li.textContent = code;
+        newBackupCodesEl.appendChild(li);
+      }
+    }
+
+    if (regenerateIntro) regenerateIntro.hidden = true;
+    if (backupCodesReveal) backupCodesReveal.hidden = false;
+  });
+
+  copyBackupCodesBtn?.addEventListener('click', async () => {
+    const codes = Array.from(newBackupCodesEl?.querySelectorAll('li') ?? []).map((li) => li.textContent ?? '');
+    try {
+      await navigator.clipboard.writeText(codes.join('\n'));
+      if (copyFeedback) copyFeedback.textContent = 'Tersalin ke clipboard.';
+    } catch {
+      if (copyFeedback) copyFeedback.textContent = 'Gagal menyalin — salin manual.';
+    }
+  });
+</script>
+
+<style>
+  .security-card {
+    max-width: 32rem;
+    padding: 2rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .security-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+  }
+
+  .status-ok {
+    color: var(--color-accent-phosphor);
+    font-weight: 600;
+  }
+
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+  }
+
+  .field__hint {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .totp-uri {
+    display: block;
+    padding: 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.78rem;
+    word-break: break-all;
+    margin-bottom: 1.25rem;
+  }
+
+  .backup-codes-label {
+    margin-top: 0.5rem;
+  }
+
+  .backup-codes-warning {
+    color: var(--color-error);
+  }
+
+  #copy-feedback {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+  }
+
+  .backup-codes {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.82rem;
+    margin-bottom: 1.5rem;
+  }
+
+  [role='alert']:empty { display: none; }
+  [role='alert'] { color: var(--color-error); font-size: 0.85rem; margin-bottom: 1rem; }
+
+  button {
+    padding: 0.65rem 1.25rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+  }
+</style>

@@ -1,0 +1,266 @@
+---
+import { IDENTITY } from '../../data/identity';
+import MagneticButton from '../ui/MagneticButton.astro';
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+---
+
+<section id="contact" class="contact" data-telemetry-section="contact">
+  <canvas id="contact-canvas" class="contact__canvas" aria-hidden="true"></canvas>
+
+  {
+    turnstileSiteKey && (
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline />
+    )
+  }
+
+  <div class="contact__inner container-site">
+    <h2 class="contact__heading font-display">Get in touch</h2>
+    <p class="contact__lead">
+      Available for security engagements, Web2 product work, and Web3 protocol builds — reach
+      out directly or through the form.
+    </p>
+
+    <div class="contact__direct">
+      <a href={`mailto:${IDENTITY.email}`} class="contact__direct-link font-mono">
+        {IDENTITY.email}
+      </a>
+      <a
+        href={IDENTITY.whatsappLink}
+        class="contact__direct-link font-mono"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {IDENTITY.whatsappDisplay}
+      </a>
+    </div>
+
+    <form class="contact__form" id="contact-form" novalidate>
+      <div class="contact__field">
+        <label for="contact-name">Name</label>
+        <input
+          type="text"
+          id="contact-name"
+          name="name"
+          required
+          minlength="2"
+          maxlength="100"
+          autocomplete="name"
+          aria-describedby="contact-name-error"
+        />
+        <p id="contact-name-error" class="contact__field-error" aria-live="polite"></p>
+      </div>
+
+      <div class="contact__field">
+        <label for="contact-email">Email</label>
+        <input
+          type="email"
+          id="contact-email"
+          name="email"
+          required
+          autocomplete="email"
+          aria-describedby="contact-email-error"
+        />
+        <p id="contact-email-error" class="contact__field-error" aria-live="polite"></p>
+      </div>
+
+      <div class="contact__field">
+        <label for="contact-message">Message</label>
+        <textarea
+          id="contact-message"
+          name="message"
+          required
+          minlength="10"
+          maxlength="2000"
+          rows="5"
+          aria-describedby="contact-message-error"
+        ></textarea>
+        <p id="contact-message-error" class="contact__field-error" aria-live="polite"></p>
+      </div>
+
+      {
+        turnstileSiteKey && (
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-size="flexible" />
+        )
+      }
+
+      <div class="contact__honeypot" aria-hidden="true">
+        <label for="contact-website">Website</label>
+        <input type="text" id="contact-website" name="honeypot" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <p id="contact-form-status" class="contact__status" role="status" aria-live="polite"></p>
+
+      <MagneticButton type="submit" variant="primary">Send message</MagneticButton>
+    </form>
+
+    <div class="contact__socials" data-contact-socials>
+      <a href={IDENTITY.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="font-mono">
+        [GITHUB]
+      </a>
+      <a href={IDENTITY.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="font-mono">
+        [INSTAGRAM]
+      </a>
+      <a href={IDENTITY.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="font-mono">
+        [LINKEDIN]
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { mountNoiseCanvas } from '../../scripts/contact-noise';
+  import { initContactForm } from '../../scripts/contact-form';
+  import { initSocialEntrance } from '../../scripts/anime-svg';
+
+  document.addEventListener('astro:page-load', () => {
+    mountNoiseCanvas('#contact-canvas');
+    initContactForm();
+    initSocialEntrance('[data-contact-socials]');
+  });
+</script>
+
+<style>
+  .contact {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--spacing-section);
+  }
+
+  .contact__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .contact__inner {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+  }
+
+  .contact__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .contact__lead {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+    max-width: 52ch;
+  }
+
+  .contact__direct {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .contact__direct-link {
+    font-size: 0.9375rem;
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    width: fit-content;
+  }
+
+  .contact__direct-link:hover {
+    text-decoration: underline;
+  }
+
+  .contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact__field label {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .contact__field input,
+  .contact__field textarea {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.7rem 0.9rem;
+    resize: vertical;
+  }
+
+  .contact__field input:focus-visible,
+  .contact__field textarea:focus-visible {
+    outline: 2px solid var(--color-accent-phosphor);
+    outline-offset: 1px;
+  }
+
+  .contact__field input[aria-invalid='true'],
+  .contact__field textarea[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+
+  .contact__field-error {
+    font-size: 0.8125rem;
+    color: var(--color-error);
+  }
+
+  .contact__field-error:empty {
+    display: none;
+  }
+
+  :global(.cf-turnstile) {
+    margin-top: -0.5rem;
+  }
+
+  .contact__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .contact__status {
+    font-size: 0.875rem;
+    min-height: 1.25rem;
+    color: var(--color-text-muted);
+  }
+
+  .contact__status[data-state='success'] {
+    color: var(--color-accent-phosphor);
+  }
+
+  .contact__status[data-state='error'] {
+    color: var(--color-error);
+  }
+
+  .contact__socials {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .contact__socials a {
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .contact__socials a:hover {
+    color: var(--color-accent-phosphor);
+  }
+</style>

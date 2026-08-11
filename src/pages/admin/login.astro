@@ -1,0 +1,242 @@
+---
+import '../../styles/global.css';
+
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Login — Admin</title>
+  </head>
+  <body class="login-body">
+    <main class="login-card surface-raised border-subtle">
+      <p class="font-mono login-card__brand">WAP // ADMIN</p>
+      <h1 class="font-display">Masuk</h1>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="password">Kata sandi</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" />
+        </div>
+        <p id="login-error" role="alert"></p>
+        <button type="submit">Masuk</button>
+      </form>
+
+      <form id="totp-form" hidden novalidate>
+        <div class="field">
+          <label for="totp-code" id="totp-code-label">Kode autentikator (TOTP)</label>
+          <input
+            type="text"
+            id="totp-code"
+            name="code"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            autocomplete="one-time-code"
+            required
+          />
+        </div>
+        <p id="totp-error" role="alert"></p>
+        <button type="submit">Verifikasi</button>
+        <button type="button" id="toggle-backup-mode" class="link-button">
+          Kehilangan akses authenticator? Pakai kode backup
+        </button>
+      </form>
+    </main>
+
+    <script>
+      const loginForm = document.getElementById('login-form') as HTMLFormElement;
+      const totpForm = document.getElementById('totp-form') as HTMLFormElement;
+      const loginError = document.getElementById('login-error') as HTMLElement;
+      const totpError = document.getElementById('totp-error') as HTMLElement;
+      const totpCodeInput = document.getElementById('totp-code') as HTMLInputElement;
+      const totpCodeLabel = document.getElementById('totp-code-label') as HTMLElement;
+      const toggleBackupModeBtn = document.getElementById('toggle-backup-mode') as HTMLButtonElement;
+      let backupCodeMode = false;
+
+      toggleBackupModeBtn.addEventListener('click', () => {
+        backupCodeMode = !backupCodeMode;
+        totpError.textContent = '';
+        totpCodeInput.value = '';
+        if (backupCodeMode) {
+          totpCodeLabel.textContent = 'Kode backup';
+          totpCodeInput.removeAttribute('pattern');
+          totpCodeInput.removeAttribute('inputmode');
+          totpCodeInput.autocomplete = 'off';
+          toggleBackupModeBtn.textContent = 'Punya akses authenticator? Pakai kode TOTP';
+        } else {
+          totpCodeLabel.textContent = 'Kode autentikator (TOTP)';
+          totpCodeInput.setAttribute('pattern', '[0-9]{6}');
+          totpCodeInput.setAttribute('inputmode', 'numeric');
+          totpCodeInput.autocomplete = 'one-time-code';
+          toggleBackupModeBtn.textContent = 'Kehilangan akses authenticator? Pakai kode backup';
+        }
+        totpCodeInput.focus();
+      });
+
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        loginError.textContent = '';
+        const formData = new FormData(loginForm);
+
+        const res = await fetch('/api/auth/sign-in/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.get('email'),
+            password: formData.get('password'),
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          loginError.textContent = data.message ?? data.error ?? 'Email atau kata sandi salah';
+          return;
+        }
+
+        if (data.twoFactorRedirect) {
+          loginForm.hidden = true;
+          totpForm.hidden = false;
+          document.getElementById('totp-code')?.focus();
+          return;
+        }
+
+        window.location.href = '/admin';
+      });
+
+      totpForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        totpError.textContent = '';
+        const formData = new FormData(totpForm);
+
+        const endpoint = backupCodeMode
+          ? '/api/auth/two-factor/verify-backup-code'
+          : '/api/auth/two-factor/verify-totp';
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: formData.get('code') }),
+        });
+
+        if (!res.ok) {
+          totpError.textContent = backupCodeMode
+            ? 'Kode backup tidak valid atau sudah pernah dipakai'
+            : 'Kode tidak valid atau kedaluwarsa';
+          return;
+        }
+
+        window.location.href = '/admin';
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .login-body {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+    padding: 1.5rem;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 22rem;
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+  }
+
+  .login-card__brand {
+    color: var(--color-accent-phosphor);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-card h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .field {
+    margin-bottom: 1.25rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-size: 1rem;
+  }
+
+  .field input:focus-visible {
+    border-color: var(--color-accent-phosphor);
+  }
+
+  [role='alert']:empty {
+    display: none;
+  }
+
+  [role='alert'] {
+    color: var(--color-error);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  button[type='submit'] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+  }
+
+  button[type='submit']:hover {
+    opacity: 0.9;
+  }
+
+  .link-button {
+    display: block;
+    width: 100%;
+    margin-top: 0.85rem;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .link-button:hover,
+  .link-button:focus-visible {
+    color: var(--color-accent-phosphor);
+  }
+</style>

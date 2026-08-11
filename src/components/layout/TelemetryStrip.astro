@@ -1,0 +1,69 @@
+---
+---
+
+<div class="telemetry-strip" data-telemetry-strip aria-hidden="true">
+  <div class="telemetry-strip__inner container-site">
+    <span id="telemetry-path" class="telemetry-strip__path">/home/wahyu</span>
+    <span id="telemetry-status" class="telemetry-strip__status">STATUS: ONLINE</span>
+    <span id="telemetry-clock" class="telemetry-strip__clock">00:00:00</span>
+  </div>
+</div>
+
+<script>
+  import { initTelemetry } from '../../scripts/telemetry';
+
+  document.addEventListener('astro:page-load', initTelemetry);
+</script>
+
+<style>
+  .telemetry-strip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    height: var(--telemetry-h, 2rem);
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .telemetry-strip__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .telemetry-strip__path,
+  .telemetry-strip__status,
+  .telemetry-strip__clock {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .telemetry-strip__status {
+    color: var(--color-accent-phosphor);
+    text-align: center;
+    flex: 1;
+  }
+
+  .telemetry-strip__clock {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 479px) {
+    .telemetry-strip__path {
+      display: none;
+    }
+
+    .telemetry-strip__status {
+      text-align: left;
+    }
+  }
+</style>

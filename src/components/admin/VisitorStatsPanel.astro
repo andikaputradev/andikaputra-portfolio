@@ -1,0 +1,187 @@
+---
+import StatCard from './StatCard.astro';
+import { renderDailyBarChart } from '../../lib/render-bar-chart';
+import type { VisitorSummary } from '../../lib/visitor-stats';
+
+interface Props {
+  summary: VisitorSummary;
+}
+
+const { summary } = Astro.props;
+const chartSvg = renderDailyBarChart(summary.daily);
+const topDevice = [...summary.byDevice].sort((a, b) => b.count - a.count)[0];
+---
+
+<div class="stat-grid">
+  <StatCard label="Total kunjungan (30 hari)" value={summary.totalViews} />
+  <StatCard label="Pengunjung unik (30 hari)" value={summary.totalUniqueVisitors} />
+  <StatCard label="Halaman dilacak" value={summary.topPages.length} />
+  <StatCard
+    label="Perangkat dominan"
+    value={topDevice?.count ?? 0}
+    suffix={topDevice ? ` ${topDevice.deviceType}` : ''}
+  />
+</div>
+
+<section class="chart-section">
+  <h2>Kunjungan Harian</h2>
+  <div class="chart-wrap surface border-subtle" set:html={chartSvg} />
+</section>
+
+<div class="tables-grid">
+  <section>
+    <h2>Halaman Teratas</h2>
+    {
+      summary.topPages.length === 0 ? (
+        <p class="empty-state">Belum ada data.</p>
+      ) : (
+        <div class="admin-table">
+          {summary.topPages.map((p) => (
+            <div class="admin-row border-subtle">
+              <span class="mono admin-row__count">{p.count}</span>
+              <span class="admin-row__path">{p.path}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  <section>
+    <h2>Perangkat</h2>
+    {
+      summary.byDevice.length === 0 ? (
+        <p class="empty-state">Belum ada data.</p>
+      ) : (
+        <div class="admin-table">
+          {summary.byDevice.map((d) => (
+            <div class="admin-row border-subtle">
+              <span class="mono admin-row__count">{d.count}</span>
+              <span class="admin-row__path">{d.deviceType}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</div>
+
+<style>
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .chart-section {
+    margin-bottom: 3rem;
+  }
+
+  .chart-section h2,
+  .tables-grid h2 {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .chart-wrap {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .tables-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .empty-state {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .admin-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-row {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: 1rem;
+    padding: 0.6rem 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.88rem;
+    opacity: 0;
+    animation: row-in 320ms ease forwards;
+  }
+
+  .admin-row:nth-child(1) { animation-delay: 0ms; }
+  .admin-row:nth-child(2) { animation-delay: 30ms; }
+  .admin-row:nth-child(3) { animation-delay: 60ms; }
+  .admin-row:nth-child(4) { animation-delay: 90ms; }
+  .admin-row:nth-child(5) { animation-delay: 120ms; }
+  .admin-row:nth-child(n + 6) { animation-delay: 150ms; }
+
+  .admin-row__count {
+    color: var(--color-accent-phosphor);
+  }
+
+  .admin-row__path {
+    color: var(--color-text-primary);
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 860px) {
+    .tables-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<style is:global>
+  .visitor-chart {
+    width: 100%;
+    height: auto;
+  }
+
+  .visitor-chart .chart-bar {
+    fill: var(--color-accent-phosphor);
+    transform-origin: bottom;
+    transform-box: fill-box;
+    animation: bar-grow 500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .visitor-chart .chart-label {
+    fill: var(--color-text-muted);
+    font-family: var(--font-mono), monospace;
+    font-size: 9px;
+  }
+
+  .chart-empty {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+</style>

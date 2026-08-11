@@ -1,0 +1,97 @@
+.admin-form .field {
+  margin-bottom: 1.25rem;
+}
+
+.admin-form .field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.admin-form .field--checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-form .field--checkbox label {
+  margin-bottom: 0;
+}
+
+.admin-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.admin-form input[type='text'],
+.admin-form input[type='url'],
+.admin-form input[type='number'],
+.admin-form input[type='date'],
+.admin-form input[type='file'],
+.admin-form select,
+.admin-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast);
+}
+
+.admin-form input:focus-visible,
+.admin-form select:focus-visible,
+.admin-form textarea:focus-visible {
+  border-color: var(--color-accent-phosphor);
+}
+
+.admin-form textarea#bodyMarkdown {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+}
+
+.admin-form .field__hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 0.35rem;
+  line-height: 1.5;
+}
+
+.admin-form .field__hint code {
+  font-family: var(--font-mono), monospace;
+}
+
+.admin-form .field__hint--warning {
+  color: var(--color-accent-steel);
+}
+
+.admin-form button[type='submit'] {
+  padding: 0.7rem 1.5rem;
+  background-color: var(--color-accent-phosphor);
+  color: var(--color-bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.admin-form button[type='submit']:hover {
+  opacity: 0.9;
+}
+
+.admin-form.admin-form--secondary button[type='submit'] {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 640px) {
+  .admin-form .field-row {
+    grid-template-columns: 1fr;
+  }
+}

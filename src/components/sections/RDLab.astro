@@ -1,0 +1,77 @@
+---
+import { RD_LAB } from '../../data/rd-lab';
+---
+
+<section id="rd-lab" class="rd-lab" data-telemetry-section="rd-lab">
+  <div class="container-site">
+    <h2 class="rd-lab__heading font-display">R&D Lab</h2>
+
+    <ul class="rd-lab-list">
+      {
+        RD_LAB.map((entry) => (
+          <li class="rd-lab-item">
+            <span class="rd-lab-item__tag font-mono">[{entry.tag}]</span>
+            <span class="rd-lab-item__name">{entry.name}</span>
+            <span class="rd-lab-item__desc">{entry.desc}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  import { initRdLabEntrance } from '../../scripts/anime-svg';
+
+  document.addEventListener('astro:page-load', () => initRdLabEntrance());
+</script>
+
+<style>
+  .rd-lab {
+    padding-block: var(--spacing-section);
+  }
+
+  .rd-lab__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .rd-lab-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rd-lab-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .rd-lab-item__tag {
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    color: var(--color-accent-steel);
+  }
+
+  .rd-lab-item__name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .rd-lab-item__desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .rd-lab-item {
+      grid-template-columns: 7.5rem 13rem 1fr;
+      align-items: baseline;
+      gap: 1.5rem;
+    }
+  }
+</style>

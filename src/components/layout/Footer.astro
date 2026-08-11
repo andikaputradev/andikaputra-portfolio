@@ -1,0 +1,112 @@
+---
+import { IDENTITY } from '../../data/identity';
+
+const ASCII_WAHYU = [
+  '__      ___   _  ___   ___   _ ',
+  '\\ \\    / /_\\ | || \\ \\ / / | | |',
+  ' \\ \\/\\/ / _ \\| __ |\\ V /| |_| |',
+  '  \\_/\\_/_/ \\_\\_||_| |_|  \\___/ ',
+] as const;
+
+const ASCII_ANDIKA_PUTRA = [
+  '   _   _  _ ___ ___ _  __   _     ___ _   _ _____ ___    _   ',
+  '  /_\\ | \\| |   \\_ _| |/ /  /_\\   | _ \\ | | |_   _| _ \\  /_\\  ',
+  ' / _ \\| .` | |) | || \' <  / _ \\  |  _/ |_| | | | |   / / _ \\ ',
+  '/_/ \\_\\_|\\_|___/___|_|\\_\\/_/ \\_\\ |_|  \\___/  |_| |_|_\\/_/ \\_\\',
+] as const;
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container-site">
+    <div class="site-footer__ascii-wrap">
+      <pre class="site-footer__ascii" data-footer-ascii aria-hidden="true"><span class="footer-ascii__line">{ASCII_WAHYU[0]}</span><span class="footer-ascii__line">{ASCII_WAHYU[1]}</span><span class="footer-ascii__line">{ASCII_WAHYU[2]}</span><span class="footer-ascii__line">{ASCII_WAHYU[3]}</span><span class="footer-ascii__line">{ASCII_ANDIKA_PUTRA[0]}</span><span class="footer-ascii__line">{ASCII_ANDIKA_PUTRA[1]}</span><span class="footer-ascii__line">{ASCII_ANDIKA_PUTRA[2]}</span><span class="footer-ascii__line">{ASCII_ANDIKA_PUTRA[3]}</span></pre>
+      <span class="sr-only">{IDENTITY.fullName}</span>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p class="site-footer__copyright">
+        © {currentYear} {IDENTITY.fullName}. All rights reserved.
+      </p>
+      <a href="/#top" class="site-footer__back-to-top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  import { initFooterReveal } from '../../scripts/footer-ascii';
+
+  document.addEventListener('astro:page-load', () => initFooterReveal());
+</script>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding-block: clamp(3rem, 6vw, 5rem);
+    margin-top: var(--spacing-section);
+  }
+
+  .site-footer__ascii-wrap {
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .site-footer__ascii-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-footer__ascii {
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.5rem, 1.4vw, 0.875rem);
+    line-height: 1.15;
+    color: var(--color-accent-phosphor);
+    white-space: pre;
+    width: max-content;
+  }
+
+  .footer-ascii__line {
+    display: block;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .site-footer__copyright {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__back-to-top {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .site-footer__back-to-top:hover {
+    color: var(--color-accent-phosphor);
+  }
+</style>

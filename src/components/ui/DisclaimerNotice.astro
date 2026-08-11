@@ -1,0 +1,55 @@
+---
+---
+
+<aside class="disclaimer-notice" role="note">
+  <span class="disclaimer-notice__marker font-mono" aria-hidden="true">!</span>
+  <div class="disclaimer-notice__body">
+    <p class="disclaimer-notice__title font-mono">AUTHORIZED USE ONLY</p>
+    <p class="disclaimer-notice__text">
+      DarkStar is built for systems you own, isolated lab environments, or engagements with
+      documented written authorization. It is not designed or distributed for use against
+      systems without consent.
+    </p>
+  </div>
+</aside>
+
+<style>
+  .disclaimer-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-accent-phosphor);
+    border-radius: var(--radius-md);
+  }
+
+  .disclaimer-notice__marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    color: var(--color-accent-phosphor);
+    border: 1px solid color-mix(in oklch, var(--color-accent-phosphor) 45%, transparent);
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .disclaimer-notice__title {
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.375rem;
+  }
+
+  .disclaimer-notice__text {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    max-width: 62ch;
+  }
+</style>

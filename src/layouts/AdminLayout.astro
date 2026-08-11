@@ -1,0 +1,233 @@
+---
+import '../styles/global.css';
+import AdminSidebar from '../components/admin/AdminSidebar.astro';
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '../lib/csrf';
+
+interface Props {
+  title: string;
+  breadcrumb?: string;
+}
+
+const { title, breadcrumb } = Astro.props;
+const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
+const hxHeaders = JSON.stringify({ [CSRF_HEADER_NAME]: csrfToken });
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Admin</title>
+    <script is:inline src="/vendor/htmx-2.0.10.min.js" defer></script>
+    <script is:inline src="/vendor/htmx-ext-json-enc.js" defer></script>
+    <script is:inline src="/vendor/alpinejs-csp-3.15.12.min.js" defer></script>
+  </head>
+  <body>
+    <a href="#admin-main" class="skip-link">Lompat ke konten</a>
+
+    <div id="admin-toast" role="status" aria-live="polite" data-state="hidden" data-variant="success"></div>
+
+    <dialog id="confirm-dialog" class="phosphor-dialog">
+      <p id="confirm-dialog-text" class="mono"></p>
+      <div class="dialog-actions">
+        <button id="confirm-dialog-cancel" type="button">Batal</button>
+        <button id="confirm-dialog-ok" type="button" class="danger">Konfirmasi</button>
+      </div>
+    </dialog>
+
+    <div class="admin-shell" hx-headers={hxHeaders}>
+      <AdminSidebar />
+
+      <div class="admin-shell__main">
+        <header class="admin-topbar">
+          <p class="admin-breadcrumb font-mono">{breadcrumb ?? title}</p>
+        </header>
+
+        <main id="admin-main" class="admin-main container-site">
+          <h1 class="font-display">{title}</h1>
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <script>
+      import { initAdminToast } from '../scripts/admin/htmx-toast';
+      import { initConfirmDialog } from '../scripts/admin/confirm-dialog';
+
+      initAdminToast();
+      initConfirmDialog();
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+  }
+
+  .admin-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100dvh;
+  }
+
+  .admin-shell__main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .admin-topbar {
+    padding: 1.25rem var(--spacing-container, 2rem);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .admin-breadcrumb {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .admin-main {
+    flex: 1;
+    padding-block: 2.5rem 4rem;
+  }
+
+  .admin-main h1 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 860px) {
+    .admin-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-sidebar {
+      flex-direction: row;
+      align-items: center;
+      overflow-x: auto;
+      height: auto;
+    }
+  }
+
+  /* --- Toast: gaya log-line, slide-in dari bawah kanan --- */
+  #admin-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 200;
+    max-width: 24rem;
+    padding: 0.8rem 1.1rem;
+    background-color: var(--color-surface-raised);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-success);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.82rem;
+    box-shadow: 0 12px 32px oklch(0% 0 0 / 45%);
+    transform: translateY(0.75rem) scale(0.98);
+    opacity: 0;
+    transition: opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  #admin-toast[data-variant='error'] {
+    border-left-color: var(--color-error);
+  }
+
+  #admin-toast[data-state='visible'] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* --- Dialog konfirmasi: @starting-style, dependable cross-browser sejak 2026 --- */
+  .phosphor-dialog {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.75rem;
+    max-width: 24rem;
+    width: calc(100% - 2rem);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+    transition:
+      opacity 220ms ease,
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      overlay 220ms allow-discrete,
+      display 220ms allow-discrete;
+  }
+
+  .phosphor-dialog[open] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  @starting-style {
+    .phosphor-dialog[open] {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
+
+  .phosphor-dialog::backdrop {
+    background-color: oklch(10% 0.01 260 / 0%);
+    transition: background-color 220ms ease, overlay 220ms allow-discrete, display 220ms allow-discrete;
+  }
+
+  .phosphor-dialog[open]::backdrop {
+    background-color: oklch(10% 0.01 260 / 60%);
+  }
+
+  @starting-style {
+    .phosphor-dialog[open]::backdrop {
+      background-color: oklch(10% 0.01 260 / 0%);
+    }
+  }
+
+  .phosphor-dialog p {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    font-size: 0.9rem;
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
+  .dialog-actions button {
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 1px solid var(--color-border);
+    background: none;
+    color: var(--color-text-primary);
+  }
+
+  .dialog-actions button.danger {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    color: var(--color-bg);
+    font-weight: 600;
+  }
+</style>

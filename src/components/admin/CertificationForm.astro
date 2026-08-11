@@ -1,0 +1,111 @@
+---
+import '../../styles/admin-forms.css';
+import type { Certification } from '../../db/schema';
+
+interface Props {
+  certification?: Certification;
+  action: string;
+  method: 'POST' | 'PUT';
+}
+
+const { certification, action, method } = Astro.props;
+
+function toDateInputValue(date: Date | null | undefined): string {
+  if (!date) return '';
+  return date.toISOString().slice(0, 10);
+}
+---
+
+<form
+  id="cert-form"
+  class="admin-form"
+  hx-post={method === 'POST' ? action : undefined}
+  hx-put={method === 'PUT' ? action : undefined}
+  hx-ext="json-enc"
+>
+  <div class="field">
+    <label for="name">Nama sertifikasi</label>
+    <input type="text" id="name" name="name" required maxlength="150" value={certification?.name ?? ''} />
+  </div>
+
+  <div class="field">
+    <label for="issuer">Penerbit</label>
+    <input type="text" id="issuer" name="issuer" required maxlength="150" value={certification?.issuer ?? ''} />
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="issueDate">Tanggal terbit</label>
+      <input
+        type="date"
+        id="issueDate"
+        name="issueDate"
+        required
+        value={toDateInputValue(certification?.issueDate)}
+      />
+    </div>
+    <div class="field">
+      <label for="expiryDate">Tanggal kedaluwarsa (opsional)</label>
+      <input type="date" id="expiryDate" name="expiryDate" value={toDateInputValue(certification?.expiryDate)} />
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="credentialId">Credential ID</label>
+      <input type="text" id="credentialId" name="credentialId" value={certification?.credentialId ?? ''} />
+    </div>
+    <div class="field">
+      <label for="verificationUrl">URL Verifikasi</label>
+      <input type="url" id="verificationUrl" name="verificationUrl" value={certification?.verificationUrl ?? ''} />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="asset-file">Bukti sertifikat (gambar atau PDF)</label>
+    <input type="file" id="asset-file" accept="image/jpeg,image/png,application/pdf" />
+    <input type="hidden" id="assetPublicId" name="assetPublicId" value={certification?.assetPublicId ?? ''} />
+    <input type="hidden" id="assetFormat" name="assetFormat" value={certification?.assetFormat ?? ''} />
+    <p id="asset-upload-status" class="field__hint"></p>
+    <p class="field__hint field__hint--warning">
+      Jika file PDF tidak bisa dibuka setelah dipublikasikan, aktifkan &quot;Allow delivery of PDF
+      and ZIP files&quot; di Cloudinary Console → Settings → Security.
+    </p>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="displayOrder">Urutan tampil</label>
+      <input type="number" id="displayOrder" name="displayOrder" value={certification?.displayOrder ?? 0} />
+    </div>
+    <div class="field field--checkbox">
+      <input type="checkbox" id="published" name="published" checked={certification?.published ?? true} />
+      <label for="published">Published</label>
+    </div>
+  </div>
+
+  <button type="submit">{method === 'POST' ? 'Buat Sertifikasi' : 'Simpan Perubahan'}</button>
+</form>
+
+<script>
+  import { initCloudinaryUploadField } from '../../scripts/admin/cloudinary-upload';
+
+  initCloudinaryUploadField({
+    fileInputId: 'asset-file',
+    hiddenInputId: 'assetPublicId',
+    formatHiddenInputId: 'assetFormat',
+    statusId: 'asset-upload-status',
+    folder: 'portfolio/certifications',
+    resourceType: 'image',
+    maxSizeBytes: 5_242_880,
+    allowedMimeTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+  });
+
+  document.getElementById('cert-form')?.addEventListener('htmx:configRequest', ((event: CustomEvent) => {
+    const params = event.detail.parameters;
+    params.published = params.published === 'on';
+    params.displayOrder = Number(params.displayOrder) || 0;
+    if (!params.expiryDate) delete params.expiryDate;
+    if (!params.assetFormat) delete params.assetFormat;
+  }) as EventListener);
+</script>

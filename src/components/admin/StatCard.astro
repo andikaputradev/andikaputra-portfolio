@@ -1,0 +1,77 @@
+---
+interface Props {
+  label: string;
+  value: number;
+  suffix?: string;
+}
+
+const { label, value, suffix = '' } = Astro.props;
+const id = `stat-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+---
+
+<div class="stat-card border-subtle">
+  <p class="stat-card__label">{label}</p>
+  <p class="stat-card__value font-mono" id={id} data-count-target={value} data-suffix={suffix}>0{suffix}</p>
+</div>
+
+<script>
+  function countUp(el: HTMLElement): void {
+    const target = Number(el.dataset.countTarget ?? '0');
+    const suffix = el.dataset.suffix ?? '';
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion || target === 0) {
+      el.textContent = `${target}${suffix}`;
+      return;
+    }
+
+    const duration = 900;
+    const start = performance.now();
+
+    function tick(now: number): void {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(target * eased);
+      el.textContent = `${current}${suffix}`;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  function countUpAll(root: ParentNode): void {
+    root.querySelectorAll<HTMLElement>('[data-count-target]').forEach(countUp);
+  }
+
+  countUpAll(document);
+
+  // Modul ES ini hanya dievaluasi sekali per full page load; StatCard yang
+  // di-refresh lewat polling htmx (mis. /admin/visitors) di-swap via
+  // innerHTML sehingga tidak memicu evaluasi ulang modul. Listener ini
+  // membuat count-up berjalan lagi untuk konten baru tanpa bergantung pada
+  // eksekusi ulang script.
+  document.addEventListener('htmx:afterSwap', ((event: CustomEvent) => {
+    if (event.target instanceof Element) countUpAll(event.target);
+  }) as EventListener);
+</script>
+
+<style>
+  .stat-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .stat-card__label {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-card__value {
+    font-size: 2.25rem;
+    color: var(--color-accent-phosphor);
+    line-height: 1;
+  }
+</style>

@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785400904634,
+      "tag": "0000_melted_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785569582945,
+      "tag": "0001_orange_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785654218503,
+      "tag": "0002_new_nuke",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786170010562,
+      "tag": "0003_visitor-hash-and-performance-indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786283134003,
+      "tag": "0004_better-auth-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786403211751,
+      "tag": "0005_rate-limit-log",
+      "breakpoints": true
+    }
+  ]
+}

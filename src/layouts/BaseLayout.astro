@@ -1,0 +1,134 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import TelemetryStrip from '../components/layout/TelemetryStrip.astro';
+import Nav from '../components/layout/Nav.astro';
+import Footer from '../components/layout/Footer.astro';
+import JsonLd from '../components/seo/JsonLd.astro';
+import { buildPersonSchema } from '../lib/json-ld';
+
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource-variable/fraunces';
+
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  canonical?: string;
+  additionalSchemas?: Array<Record<string, unknown>>;
+  noindex?: boolean;
+  lang?: 'en' | 'id';
+}
+
+const {
+  title,
+  description,
+  ogImage = '/og/index.png',
+  canonical = Astro.url.href,
+  additionalSchemas = [],
+  noindex = false,
+  lang = 'en',
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const allSchemas = [buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined), ...additionalSchemas];
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageAbsolute} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Wahyu Andika Putra" />
+    <meta property="og:locale" content={lang === 'id' ? 'id_ID' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbsolute} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <JsonLd schemas={allSchemas} />
+
+    <script is:inline>
+      (function () {
+        var stored = null;
+        try { stored = localStorage.getItem('wahyu-theme'); } catch (e) {}
+        var theme = stored === 'light' || stored === 'dark' ? stored : 'dark';
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+        document.documentElement.style.colorScheme = theme;
+        document.documentElement.setAttribute('data-js-ready', '');
+      })();
+    </script>
+
+    <script is:inline>
+      (function () {
+        function forceReveal() {
+          var els = document.querySelectorAll('.js-reveal');
+          for (var i = 0; i < els.length; i++) {
+            els[i].style.opacity = '1';
+            els[i].style.transform = 'none';
+          }
+        }
+        window.addEventListener('load', function () {
+          setTimeout(forceReveal, 2500);
+        });
+      })();
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body id="top">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <TelemetryStrip />
+    <Nav />
+    <slot />
+    <Footer />
+  </body>
+</html>
+
+<script>
+  import { initImageFallback } from '../scripts/image-fallback';
+
+  document.addEventListener('astro:page-load', () => initImageFallback());
+</script>
+
+<style>
+  .skip-link {
+    position: absolute;
+    top: -9999px;
+    left: 1rem;
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .skip-link:focus-visible {
+    top: 1rem;
+    outline: 2px solid var(--color-text-primary);
+    outline-offset: 2px;
+  }
+</style>

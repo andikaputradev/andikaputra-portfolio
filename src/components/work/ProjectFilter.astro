@@ -1,0 +1,55 @@
+---
+const FILTERS = ['ALL', 'SECURITY', 'WEB2', 'WEB3'] as const;
+---
+
+<div class="project-filter" role="group" aria-label="Filter projects by category">
+  {
+    FILTERS.map((filter, i) => (
+      <button
+        type="button"
+        class="project-filter__btn font-mono"
+        data-filter-btn={filter}
+        aria-pressed={i === 0 ? 'true' : 'false'}
+      >
+        [{filter}]
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  import { initProjectFilter } from '../../scripts/project-filter';
+
+  document.addEventListener('astro:page-load', () => initProjectFilter());
+</script>
+
+<style>
+  .project-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .project-filter__btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.03em;
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .project-filter__btn:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  .project-filter__btn[aria-pressed='true'] {
+    color: var(--color-accent-phosphor);
+    border-color: var(--color-accent-phosphor);
+  }
+</style>

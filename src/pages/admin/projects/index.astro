@@ -1,0 +1,214 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { db } from '../../../db';
+import { projects } from '../../../db/schema';
+import { desc } from 'drizzle-orm';
+import { CSRF_COOKIE_NAME } from '../../../lib/csrf';
+
+export const prerender = false;
+
+const allProjects = await db.select().from(projects).orderBy(desc(projects.displayOrder));
+const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
+---
+
+<AdminLayout title="Proyek">
+  <div class="toolbar">
+    <a href="/admin/projects/new" class="btn-primary">+ Proyek baru</a>
+  </div>
+
+  {allProjects.length === 0 ? (
+    <p class="empty-state">
+      Belum ada proyek. Jalankan <code>npm run migrate:content</code> untuk memindahkan 9 proyek
+      existing, atau buat baru.
+    </p>
+  ) : (
+    <div class="admin-table" id="project-sortable" data-csrf={csrfToken}>
+      {allProjects.map((p) => (
+        <div class="admin-row border-subtle" id={`project-row-${p.id}`} data-id={p.id}>
+          <span class="drag-handle" aria-label="Seret untuk mengubah urutan" role="button" tabindex="0">⠿</span>
+          <span class="mono admin-row__tag">{p.tag}</span>
+          <span class="admin-row__title">
+            {p.title}
+            {!p.published && <em class="draft-badge">belum publish</em>}
+            {p.published && p.draftData && <em class="draft-badge draft-badge--pending">draft menunggu</em>}
+          </span>
+          <span class="admin-row__links">
+            {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener">GitHub</a>}
+            {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noopener">Live</a>}
+          </span>
+          <a href={`/admin/preview/projects/${p.id}`} target="_blank" rel="noopener">Pratinjau</a>
+          <a href={`/admin/projects/${p.id}/edit`}>Edit</a>
+          <button
+            type="button"
+            hx-delete={`/api/admin/projects/${p.id}`}
+            hx-target={`#project-row-${p.id}`}
+            hx-swap="outerHTML swap:0.2s"
+            hx-confirm={`Hapus proyek "${p.title}" secara permanen?`}
+            class="btn-danger"
+          >
+            Hapus
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { initReorder } from '../../../scripts/admin/reorder';
+  import { showToast } from '../../../scripts/admin/htmx-toast';
+
+  initReorder({ containerId: 'project-sortable', endpoint: '/api/admin/projects/reorder' });
+
+  const params = new URLSearchParams(window.location.search);
+  const flash = params.get('flash');
+  if (flash === 'created') {
+    showToast('Proyek dibuat', 'success');
+  } else if (flash === 'published') {
+    showToast('Proyek dipublikasikan', 'success');
+  } else if (flash === 'draft-saved') {
+    showToast('Draft disimpan', 'success');
+  }
+  if (flash) {
+    params.delete('flash');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }
+</script>
+
+<style>
+  .toolbar {
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .empty-state {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .empty-state code {
+    font-family: var(--font-mono), monospace;
+    background-color: var(--color-surface);
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .admin-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-row {
+    display: grid;
+    grid-template-columns: 1.5rem 5.5rem 1fr auto auto auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    background-color: var(--color-bg);
+    opacity: 0;
+    animation: row-in 320ms ease forwards;
+  }
+
+  .admin-row:nth-child(1) { animation-delay: 0ms; }
+  .admin-row:nth-child(2) { animation-delay: 30ms; }
+  .admin-row:nth-child(3) { animation-delay: 60ms; }
+  .admin-row:nth-child(4) { animation-delay: 90ms; }
+  .admin-row:nth-child(5) { animation-delay: 120ms; }
+  .admin-row:nth-child(n + 6) { animation-delay: 150ms; }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .admin-row--ghost {
+    opacity: 0.4;
+  }
+
+  .drag-handle {
+    cursor: grab;
+    color: var(--color-text-muted);
+    text-align: center;
+    user-select: none;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .admin-row__tag {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .admin-row__title {
+    font-weight: 500;
+  }
+
+  .draft-badge {
+    color: var(--color-accent-steel);
+    font-style: normal;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  .draft-badge--pending {
+    color: var(--color-accent-phosphor);
+  }
+
+  .admin-row__links {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .admin-row a {
+    color: var(--color-accent-steel);
+    text-decoration: none;
+  }
+
+  .admin-row a:hover {
+    text-decoration: underline;
+  }
+
+  .btn-danger {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-error);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.82rem;
+  }
+
+  .btn-danger:hover {
+    background-color: var(--color-error);
+    color: var(--color-bg);
+  }
+
+  @media (max-width: 860px) {
+    .admin-row {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+import '../../styles/admin-forms.css';
+import type { Project } from '../../db/schema';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const stackValue = project.stack?.join(', ') ?? '';
+---
+
+<form
+  id="project-settings-form"
+  class="admin-form admin-form--secondary"
+  hx-patch={`/api/admin/projects/${project.id}/settings`}
+  hx-ext="json-enc"
+>
+  <div class="field-row">
+    <div class="field">
+      <label for="tag">Kategori</label>
+      <select id="tag" name="tag" required>
+        {['SECURITY', 'WEB2', 'WEB3'].map((t) => (
+          <option value={t} selected={project.tag === t}>{t}</option>
+        ))}
+      </select>
+    </div>
+    <div class="field">
+      <label for="schemaType">Tipe Schema (SEO)</label>
+      <select id="schemaType" name="schemaType" required>
+        <option value="CreativeWork" selected={project.schemaType === 'CreativeWork'}>CreativeWork</option>
+        <option value="SoftwareApplication" selected={project.schemaType === 'SoftwareApplication'}>
+          SoftwareApplication
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field field--checkbox">
+    <input type="checkbox" id="flagship" name="flagship" checked={project.flagship} />
+    <label for="flagship">Flagship</label>
+  </div>
+
+  <div class="field">
+    <label for="stack">Stack (pisahkan dengan koma)</label>
+    <input type="text" id="stack" name="stack" data-array-field value={stackValue} />
+  </div>
+
+  <div class="field">
+    <label for="cover-file">Cover image</label>
+    <input type="file" id="cover-file" accept="image/*" />
+    <input type="hidden" id="coverImagePublicId" name="coverImagePublicId" value={project.coverImagePublicId ?? ''} />
+    <p id="cover-upload-status" class="field__hint"></p>
+  </div>
+
+  <div class="field field--checkbox">
+    <input type="checkbox" id="published" name="published" checked={project.published} />
+    <label for="published">Published</label>
+  </div>
+  <p class="field__hint">
+    Slug (<code>{project.slug}</code>) dan urutan tampil tidak diedit di sini — slug bersifat
+    permanen setelah dibuat, urutan tampil diatur lewat drag-and-drop di halaman daftar proyek.
+  </p>
+
+  <button type="submit">Simpan Pengaturan</button>
+</form>
+
+<script>
+  import { initCloudinaryUploadField } from '../../scripts/admin/cloudinary-upload';
+
+  initCloudinaryUploadField({
+    fileInputId: 'cover-file',
+    hiddenInputId: 'coverImagePublicId',
+    statusId: 'cover-upload-status',
+    folder: 'portfolio/projects',
+    resourceType: 'image',
+    maxSizeBytes: 5_242_880,
+  });
+
+  document
+    .getElementById('project-settings-form')
+    ?.addEventListener('htmx:configRequest', ((event: CustomEvent) => {
+      const params = event.detail.parameters;
+      if (typeof params.stack === 'string') {
+        // Lihat catatan identik di ProjectForm.astro: array harus dikirim sebagai
+        // string JSON agar tidak tereduksi menjadi elemen terakhir oleh proxy
+        // parameter htmx + ekstensi json-enc.
+        params.stack = JSON.stringify(
+          params.stack
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter(Boolean),
+        );
+      }
+      params.flagship = params.flagship === 'on';
+      params.published = params.published === 'on';
+    }) as EventListener);
+</script>
+

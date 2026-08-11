@@ -1,0 +1,195 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const NAV_LINKS = [
+  { href: '/#philosophy', label: 'Philosophy' },
+  { href: '/#expertise', label: 'Expertise' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#rd-lab', label: 'Lab' },
+  { href: '/jasa', label: 'Jasa' },
+  { href: '/#contact', label: 'Contact' },
+] as const;
+---
+
+<header class="site-nav" data-site-nav>
+  <div class="site-nav__inner container-site">
+    <a href="/" class="site-nav__logo" aria-label="Wahyu Andika Putra — back to top">
+      <span class="site-nav__logo-mark">WAP</span>
+    </a>
+
+    <nav
+      id="primary-nav-menu"
+      class="site-nav__menu"
+      data-nav-menu
+      data-open="false"
+      aria-label="Primary"
+    >
+      <ul class="site-nav__list">
+        {
+          NAV_LINKS.map((link) => (
+            <li>
+              <a href={link.href}>{link.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-nav__controls">
+      <ThemeToggle />
+      <button
+        type="button"
+        class="site-nav__toggle"
+        data-nav-toggle
+        aria-expanded="false"
+        aria-controls="primary-nav-menu"
+        aria-label="Toggle navigation menu"
+      >
+        <span class="site-nav__toggle-bar"></span>
+        <span class="site-nav__toggle-bar"></span>
+        <span class="site-nav__toggle-bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  import { initNavToggle } from '../../scripts/nav-toggle';
+
+  document.addEventListener('astro:page-load', initNavToggle);
+</script>
+
+<style>
+  .site-nav {
+    position: fixed;
+    top: var(--telemetry-h, 2rem);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background-color: color-mix(in oklch, var(--color-bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--nav-h, 4.5rem);
+  }
+
+  .site-nav__logo {
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .site-nav__logo-mark {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+
+  .site-nav__list {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .site-nav__list a {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .site-nav__list a:hover {
+    color: var(--color-accent-phosphor);
+  }
+
+  .site-nav__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .site-nav__toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .site-nav__toggle-bar {
+    width: 1rem;
+    height: 1.5px;
+    background-color: var(--color-text-primary);
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .site-nav__toggle[aria-expanded='true'] .site-nav__toggle-bar:nth-child(1) {
+    transform: translateY(5.5px) rotate(45deg);
+  }
+
+  .site-nav__toggle[aria-expanded='true'] .site-nav__toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  .site-nav__toggle[aria-expanded='true'] .site-nav__toggle-bar:nth-child(3) {
+    transform: translateY(-5.5px) rotate(-45deg);
+  }
+
+  @media (max-width: 1023px) {
+    .site-nav__toggle {
+      display: flex;
+    }
+
+    .site-nav__menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-base);
+    }
+
+    .site-nav__menu[data-open='true'] {
+      max-height: 24rem;
+    }
+
+    .site-nav__list {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      padding: 0.5rem var(--spacing-container) 1.25rem;
+    }
+
+    .site-nav__list li {
+      width: 100%;
+    }
+
+    .site-nav__list a {
+      display: block;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-nav__menu {
+      transition: none;
+    }
+  }
+</style>

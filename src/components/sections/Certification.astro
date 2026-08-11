@@ -1,0 +1,53 @@
+---
+import { db } from '../../db';
+import { certifications } from '../../db/schema';
+import { eq, desc } from 'drizzle-orm';
+import CertificationCard from '../work/CertificationCard.astro';
+
+const items = await db
+  .select()
+  .from(certifications)
+  .where(eq(certifications.published, true))
+  .orderBy(desc(certifications.displayOrder));
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+---
+
+{items.length > 0 && (
+  <section id="certifications" class="cert-section section-spacing" data-telemetry-section="certifications">
+    <div class="container-site">
+      <p class="cert-section__eyebrow font-mono js-reveal">CERTIFICATIONS</p>
+      <div class="cert-grid">
+        {items.map((cert) => (
+          <div class="js-reveal">
+            <CertificationCard
+              name={cert.name}
+              issuer={cert.issuer}
+              issueDateLabel={formatDate(cert.issueDate)}
+              assetPublicId={cert.assetPublicId}
+              assetFormat={cert.assetFormat}
+              verificationUrl={cert.verificationUrl}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .cert-section__eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1.25rem;
+  }
+</style>

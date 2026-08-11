@@ -1,0 +1,37 @@
+---
+import type { ProjectTag } from '../../lib/types';
+
+interface Props {
+  tag: ProjectTag;
+}
+
+const { tag } = Astro.props;
+---
+
+<span class={`tag-badge tag-badge--${tag.toLowerCase()}`}>[{tag}]</span>
+
+<style>
+  .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    width: fit-content;
+  }
+
+  .tag-badge--security,
+  .tag-badge--web2 {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 40%, transparent);
+  }
+
+  .tag-badge--web3 {
+    color: var(--color-accent-steel);
+    border-color: color-mix(in oklch, var(--color-accent-steel) 40%, transparent);
+  }
+</style>

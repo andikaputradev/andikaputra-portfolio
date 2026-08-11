@@ -1,0 +1,203 @@
+---
+import type { Project } from '../../db/schema';
+import TagBadge from '../ui/TagBadge.astro';
+import { formatPublishedDate } from '../../lib/format-date';
+import { resolveCoverImage } from '../../lib/cloudinary-url';
+import { renderProjectBody } from '../../lib/render-markdown';
+
+interface Props {
+  project: Project;
+  showBackLink?: boolean;
+}
+
+const { project, showBackLink = true } = Astro.props;
+const stack = project.stack ?? [];
+const publishedLabel = formatPublishedDate(project.publishedAt);
+const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1600');
+const bodyHtml = renderProjectBody(project.bodyMarkdown);
+---
+
+<article class="project-detail">
+  <header class="project-detail__header container-site">
+    {showBackLink && <a href="/#work" class="project-detail__back">← Back to work</a>}
+    <TagBadge tag={project.tag} />
+    <h1 class="project-detail__title font-display">{project.title}</h1>
+    <p class="project-detail__summary">{project.summary}</p>
+  </header>
+
+  <div class="project-detail__cover-wrap cover-image-wrap container-site">
+    {coverSrc ? (
+      <img
+        src={coverSrc}
+        alt={`${project.title} — cover screenshot`}
+        class="project-detail__cover js-cover-image"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        transition:name={`project-image-${project.slug}`}
+      />
+    ) : (
+      <img alt="" class="project-detail__cover js-cover-image is-broken" />
+    )}
+  </div>
+
+  <div class="project-detail__body container-site">
+    <div class="project-detail__content" set:html={bodyHtml} />
+
+    <aside class="project-detail__meta">
+      <div class="project-detail__meta-block">
+        <h2 class="project-detail__meta-heading font-mono">Published</h2>
+        <p class="project-detail__published">{publishedLabel}</p>
+      </div>
+
+      {
+        stack.length > 0 && (
+          <div class="project-detail__meta-block">
+            <h2 class="project-detail__meta-heading font-mono">Stack</h2>
+            <ul class="project-detail__stack-list">
+              {stack.map((tech: string) => (
+                <li>{tech}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        (project.liveUrl || project.repoUrl) && (
+          <div class="project-detail__meta-block">
+            <h2 class="project-detail__meta-heading font-mono">Links</h2>
+            <ul class="project-detail__link-list">
+              {project.liveUrl && (
+                <li>
+                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                    Live site ↗
+                  </a>
+                </li>
+              )}
+              {project.repoUrl && (
+                <li>
+                  <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+                    Repository ↗
+                  </a>
+                </li>
+              )}
+            </ul>
+          </div>
+        )
+      }
+    </aside>
+  </div>
+</article>
+
+<style>
+  .project-detail__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    padding-bottom: 2rem;
+  }
+
+  .project-detail__back {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .project-detail__back:hover {
+    color: var(--color-accent-phosphor);
+  }
+
+  .project-detail__title {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.1;
+    max-width: 24ch;
+  }
+
+  .project-detail__summary {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    color: var(--color-text-muted);
+    max-width: 60ch;
+  }
+
+  .project-detail__cover-wrap {
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .project-detail__cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+  }
+
+  .project-detail__body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-bottom: var(--spacing-section);
+  }
+
+  .project-detail__content {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    max-width: 68ch;
+  }
+
+  .project-detail__content :global(p + p) {
+    margin-top: 1.25rem;
+  }
+
+  .project-detail__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .project-detail__meta-heading {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .project-detail__stack-list,
+  .project-detail__link-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .project-detail__stack-list li {
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+  }
+
+  .project-detail__published {
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+  }
+
+  .project-detail__link-list a {
+    font-size: 0.9375rem;
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+  }
+
+  .project-detail__link-list a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 768px) {
+    .project-detail__body {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,192 @@
+---
+const GROUPS = [
+  {
+    id: 'software-engineering',
+    label: 'Software Engineering',
+    skills: ['TypeScript', 'React', 'Next.js', 'Laravel', 'PHP', 'FastAPI', 'PostgreSQL', 'Rust'],
+  },
+  {
+    id: 'cybersecurity',
+    label: 'Cybersecurity',
+    skills: ['Python', 'PySide6', 'Plugin Architecture', 'Slither', 'Web3.py'],
+  },
+  {
+    id: 'web3-blockchain',
+    label: 'Web3 / Blockchain',
+    skills: ['Solidity', 'Hardhat', 'OpenZeppelin', 'Wagmi', 'Viem', 'The Graph', 'RainbowKit'],
+  },
+] as const;
+---
+
+<section id="expertise" class="expertise" data-telemetry-section="expertise">
+  <div class="container-site">
+    <h2 class="expertise__heading font-display">Expertise</h2>
+
+    <div class="expertise__groups" id="expertise-groups">
+      {
+        GROUPS.map((group) => (
+          <div class="expertise-panel js-reveal" data-category={group.id}>
+            <div class="expertise-panel__glow" aria-hidden="true" />
+            <div class="expertise-panel__header">
+              <span class="expertise-panel__dot" aria-hidden="true" />
+              <h3 class="expertise-panel__title font-mono">{group.label}</h3>
+              <span class="expertise-panel__count font-mono">[{String(group.skills.length).padStart(2, '0')}]</span>
+            </div>
+            <ul class="expertise-panel__skills">
+              {group.skills.map((skill) => (
+                <li class="expertise-chip font-mono">{skill}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initExpertiseReveal } from '../../scripts/anime-svg';
+
+  document.addEventListener('astro:page-load', () => initExpertiseReveal());
+</script>
+
+<style>
+  .expertise {
+    padding-block: var(--spacing-section);
+  }
+
+  .expertise__heading {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .expertise__groups {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .expertise__groups {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    }
+  }
+
+  .expertise-panel {
+    position: relative;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    overflow: hidden;
+    transition: border-color var(--transition-base), transform 0.55s ease, opacity 0.55s ease;
+  }
+
+  :root[data-js-ready] .expertise-panel.js-reveal {
+    transform: translateY(20px);
+  }
+
+  .expertise-panel:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 35%, var(--color-border));
+  }
+
+  .expertise-panel[data-category='web3-blockchain']:hover {
+    border-color: color-mix(in oklch, var(--color-accent-steel) 35%, var(--color-border));
+  }
+
+  .expertise-panel__glow {
+    position: absolute;
+    inset: -20% auto auto -20%;
+    width: 60%;
+    aspect-ratio: 1;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--color-accent-phosphor) 16%, transparent),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  .expertise-panel[data-category='web3-blockchain'] .expertise-panel__glow {
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--color-accent-steel) 16%, transparent),
+      transparent 70%
+    );
+  }
+
+  .expertise-panel__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .expertise-panel__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 8px color-mix(in oklch, var(--color-accent-phosphor) 70%, transparent);
+    flex-shrink: 0;
+  }
+
+  .expertise-panel[data-category='web3-blockchain'] .expertise-panel__dot {
+    background-color: var(--color-accent-steel);
+    box-shadow: 0 0 8px color-mix(in oklch, var(--color-accent-steel) 70%, transparent);
+  }
+
+  .expertise-panel__title {
+    position: relative;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    flex: 1;
+  }
+
+  .expertise-panel__count {
+    position: relative;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .expertise-panel__skills {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .expertise-chip {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  .expertise-chip:hover {
+    color: var(--color-text-primary);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 50%, var(--color-border));
+    transform: translateY(-1px);
+  }
+
+  .expertise-panel[data-category='web3-blockchain'] .expertise-chip:hover {
+    border-color: color-mix(in oklch, var(--color-accent-steel) 50%, var(--color-border));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .expertise-chip:hover {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import VisitorStatsPanel from '../../components/admin/VisitorStatsPanel.astro';
+import { getVisitorSummary } from '../../lib/visitor-stats';
+
+export const prerender = false;
+
+const summary = await getVisitorSummary(30);
+---
+
+<AdminLayout title="Pengunjung" breadcrumb="Admin / Pengunjung">
+  <div id="visitor-live-stats" hx-get="/admin/visitors/fragment" hx-trigger="load, every 15s" hx-swap="innerHTML">
+    <VisitorStatsPanel summary={summary} />
+  </div>
+
+  <p class="privacy-note mono">
+    Tanpa cookie · tanpa alamat IP tersimpan · negara dari header geolokasi Vercel (granularitas
+    negara saja, tidak tersedia saat pratinjau lokal). Pengunjung unik dihitung dari hash harian
+    yang berputar setiap hari — tidak ada pelacakan lintas sesi.
+  </p>
+</AdminLayout>
+
+<style>
+  .privacy-note {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

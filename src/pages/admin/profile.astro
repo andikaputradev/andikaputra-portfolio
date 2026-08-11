@@ -1,0 +1,114 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { db } from '../../db';
+import { siteProfile } from '../../db/schema';
+
+export const prerender = false;
+
+let [profile] = await db.select().from(siteProfile).limit(1);
+if (!profile) {
+  [profile] = await db.insert(siteProfile).values({}).returning();
+}
+---
+
+<AdminLayout title="Profil">
+  <form id="profile-form" hx-put="/api/admin/profile" hx-ext="json-enc">
+    <section class="profile-field surface border-subtle">
+      <h2>Foto Profil</h2>
+      {profile.photoPublicId && (
+        <p class="field__hint">Public ID saat ini: <code>{profile.photoPublicId}</code></p>
+      )}
+      <input type="file" id="photo-file" accept="image/*" />
+      <input type="hidden" id="photoPublicId" name="photoPublicId" value={profile.photoPublicId ?? ''} />
+      <p id="photo-upload-status" class="field__hint"></p>
+    </section>
+
+    <section class="profile-field surface border-subtle">
+      <h2>CV (PDF)</h2>
+      {profile.cvPublicId && (
+        <p class="field__hint">
+          Public ID saat ini: <code>{profile.cvPublicId}</code>
+          {profile.cvUpdatedAt && ` — diperbarui ${profile.cvUpdatedAt.toISOString().slice(0, 10)}`}
+        </p>
+      )}
+      <input type="file" id="cv-file" accept="application/pdf" />
+      <input type="hidden" id="cvPublicId" name="cvPublicId" value={profile.cvPublicId ?? ''} />
+      <p id="cv-upload-status" class="field__hint"></p>
+    </section>
+
+    <button type="submit">Simpan Profil</button>
+  </form>
+</AdminLayout>
+
+<script>
+  import { initCloudinaryUploadField } from '../../scripts/admin/cloudinary-upload';
+
+  initCloudinaryUploadField({
+    fileInputId: 'photo-file',
+    hiddenInputId: 'photoPublicId',
+    statusId: 'photo-upload-status',
+    folder: 'portfolio/profile/photo',
+    resourceType: 'image',
+    maxSizeBytes: 5_242_880,
+  });
+
+  initCloudinaryUploadField({
+    fileInputId: 'cv-file',
+    hiddenInputId: 'cvPublicId',
+    statusId: 'cv-upload-status',
+    folder: 'portfolio/profile/cv',
+    resourceType: 'raw',
+    maxSizeBytes: 10_485_760,
+  });
+</script>
+
+<style>
+  #profile-form {
+    max-width: 32rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .profile-field {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .profile-field h2 {
+    font-size: 1rem;
+    margin-bottom: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .profile-field input[type='file'] {
+    width: 100%;
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+  }
+
+  .field__hint {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+  }
+
+  .field__hint code {
+    font-family: var(--font-mono), monospace;
+    background-color: var(--color-bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius-sm);
+  }
+
+  button[type='submit'] {
+    align-self: flex-start;
+    padding: 0.7rem 1.5rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+  }
+</style>

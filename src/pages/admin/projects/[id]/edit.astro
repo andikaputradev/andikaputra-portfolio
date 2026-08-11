@@ -1,0 +1,290 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import ProjectSettingsForm from '../../../../components/admin/ProjectSettingsForm.astro';
+import { db } from '../../../../db';
+import { projects } from '../../../../db/schema';
+import { eq } from 'drizzle-orm';
+import { resolveProjectView } from '../../../../lib/project-draft';
+import { CSRF_COOKIE_NAME } from '../../../../lib/csrf';
+
+export const prerender = false;
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id)) {
+  return Astro.redirect('/admin/projects');
+}
+
+const [project] = await db.select().from(projects).where(eq(projects.id, id));
+if (!project) {
+  return Astro.redirect('/admin/projects');
+}
+
+const hasDraft = Boolean(project.draftData);
+const contentValues = resolveProjectView(project);
+const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
+---
+
+<AdminLayout title={`Edit — ${project.title}`}>
+  {hasDraft && (
+    <div class="draft-banner" id="draft-banner">
+      Ada draft belum dipublikasikan.
+      <a href={`/admin/preview/projects/${project.id}`} target="_blank" rel="noopener">Lihat pratinjau</a>
+      <button
+        type="button"
+        id="discard-draft-btn"
+        data-project-id={project.id}
+        data-csrf={csrfToken}
+      >
+        Buang draft
+      </button>
+    </div>
+  )}
+
+  <div class="edit-grid">
+    <section class="edit-section">
+      <h2>Konten</h2>
+      <form id="project-content-form" data-project-id={project.id} data-csrf={csrfToken}>
+        <div class="field">
+          <label for="title">Judul</label>
+          <input type="text" id="title" name="title" required maxlength="150" value={contentValues.title} />
+        </div>
+        <div class="field">
+          <label for="summary">Ringkasan (maks 200 karakter)</label>
+          <textarea id="summary" name="summary" required maxlength="200" rows="2">{contentValues.summary}</textarea>
+        </div>
+        <div class="field">
+          <label for="body-editor">Isi case study</label>
+          <div id="editor-toolbar" class="editor-toolbar">
+            <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
+            <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
+            <button type="button" data-command="h2">H2</button>
+            <button type="button" data-command="h3">H3</button>
+            <button type="button" data-command="bulletList">• List</button>
+            <button type="button" data-command="orderedList">1. List</button>
+            <button type="button" data-command="blockquote">Quote</button>
+            <button type="button" data-command="code">Code</button>
+            <button type="button" data-command="link">Link</button>
+            <button type="button" data-command="image">Image</button>
+            <input type="file" data-image-input accept="image/*" hidden />
+          </div>
+          <div id="body-editor" data-initial={contentValues.bodyMarkdown}></div>
+          <input type="hidden" id="bodyMarkdown-sync" name="bodyMarkdown" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="liveUrl">Live URL</label>
+            <input type="url" id="liveUrl" name="liveUrl" value={contentValues.liveUrl ?? ''} />
+          </div>
+          <div class="field">
+            <label for="repoUrl">Repo URL</label>
+            <input type="url" id="repoUrl" name="repoUrl" value={contentValues.repoUrl ?? ''} />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href={`/admin/preview/projects/${project.id}`} target="_blank" rel="noopener">Pratinjau</a>
+          <button type="submit" data-save-mode="draft">Simpan sebagai draft</button>
+          <button type="submit" data-save-mode="publish" class="primary">Publikasikan</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="edit-section">
+      <h2>Pengaturan</h2>
+      <ProjectSettingsForm project={project} />
+    </section>
+  </div>
+</AdminLayout>
+
+<script>
+  import { initProjectContentForm } from '../../../../scripts/admin/project-content-form';
+  import { CSRF_HEADER_NAME } from '../../../../lib/csrf';
+  import { showToast } from '../../../../scripts/admin/htmx-toast';
+
+  initProjectContentForm();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('flash') === 'settings-saved') {
+    showToast('Pengaturan disimpan', 'success');
+    params.delete('flash');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }
+
+  document.getElementById('discard-draft-btn')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    button.disabled = true;
+    try {
+      const res = await fetch(`/api/admin/projects/${button.dataset.projectId}/draft`, {
+        method: 'DELETE',
+        headers: { [CSRF_HEADER_NAME]: button.dataset.csrf ?? '' },
+      });
+      if (!res.ok) throw new Error('Gagal membuang draft');
+      window.location.reload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Gagal membuang draft');
+      button.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .draft-banner {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 2rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-accent-phosphor);
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+  }
+
+  .draft-banner a {
+    color: var(--color-accent-phosphor);
+  }
+
+  .draft-banner button {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-error);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.82rem;
+  }
+
+  .edit-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .edit-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-muted);
+  }
+
+  #project-content-form .field,
+  #project-content-form .field-row > .field {
+    margin-bottom: 1.25rem;
+  }
+
+  #project-content-form .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  #project-content-form label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  #project-content-form input[type='text'],
+  #project-content-form input[type='url'],
+  #project-content-form textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  .editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+
+  .editor-toolbar button {
+    padding: 0.3rem 0.65rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .editor-toolbar button:hover {
+    border-color: var(--color-accent-phosphor);
+  }
+
+  #body-editor {
+    min-height: 16rem;
+    padding: 1rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+
+  #body-editor:focus-within {
+    border-color: var(--color-accent-phosphor);
+  }
+
+  #body-editor :global(.admin-editor-body) {
+    outline: none;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-primary);
+    min-height: 14rem;
+  }
+
+  #body-editor :global(.admin-editor-body p) {
+    margin-bottom: 0.85rem;
+  }
+
+  #body-editor :global(.admin-editor-body img) {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .form-actions a {
+    color: var(--color-accent-steel);
+    font-size: 0.88rem;
+    margin-right: auto;
+  }
+
+  .form-actions button[type='submit'] {
+    padding: 0.7rem 1.4rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .form-actions button.primary {
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border-color: var(--color-accent-phosphor);
+  }
+
+  @media (min-width: 1100px) {
+    .edit-grid {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+</style>

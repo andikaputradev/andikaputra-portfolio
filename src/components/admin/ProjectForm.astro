@@ -1,0 +1,147 @@
+---
+import '../../styles/admin-forms.css';
+import type { Project } from '../../db/schema';
+
+interface Props {
+  project?: Project;
+  action: string;
+  method: 'POST' | 'PUT';
+}
+
+const { project, action, method } = Astro.props;
+const stackValue = project?.stack?.join(', ') ?? '';
+---
+
+<form
+  id="project-form"
+  class="admin-form"
+  hx-post={method === 'POST' ? action : undefined}
+  hx-put={method === 'PUT' ? action : undefined}
+  hx-ext="json-enc"
+>
+  <div class="field">
+    <label for="title">Judul</label>
+    <input type="text" id="title" name="title" required maxlength="150" value={project?.title ?? ''} />
+  </div>
+
+  <div class="field">
+    <label for="slug">Slug</label>
+    <input
+      type="text"
+      id="slug"
+      name="slug"
+      required
+      maxlength="100"
+      pattern="[a-z0-9-]+"
+      value={project?.slug ?? ''}
+    />
+    <p class="field__hint">Huruf kecil, angka, tanda hubung. Dipakai di URL /work/[slug].</p>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="tag">Kategori</label>
+      <select id="tag" name="tag" required>
+        {['SECURITY', 'WEB2', 'WEB3'].map((t) => (
+          <option value={t} selected={project?.tag === t}>{t}</option>
+        ))}
+      </select>
+    </div>
+    <div class="field">
+      <label for="schemaType">Tipe Schema (SEO)</label>
+      <select id="schemaType" name="schemaType" required>
+        <option value="CreativeWork" selected={!project || project.schemaType === 'CreativeWork'}>
+          CreativeWork
+        </option>
+        <option value="SoftwareApplication" selected={project?.schemaType === 'SoftwareApplication'}>
+          SoftwareApplication
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field field--checkbox">
+    <input type="checkbox" id="flagship" name="flagship" checked={project?.flagship ?? false} />
+    <label for="flagship">Flagship (ditonjolkan di Selected Work)</label>
+  </div>
+
+  <div class="field">
+    <label for="summary">Ringkasan (maks 200 karakter)</label>
+    <textarea id="summary" name="summary" required maxlength="200" rows="2">{project?.summary ?? ''}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="bodyMarkdown">Isi (Markdown)</label>
+    <textarea id="bodyMarkdown" name="bodyMarkdown" required rows="10">{project?.bodyMarkdown ?? ''}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="stack">Stack (pisahkan dengan koma)</label>
+    <input type="text" id="stack" name="stack" data-array-field value={stackValue} />
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="liveUrl">Live URL</label>
+      <input type="url" id="liveUrl" name="liveUrl" value={project?.liveUrl ?? ''} />
+    </div>
+    <div class="field">
+      <label for="repoUrl">Repo URL</label>
+      <input type="url" id="repoUrl" name="repoUrl" value={project?.repoUrl ?? ''} />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="cover-file">Cover image</label>
+    <input type="file" id="cover-file" accept="image/*" />
+    <input type="hidden" id="coverImagePublicId" name="coverImagePublicId" value={project?.coverImagePublicId ?? ''} />
+    <p id="cover-upload-status" class="field__hint"></p>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="displayOrder">Urutan tampil</label>
+      <input type="number" id="displayOrder" name="displayOrder" value={project?.displayOrder ?? 0} />
+    </div>
+    <div class="field field--checkbox">
+      <input type="checkbox" id="published" name="published" checked={project?.published ?? true} />
+      <label for="published">Published</label>
+    </div>
+  </div>
+
+  <button type="submit">{method === 'POST' ? 'Buat Proyek' : 'Simpan Perubahan'}</button>
+</form>
+
+<script>
+  import { initCloudinaryUploadField } from '../../scripts/admin/cloudinary-upload';
+
+  initCloudinaryUploadField({
+    fileInputId: 'cover-file',
+    hiddenInputId: 'coverImagePublicId',
+    statusId: 'cover-upload-status',
+    folder: 'portfolio/projects',
+    resourceType: 'image',
+    maxSizeBytes: 5_242_880,
+  });
+
+  document.getElementById('project-form')?.addEventListener('htmx:configRequest', ((event: CustomEvent) => {
+    const params = event.detail.parameters;
+    if (typeof params.stack === 'string') {
+      // htmx mem-proxy parameter lewat FormData sebelum di-serialize; array yang
+      // di-assign langsung akan berubah jadi entri berganda dan tereduksi menjadi
+      // elemen TERAKHIR saja saat Object.fromEntries() dijalankan oleh ext json-enc.
+      // Mengirimnya sebagai string JSON menghindari jalur destruktif tersebut —
+      // server mem-parse-nya kembali lewat zJsonArray (lihat admin-schemas.ts).
+      params.stack = JSON.stringify(
+        params.stack
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter(Boolean),
+      );
+    }
+    params.flagship = params.flagship === 'on';
+    params.published = params.published === 'on';
+    params.displayOrder = Number(params.displayOrder) || 0;
+  }) as EventListener);
+</script>
+

@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+:root {
+  --telemetry-h: 2rem;
+  --nav-h: 4.5rem;
+  --header-h: calc(var(--telemetry-h) + var(--nav-h));
+
+  --font-geist-sans: 'Geist Variable', system-ui, sans-serif;
+  --font-geist-mono: 'Geist Mono Variable', "Courier New", monospace;
+  --font-fraunces: 'Fraunces Variable', Georgia, serif;
+}
+
+@media (max-width: 479px) {
+  :root {
+    --telemetry-h: 1.75rem;
+    --nav-h: 3.75rem;
+  }
+}
+
+@theme {
+  --color-bg: oklch(16% 0.015 260);
+  --color-surface: oklch(20% 0.016 260);
+  --color-surface-raised: oklch(24% 0.018 260);
+  --color-text-primary: oklch(94% 0.01 80);
+  --color-text-muted: oklch(62% 0.015 80);
+  --color-accent-phosphor: oklch(72% 0.14 55);
+  --color-accent-steel: oklch(75% 0.08 220);
+  --color-error: oklch(65% 0.19 25);
+  --color-success: oklch(68% 0.14 150);
+  --color-border: oklch(30% 0.02 260 / 40%);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --spacing-section: clamp(5rem, 10vw, 9rem);
+  --spacing-container: clamp(1.25rem, 5vw, 4rem);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+[data-theme="light"] {
+  --color-bg: oklch(96% 0.01 80);
+  --color-surface: oklch(99% 0.005 80);
+  --color-surface-raised: oklch(97% 0.008 80);
+  --color-text-primary: oklch(18% 0.01 260);
+  --color-text-muted: oklch(45% 0.015 260);
+  --color-accent-phosphor: oklch(54% 0.15 55);
+  --color-accent-steel: oklch(50% 0.09 220);
+  --color-error: oklch(45% 0.19 25);
+  --color-success: oklch(48% 0.14 150);
+  --color-border: oklch(85% 0.01 80);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 1.5rem);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    padding-top: var(--header-h);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-phosphor);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  ::selection {
+    background-color: oklch(72% 0.14 55 / 25%);
+    color: var(--color-text-primary);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .text-phosphor {
+    color: var(--color-accent-phosphor);
+  }
+
+  .text-steel {
+    color: var(--color-accent-steel);
+  }
+
+  .surface {
+    background-color: var(--color-surface);
+  }
+
+  .surface-raised {
+    background-color: var(--color-surface-raised);
+  }
+
+  .border-subtle {
+    border-color: var(--color-border);
+  }
+
+  .container-site {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: var(--spacing-container);
+  }
+
+  .section-spacing {
+    padding-block: var(--spacing-section);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  :root[data-js-ready] .js-reveal {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root[data-js-ready] .js-reveal {
+      opacity: 1;
+    }
+  }
+
+  .cover-image-wrap {
+    position: relative;
+  }
+
+  .cover-image-wrap .js-cover-image {
+    transition: opacity var(--transition-fast);
+  }
+
+  .cover-image-wrap .js-cover-image.is-broken {
+    opacity: 0;
+  }
+
+  .cover-image-wrap::after {
+    content: '[ ASSET PENDING ]';
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    background-color: var(--color-surface-raised);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .cover-image-wrap:has(.js-cover-image.is-broken)::after {
+    display: flex;
+  }
+}

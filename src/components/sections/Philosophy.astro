@@ -1,0 +1,57 @@
+---
+---
+
+<section id="philosophy" class="philosophy" data-telemetry-section="philosophy">
+  <div class="container-site">
+    <blockquote class="philosophy__quote font-display">
+      <span class="philosophy__sentence" data-philosophy-sentence
+        >Most software is built to work.</span
+      >
+      <span class="philosophy__sentence" data-philosophy-sentence
+        >Less of it is built to survive someone trying to make it fail — a malformed request, a
+        race condition, an attacker who read the same documentation you did.</span
+      >
+      <span class="philosophy__sentence" data-philosophy-sentence
+        >That distinction shapes how I build: web platforms engineered for the team that
+        maintains them after I'm gone, and security tooling built for the assessor who needs
+        results they can trust in a report.</span
+      >
+      <span class="philosophy__sentence" data-philosophy-sentence
+        >Web2 or Web3, the discipline doesn't change — authorized, documented, reproducible.</span
+      >
+    </blockquote>
+  </div>
+</section>
+
+<script>
+  import { initPhilosophyReveal } from '../../scripts/philosophy-reveal';
+
+  document.addEventListener('astro:page-load', () => initPhilosophyReveal());
+</script>
+
+<style>
+  .philosophy {
+    padding-block: var(--spacing-section);
+  }
+
+  .philosophy__quote {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    max-width: min(90vw, 640px);
+    margin-inline: auto;
+    font-style: normal;
+  }
+
+  .philosophy__sentence {
+    display: block;
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    line-height: 1.4;
+    color: var(--color-text-primary);
+    overflow-wrap: break-word;
+  }
+
+  .philosophy__sentence:first-child {
+    color: var(--color-accent-phosphor);
+  }
+</style>

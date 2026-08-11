@@ -1,0 +1,179 @@
+---
+import MagneticButton from '../ui/MagneticButton.astro';
+import { getSiteProfile } from '../../lib/site-data';
+import { cloudinaryImageUrl, cloudinaryRawUrl } from '../../lib/cloudinary-url';
+
+const profile = await getSiteProfile();
+const photoUrl = profile?.photoPublicId
+  ? cloudinaryImageUrl(profile.photoPublicId, 'f_auto,q_auto,w_640,h_640,c_fill,g_face')
+  : null;
+const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
+---
+
+<section id="hero" class="hero" data-telemetry-section="hero">
+  <canvas id="hero-canvas" class="hero__canvas" aria-hidden="true"></canvas>
+
+  <div class="hero__content container-site">
+    <div class="hero__text">
+      <p class="hero__eyebrow font-mono js-reveal" data-hero-eyebrow>
+        SOFTWARE ENGINEER — SECURITY SPECIALIST — WEB3
+      </p>
+
+      <h1 class="hero__heading font-display js-reveal" data-hero-heading>
+        I build systems, then try to break them first.
+      </h1>
+
+      <p class="hero__subhead js-reveal" data-hero-subhead>
+        Wahyu Andika Putra — software engineer and cybersecurity specialist working across Web2
+        product engineering and Web3 protocol security. Based in Indonesia, building for systems
+        that need to hold.
+      </p>
+
+      <div class="hero__ctas js-reveal" data-hero-ctas>
+        <MagneticButton href="/#work" variant="secondary">See selected work</MagneticButton>
+        <MagneticButton href="/#contact" variant="primary">Get in touch</MagneticButton>
+        {cvUrl && (
+          <MagneticButton href={cvUrl} variant="secondary" target="_blank" download ariaLabel="Unduh CV (PDF)">
+            Download CV
+          </MagneticButton>
+        )}
+      </div>
+    </div>
+
+    {photoUrl && (
+      <div class="hero__photo-frame">
+        <img
+          src={photoUrl}
+          width="320"
+          height="569"
+          alt="Foto Wahyu Andika Putra"
+          class="hero__photo"
+          fetchpriority="high"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  import { mountParticleCanvas } from '../../scripts/three-hero';
+  import { initHeroEntrance } from '../../scripts/hero';
+
+  document.addEventListener('astro:page-load', () => {
+    mountParticleCanvas('#hero-canvas');
+    initHeroEntrance();
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: calc(100dvh - var(--header-h));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    padding-block: clamp(3rem, 8vw, 6rem);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .hero__eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero__heading {
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    max-width: 16ch;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero__heading :global(.hero-char) {
+    display: inline-block;
+  }
+
+  .hero__subhead {
+    font-size: clamp(1.0625rem, 2vw, 1.3125rem);
+    line-height: 1.65;
+    color: var(--color-text-muted);
+    max-width: 52ch;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .hero__photo-frame {
+    position: relative;
+    width: min(22rem, 55vw);
+    aspect-ratio: 4 / 5;
+    justify-self: center;
+    padding: 0.9rem;
+  }
+
+  .hero__photo-frame::before,
+  .hero__photo-frame::after {
+    content: '';
+    position: absolute;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-color: var(--color-accent-phosphor);
+    border-style: solid;
+    opacity: 0.85;
+  }
+
+  .hero__photo-frame::before {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+  }
+
+  .hero__photo-frame::after {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+  }
+
+  .hero__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    filter: grayscale(0.25) contrast(1.05);
+    border: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 900px) {
+    .hero__content {
+      grid-template-columns: 1fr auto;
+    }
+
+    .hero__photo-frame {
+      width: 22rem;
+    }
+  }
+</style>
+

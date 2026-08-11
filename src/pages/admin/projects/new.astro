@@ -1,0 +1,10 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ProjectForm from '../../../components/admin/ProjectForm.astro';
+
+export const prerender = false;
+---
+
+<AdminLayout title="Proyek Baru">
+  <ProjectForm action="/api/admin/projects" method="POST" />
+</AdminLayout>

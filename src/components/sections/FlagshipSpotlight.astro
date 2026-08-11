@@ -1,0 +1,137 @@
+---
+import { db } from '../../db';
+import { projects } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+import DisclaimerNotice from '../ui/DisclaimerNotice.astro';
+import TagBadge from '../ui/TagBadge.astro';
+import MagneticButton from '../ui/MagneticButton.astro';
+import { resolveCoverImage } from '../../lib/cloudinary-url';
+import { renderProjectBody } from '../../lib/render-markdown';
+
+const [darkstar] = await db.select().from(projects).where(eq(projects.slug, 'darkstar-tools'));
+if (!darkstar) {
+  throw new Error('Proyek "darkstar-tools" tidak ditemukan di database — dibutuhkan FlagshipSpotlight');
+}
+
+const coverSrc = resolveCoverImage(darkstar, 'f_auto,q_auto,w_900,h_675,c_fill');
+const bodyHtml = renderProjectBody(darkstar.bodyMarkdown);
+---
+
+<section class="flagship" data-flagship data-telemetry-section="security">
+  <canvas id="flagship-canvas" class="flagship__canvas" aria-hidden="true"></canvas>
+
+  <div class="flagship__inner container-site">
+    <div class="flagship__media cover-image-wrap">
+      {coverSrc ? (
+        <img
+          src={coverSrc}
+          alt={`${darkstar.title} — product interface`}
+          class="flagship__image js-cover-image"
+          loading="lazy"
+          decoding="async"
+          transition:name={`project-image-${darkstar.slug}`}
+        />
+      ) : (
+        <img alt="" class="flagship__image js-cover-image is-broken" loading="lazy" />
+      )}
+    </div>
+
+    <div class="flagship__text" data-flagship-text>
+      <div class="flagship__label font-mono">FLAGSHIP</div>
+      <TagBadge tag={darkstar.tag} />
+      <h2 class="flagship__title font-display">{darkstar.title}</h2>
+
+      <div class="flagship__copy" set:html={bodyHtml} />
+
+      <DisclaimerNotice />
+
+      <div class="flagship__cta">
+        <MagneticButton href={`/work/${darkstar.slug}/`} variant="secondary">
+          View case study
+        </MagneticButton>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { mountParticleCanvas } from '../../scripts/three-hero';
+  import { initFlagshipReveal } from '../../scripts/flagship-reveal';
+
+  document.addEventListener('astro:page-load', () => {
+    mountParticleCanvas('#flagship-canvas', {
+      opacity: 0.25,
+      rotationSpeed: 0.00008,
+      particleCountDesktop: 1800,
+      particleCountMobile: 600,
+    });
+    initFlagshipReveal();
+  });
+</script>
+
+<style>
+  .flagship {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--spacing-section);
+    background-color: var(--color-surface);
+  }
+
+  .flagship__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .flagship__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .flagship__image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-raised);
+  }
+
+  .flagship__label {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.75rem;
+  }
+
+  .flagship__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.1;
+    margin-block: 1rem 1.5rem;
+  }
+
+  .flagship__copy {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-text-muted);
+    max-width: 58ch;
+    margin-bottom: 1.75rem;
+  }
+
+  .flagship__cta {
+    margin-top: 1.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    .flagship__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 4rem;
+    }
+  }
+</style>

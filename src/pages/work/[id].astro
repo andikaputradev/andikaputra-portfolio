@@ -1,0 +1,25 @@
+---
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
+import { db } from '../../db';
+import { projects } from '../../db/schema';
+import { and, eq } from 'drizzle-orm';
+import { trackVisit } from '../../lib/track-visit';
+
+export const prerender = false;
+
+const slug = Astro.params.id;
+const [project] = await db
+  .select()
+  .from(projects)
+  .where(and(eq(projects.slug, slug!), eq(projects.published, true)));
+
+if (!project) {
+  return Astro.rewrite('/404');
+}
+
+trackVisit(Astro.request, `/work/${project.slug}`);
+
+Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+---
+
+<ProjectLayout project={project} />

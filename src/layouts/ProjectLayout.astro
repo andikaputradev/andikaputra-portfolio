@@ -1,0 +1,26 @@
+---
+import type { Project } from '../db/schema';
+import BaseLayout from './BaseLayout.astro';
+import ProjectDetailView from '../components/work/ProjectDetailView.astro';
+import { buildProjectSchema } from '../lib/json-ld';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const ogImage = `/og/${project.slug}.png`;
+const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.dev/';
+const projectSchema = buildProjectSchema(project, siteUrl);
+---
+
+<BaseLayout
+  title={`${project.title} — Wahyu Andika Putra`}
+  description={project.summary}
+  ogImage={ogImage}
+  additionalSchemas={[projectSchema]}
+>
+  <main id="main-content">
+    <ProjectDetailView project={project} />
+  </main>
+</BaseLayout>

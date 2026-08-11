@@ -1,0 +1,86 @@
+---
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  data-theme-toggle
+  aria-label="Toggle color theme"
+>
+  <svg
+    class="theme-toggle__icon theme-toggle__icon--sun"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4.2" />
+    <path d="M12 2.5v2.4M12 19.1v2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7" />
+  </svg>
+  <svg
+    class="theme-toggle__icon theme-toggle__icon--moon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" />
+  </svg>
+</button>
+
+<script>
+  import { toggleTheme } from '../../scripts/theme-engine';
+
+  function bindThemeToggles(): void {
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => toggleTheme());
+    });
+  }
+
+  document.addEventListener('astro:page-load', bindThemeToggles);
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background-color: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .theme-toggle:hover {
+    color: var(--color-accent-phosphor);
+    border-color: var(--color-accent-phosphor);
+    background-color: var(--color-surface-raised);
+  }
+
+  .theme-toggle__icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .theme-toggle__icon--moon {
+    display: none;
+  }
+
+  :global([data-theme='light']) .theme-toggle__icon--sun {
+    display: none;
+  }
+
+  :global([data-theme='light']) .theme-toggle__icon--moon {
+    display: block;
+  }
+</style>

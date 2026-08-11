@@ -1,0 +1,158 @@
+---
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/admin', label: 'Dashboard' },
+  { href: '/admin/projects', label: 'Proyek' },
+  { href: '/admin/certifications', label: 'Sertifikasi' },
+  { href: '/admin/profile', label: 'Profil & CV' },
+  { href: '/admin/visitors', label: 'Pengunjung' },
+  { href: '/admin/settings/security', label: 'Keamanan' },
+];
+
+const currentPath = Astro.url.pathname;
+
+function isActive(href: string): boolean {
+  if (href === '/admin') return currentPath === '/admin';
+  return currentPath === href || currentPath.startsWith(`${href}/`);
+}
+---
+
+<aside class="admin-sidebar">
+  <a href="/admin" class="admin-sidebar__brand font-mono">WAP // ADMIN</a>
+
+  <nav class="admin-sidebar__nav" aria-label="Navigasi admin">
+    <span class="admin-sidebar__indicator" id="sidebar-indicator" aria-hidden="true"></span>
+    {NAV_ITEMS.map((item) => (
+      <a
+        href={item.href}
+        class="admin-nav-item"
+        data-nav-item
+        aria-current={isActive(item.href) ? 'page' : undefined}
+      >
+        {item.label}
+      </a>
+    ))}
+  </nav>
+
+  <form method="POST" action="/api/auth/sign-out" id="logout-form" class="admin-sidebar__logout">
+    <button type="submit">Keluar</button>
+  </form>
+</aside>
+
+<script>
+  function positionIndicator(): void {
+    const indicator = document.getElementById('sidebar-indicator');
+    const active = document.querySelector<HTMLElement>('[data-nav-item][aria-current="page"]');
+    const nav = active?.closest('.admin-sidebar__nav') as HTMLElement | null;
+    if (!indicator || !active || !nav) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = active.getBoundingClientRect();
+    indicator.style.setProperty('--indicator-y', `${itemRect.top - navRect.top}px`);
+    indicator.style.setProperty('--indicator-h', `${itemRect.height}px`);
+    indicator.dataset.ready = 'true';
+  }
+
+  positionIndicator();
+  window.addEventListener('resize', positionIndicator);
+
+  document.getElementById('logout-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void fetch('/api/auth/sign-out', { method: 'POST' }).finally(() => {
+      window.location.href = '/admin/login';
+    });
+  });
+</script>
+
+<style>
+  .admin-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem 1rem;
+    background-color: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    height: 100%;
+  }
+
+  .admin-sidebar__brand {
+    padding-inline: 0.75rem;
+    color: var(--color-accent-phosphor);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .admin-sidebar__nav {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .admin-sidebar__indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: var(--indicator-h, 0px);
+    background-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 8px 0 var(--color-accent-phosphor);
+    transform: translateY(var(--indicator-y, 0px));
+    opacity: 0;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+  }
+
+  .admin-sidebar__indicator[data-ready='true'] {
+    opacity: 1;
+  }
+
+  .admin-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .admin-nav-item:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-surface-raised);
+  }
+
+  .admin-nav-item[aria-current='page'] {
+    color: var(--color-text-primary);
+    background-color: var(--color-surface-raised);
+    font-weight: 500;
+  }
+
+  .admin-sidebar__logout {
+    margin-top: auto;
+  }
+
+  .admin-sidebar__logout button {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-align: left;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .admin-sidebar__logout button:hover {
+    border-color: var(--color-error);
+    color: var(--color-error);
+  }
+</style>

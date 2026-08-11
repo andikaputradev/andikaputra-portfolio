@@ -1,0 +1,94 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import StatCard from '../../components/admin/StatCard.astro';
+import { db } from '../../db';
+import { projects, certifications, auditLog } from '../../db/schema';
+import { desc, count, eq } from 'drizzle-orm';
+import { getVisitorSummary } from '../../lib/visitor-stats';
+
+export const prerender = false;
+
+const [projectCount] = await db.select({ value: count() }).from(projects);
+const [publishedProjectCount] = await db
+  .select({ value: count() })
+  .from(projects)
+  .where(eq(projects.published, true));
+const [certCount] = await db.select({ value: count() }).from(certifications);
+const recentActivity = await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(8);
+const visitorSummary = await getVisitorSummary(7);
+---
+
+<AdminLayout title="Dashboard">
+  <div class="stat-grid">
+    <StatCard label="Total proyek" value={projectCount.value} />
+    <StatCard label="Proyek published" value={publishedProjectCount.value} />
+    <StatCard label="Sertifikasi" value={certCount.value} />
+    <StatCard label="Pengunjung (7 hari)" value={visitorSummary.totalViews} />
+  </div>
+
+  <section class="activity-section">
+    <h2>Aktivitas Terbaru</h2>
+    {recentActivity.length === 0 ? (
+      <p class="empty-state">Belum ada aktivitas tercatat.</p>
+    ) : (
+      <div class="activity-list">
+        {recentActivity.map((entry, i) => (
+          <div class="activity-row border-subtle" style={`animation-delay:${Math.min(i * 30, 150)}ms`}>
+            <span class="mono">{entry.action}</span>
+            <span>{entry.entityType} #{entry.entityId}</span>
+            <span class="activity-row__meta">{entry.actorEmail}</span>
+            <time class="activity-row__meta">{entry.createdAt.toISOString()}</time>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</AdminLayout>
+
+<style>
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .activity-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  .empty-state {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .activity-row {
+    display: grid;
+    grid-template-columns: 5rem 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.85rem;
+    opacity: 0;
+    animation: row-in 320ms ease forwards;
+  }
+
+  .activity-row__meta {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

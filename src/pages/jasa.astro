@@ -1,0 +1,257 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MagneticButton from '../components/ui/MagneticButton.astro';
+import { IDENTITY } from '../data/identity';
+import { buildServiceSchema } from '../lib/json-ld';
+import { trackVisit } from '../lib/track-visit';
+
+export const prerender = false;
+
+trackVisit(Astro.request, '/jasa');
+Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+
+const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.dev/';
+
+const SERVICES = [
+  {
+    tag: 'WEB2',
+    title: 'Pengembangan Web & Aplikasi',
+    description:
+      'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack — dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
+  },
+  {
+    tag: 'SECURITY',
+    title: 'Security Hardening & Audit Defensif',
+    description:
+      'Threat modeling, secure coding review, konfigurasi header keamanan, dan hardening infrastruktur untuk sistem milik Anda sendiri. Setiap engagement dilakukan dalam batas legal dan izin tertulis.',
+  },
+  {
+    tag: 'WEB3',
+    title: 'Smart Contract & Protokol Web3',
+    description:
+      'Audit keamanan smart contract (access control, reentrancy, checks-effects-interactions), desain tokenomics, dan review risiko protokol DeFi dari sudut pandang defensif.',
+  },
+] as const;
+
+const PROCESS = [
+  { step: '01', title: 'Discovery', description: 'Menyelaraskan kebutuhan, batasan teknis, dan tolok ukur keberhasilan.' },
+  { step: '02', title: 'Build', description: 'Iterasi bertahap dengan checkpoint yang bisa ditinjau, bukan rilis besar sekali jalan.' },
+  { step: '03', title: 'Harden', description: 'Review keamanan dan aksesibilitas sebelum rilis, bukan sesudah insiden.' },
+  { step: '04', title: 'Ship & Support', description: 'Deploy, dokumentasi serah terima, dan dukungan pasca-rilis sesuai kesepakatan.' },
+] as const;
+---
+
+<BaseLayout
+  title="Jasa Pembuatan Website & Aplikasi, Security Hardening, Web3 — Wahyu Andika Putra"
+  description="Jasa pembuatan website dan aplikasi, profesional keamanan siber untuk security hardening & audit defensif, serta web3 specialist untuk audit smart contract — oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
+  ogImage="/og/index.png"
+  additionalSchemas={[buildServiceSchema(siteUrl)]}
+  lang="id"
+>
+  <main id="main-content">
+    <section class="jasa-hero section-spacing" data-telemetry-section="jasa">
+      <div class="container-site">
+        <p class="jasa-hero__eyebrow font-mono">JASA</p>
+        <h1 class="jasa-hero__heading font-display">
+          Pembuatan Website & Aplikasi, dengan Keamanan Sebagai Bagian dari Desain.
+        </h1>
+        <p class="jasa-hero__lead">
+          Bukan sekadar dibuat agar tampil — dirancang agar tahan diserang, mudah dirawat, dan
+          jelas arsitekturnya. Cocok untuk kebutuhan bisnis, riset, maupun proyek Web3.
+        </p>
+        <div class="jasa-hero__ctas">
+          <MagneticButton href={IDENTITY.whatsappLink} variant="primary" target="_blank">
+            Diskusi via WhatsApp
+          </MagneticButton>
+          <MagneticButton href="/#work" variant="secondary">Lihat studi kasus</MagneticButton>
+        </div>
+      </div>
+    </section>
+
+    <section class="jasa-services section-spacing" data-telemetry-section="jasa-services">
+      <div class="container-site">
+        <h2 class="jasa-section-heading font-display">Lingkup Layanan</h2>
+        <div class="jasa-services__grid">
+          {SERVICES.map((service) => (
+            <article class="jasa-service-card border-subtle">
+              <span class="mono jasa-service-card__tag">[{service.tag}]</span>
+              <h3 class="jasa-service-card__title">{service.title}</h3>
+              <p class="jasa-service-card__description">{service.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="jasa-process section-spacing" data-telemetry-section="jasa-process">
+      <div class="container-site">
+        <h2 class="jasa-section-heading font-display">Cara Kerja</h2>
+        <div class="jasa-process__grid">
+          {PROCESS.map((item) => (
+            <div class="jasa-process__item">
+              <span class="mono jasa-process__step">{item.step}</span>
+              <h3 class="jasa-process__title">{item.title}</h3>
+              <p class="jasa-process__description">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="jasa-cta section-spacing" data-telemetry-section="jasa-cta">
+      <div class="container-site jasa-cta__inner">
+        <h2 class="jasa-cta__heading font-display">Ada proyek yang ingin didiskusikan?</h2>
+        <p class="jasa-cta__lead">
+          Ceritakan kebutuhan Anda — saya akan merespons dengan penilaian teknis awal, bukan
+          janji generik.
+        </p>
+        <div class="jasa-cta__direct">
+          <a href={`mailto:${IDENTITY.email}`} class="jasa-cta__link font-mono">{IDENTITY.email}</a>
+          <a href={IDENTITY.whatsappLink} class="jasa-cta__link font-mono" target="_blank" rel="noopener noreferrer">
+            {IDENTITY.whatsappDisplay}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .jasa-hero__eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .jasa-hero__heading {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    max-width: 22ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .jasa-hero__lead {
+    font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+    color: var(--color-text-muted);
+    max-width: 56ch;
+    margin-bottom: 2.25rem;
+  }
+
+  .jasa-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .jasa-section-heading {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 2.5rem;
+  }
+
+  .jasa-services__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .jasa-service-card {
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .jasa-service-card__tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.85rem;
+  }
+
+  .jasa-service-card__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .jasa-service-card__description {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .jasa-process__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .jasa-process__step {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-accent-steel);
+    margin-bottom: 0.5rem;
+  }
+
+  .jasa-process__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .jasa-process__description {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
+
+  .jasa-cta {
+    background-color: var(--color-surface);
+  }
+
+  .jasa-cta__inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .jasa-cta__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 1rem;
+    max-width: 28ch;
+  }
+
+  .jasa-cta__lead {
+    color: var(--color-text-muted);
+    max-width: 48ch;
+    margin-bottom: 2rem;
+  }
+
+  .jasa-cta__direct {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .jasa-cta__link {
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .jasa-cta__link:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 640px) {
+    .jasa-services__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .jasa-process__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,132 @@
+---
+interface Props {
+  name: string;
+  issuer: string;
+  issueDateLabel: string;
+  assetPublicId?: string | null;
+  assetFormat?: string | null;
+  verificationUrl?: string | null;
+}
+
+const { name, issuer, issueDateLabel, assetPublicId, assetFormat, verificationUrl } = Astro.props;
+const cloudName = import.meta.env.CLOUDINARY_CLOUD_NAME;
+
+const hasAsset = Boolean(assetPublicId && assetFormat);
+const isPdf = assetFormat === 'pdf';
+const thumbUrl = hasAsset
+  ? `https://res.cloudinary.com/${cloudName}/image/upload/c_thumb,w_320,h_320,g_auto,f_auto,q_auto/${assetPublicId}.${assetFormat}`
+  : null;
+const fullUrl = hasAsset
+  ? `https://res.cloudinary.com/${cloudName}/image/upload/${isPdf ? 'q_auto' : 'f_auto,q_auto'}/${assetPublicId}.${assetFormat}`
+  : null;
+---
+
+<article class="cert-card border-subtle">
+  <div class="cert-card__thumb-wrap">
+    {thumbUrl ? (
+      <img src={thumbUrl} alt={`Sertifikat ${name} — ${issuer}`} loading="lazy" class="cert-card__thumb" />
+    ) : (
+      <div class="cert-card__thumb-fallback mono" aria-hidden="true">{issuer.slice(0, 2).toUpperCase()}</div>
+    )}
+    {isPdf && <span class="cert-card__format-tag mono">PDF</span>}
+  </div>
+
+  <div class="cert-card__body">
+    <p class="cert-card__name">{name}</p>
+    <p class="cert-card__meta mono">{issuer} · {issueDateLabel}</p>
+    <div class="cert-card__links">
+      {fullUrl && (
+        <a href={fullUrl} target="_blank" rel="noopener noreferrer">
+          Lihat sertifikat ↗
+        </a>
+      )}
+      {verificationUrl && (
+        <a href={verificationUrl} target="_blank" rel="noopener noreferrer">
+          Verifikasi ↗
+        </a>
+      )}
+    </div>
+  </div>
+</article>
+
+<style>
+  .cert-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .cert-card:hover {
+    border-color: var(--color-accent-phosphor);
+    transform: translateY(-2px);
+  }
+
+  .cert-card__thumb-wrap {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background-color: var(--color-surface-raised);
+  }
+
+  .cert-card__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cert-card__thumb-fallback {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--color-accent-phosphor);
+    font-size: 1.25rem;
+  }
+
+  .cert-card__format-tag {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    background-color: var(--color-bg);
+    color: var(--color-accent-phosphor);
+    border: 1px solid var(--color-accent-phosphor);
+    border-radius: var(--radius-sm);
+  }
+
+  .cert-card__body {
+    padding: 1rem 1.1rem 1.1rem;
+  }
+
+  .cert-card__name {
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.35;
+  }
+
+  .cert-card__meta {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .cert-card__links {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .cert-card__links a {
+    font-size: 0.78rem;
+    color: var(--color-accent-steel);
+    text-decoration: none;
+  }
+
+  .cert-card__links a:hover {
+    text-decoration: underline;
+  }
+</style>

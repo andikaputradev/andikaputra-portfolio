@@ -1,0 +1,13 @@
+---
+interface Props {
+  schemas: Array<Record<string, unknown>>;
+}
+
+const { schemas } = Astro.props;
+
+function safeJsonLd(schema: Record<string, unknown>): string {
+  return JSON.stringify(schema).replace(/</g, '\\u003c');
+}
+---
+
+{schemas.map((schema) => <script type="application/ld+json" is:inline set:html={safeJsonLd(schema)} />)}

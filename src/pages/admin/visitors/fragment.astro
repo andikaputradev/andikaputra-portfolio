@@ -1,0 +1,10 @@
+---
+import VisitorStatsPanel from '../../../components/admin/VisitorStatsPanel.astro';
+import { getVisitorSummary } from '../../../lib/visitor-stats';
+
+export const prerender = false;
+
+const summary = await getVisitorSummary(30);
+---
+
+<VisitorStatsPanel summary={summary} />

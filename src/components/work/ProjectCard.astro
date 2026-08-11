@@ -1,0 +1,142 @@
+---
+import type { Project } from '../../db/schema';
+import TagBadge from '../ui/TagBadge.astro';
+import { resolveCoverImage } from '../../lib/cloudinary-url';
+
+interface Props {
+  project: Project;
+  enableTransition?: boolean;
+}
+
+const { project, enableTransition = true } = Astro.props;
+const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
+---
+
+<article class="project-card" data-project-card data-project-tag={project.tag}>
+  <a href={`/work/${project.slug}/`} class="project-card__link">
+    <div class="project-card__image-wrap cover-image-wrap">
+      {coverSrc ? (
+        <img
+          src={coverSrc}
+          alt={`${project.title} — cover`}
+          class="project-card__image js-cover-image"
+          loading="lazy"
+          decoding="async"
+          transition:name={enableTransition ? `project-image-${project.slug}` : undefined}
+        />
+      ) : (
+        <img
+          alt=""
+          class="project-card__image js-cover-image is-broken"
+          loading="lazy"
+        />
+      )}
+      {project.flagship && <span class="project-card__flagship font-mono">Flagship</span>}
+    </div>
+    <div class="project-card__body">
+      <TagBadge tag={project.tag} />
+      <h3 class="project-card__title">{project.title}</h3>
+      <p class="project-card__summary">{project.summary}</p>
+    </div>
+  </a>
+  {(project.repoUrl || project.liveUrl) && (
+    <div class="project-card__actions">
+      {project.repoUrl && (
+        <a href={project.repoUrl} target="_blank" rel="noopener" class="project-card__action">
+          GitHub
+        </a>
+      )}
+      {project.liveUrl && (
+        <a href={project.liveUrl} target="_blank" rel="noopener" class="project-card__action">
+          Live
+        </a>
+      )}
+    </div>
+  )}
+</article>
+
+<style>
+  .project-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-card__link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .project-card__image-wrap {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    margin-bottom: 1.25rem;
+  }
+
+  .project-card__image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background-color: var(--color-surface-raised);
+    transition: transform var(--transition-slow);
+  }
+
+  .project-card__link:hover .project-card__image {
+    transform: scale(1.04);
+  }
+
+  .project-card__flagship {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--color-bg);
+    background-color: var(--color-accent-phosphor);
+    border-radius: var(--radius-sm);
+  }
+
+  .project-card__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .project-card__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .project-card__summary {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
+
+  .project-card__actions {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .project-card__action {
+    font-size: 0.82rem;
+    font-family: var(--font-mono), monospace;
+    color: var(--color-accent-steel);
+    text-decoration: none;
+  }
+
+  .project-card__action:hover {
+    text-decoration: underline;
+  }
+</style>

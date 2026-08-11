@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sections/Hero.astro';
+import FlagshipSpotlight from '../components/sections/FlagshipSpotlight.astro';
+import Philosophy from '../components/sections/Philosophy.astro';
+import ExpertiseMatrix from '../components/sections/ExpertiseMatrix.astro';
+import Certification from '../components/sections/Certification.astro';
+import SelectedWork from '../components/sections/SelectedWork.astro';
+import RDLab from '../components/sections/RDLab.astro';
+import Contact from '../components/sections/Contact.astro';
+import { buildWebsiteSchema } from '../lib/json-ld';
+import { trackVisit } from '../lib/track-visit';
+
+export const prerender = false;
+
+trackVisit(Astro.request, '/');
+
+const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+---
+
+<BaseLayout
+  title="Wahyu Andika Putra — Software Engineer & Cybersecurity Specialist"
+  description="Software engineer and cybersecurity specialist working across Web2 product engineering and Web3 protocol security. Based in Indonesia."
+  additionalSchemas={[buildWebsiteSchema(siteUrl)]}
+>
+  <main id="main-content">
+    <Hero />
+    <FlagshipSpotlight />
+    <Philosophy />
+    <ExpertiseMatrix />
+    <Certification />
+    <SelectedWork />
+    <RDLab />
+    <Contact />
+  </main>
+</BaseLayout>

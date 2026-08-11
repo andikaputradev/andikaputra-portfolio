@@ -1,0 +1,73 @@
+---
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary';
+  type?: 'button' | 'submit';
+  ariaLabel?: string;
+  target?: '_blank';
+  download?: boolean;
+}
+
+const { href, variant = 'primary', type = 'button', ariaLabel, target, download } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  aria-label={ariaLabel}
+  target={target}
+  rel={target === '_blank' ? 'noopener' : undefined}
+  download={download}
+  class={`magnetic-btn magnetic-btn--${variant}`}
+  data-magnetic
+>
+  <span class="magnetic-btn__label"><slot /></span>
+</Tag>
+
+<script>
+  import { initMagneticButtons } from '../../scripts/magnetic-button';
+
+  document.addEventListener('astro:page-load', () => initMagneticButtons());
+</script>
+
+<style>
+  .magnetic-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: none;
+    transition: border-color var(--transition-fast), color var(--transition-fast),
+      background-color var(--transition-fast);
+    will-change: transform;
+  }
+
+  .magnetic-btn--primary {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 55%, transparent);
+    color: var(--color-accent-phosphor);
+  }
+
+  .magnetic-btn--primary:hover {
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 12%, transparent);
+    border-color: var(--color-accent-phosphor);
+  }
+
+  .magnetic-btn--secondary {
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .magnetic-btn--secondary:hover {
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+  }
+</style>

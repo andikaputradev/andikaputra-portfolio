@@ -1,0 +1,156 @@
+---
+import { db } from '../../db';
+import { projects } from '../../db/schema';
+import { eq, desc } from 'drizzle-orm';
+import ProjectCard from '../work/ProjectCard.astro';
+import ProjectFilter from '../work/ProjectFilter.astro';
+
+const sortedProjects = await db
+  .select()
+  .from(projects)
+  .where(eq(projects.published, true))
+  .orderBy(desc(projects.displayOrder));
+
+const featuredProjects = sortedProjects.slice(0, 3);
+---
+
+<section id="work" class="selected-work" data-telemetry-section="work">
+  <div class="container-site">
+    <h2 class="selected-work__heading font-display">Selected Work</h2>
+
+    <div class="selected-work__featured selected-work__featured--motion">
+      <swiper-container
+        effect="coverflow"
+        grab-cursor="true"
+        centered-slides="true"
+        slides-per-view="auto"
+        coverflow-effect-rotate="0"
+        coverflow-effect-stretch="0"
+        coverflow-effect-depth="120"
+        coverflow-effect-modifier="1"
+        navigation="true"
+        keyboard="true"
+      >
+        {
+          featuredProjects.map((project) => (
+            <swiper-slide>
+              <ProjectCard project={project} enableTransition={!project.flagship} />
+            </swiper-slide>
+          ))
+        }
+      </swiper-container>
+    </div>
+
+    <div class="selected-work__featured selected-work__featured--reduced">
+      <swiper-container
+        effect="fade"
+        fade-effect-cross-fade="true"
+        slides-per-view="1"
+        navigation="true"
+        keyboard="true"
+      >
+        {
+          featuredProjects.map((project) => (
+            <swiper-slide>
+              <ProjectCard project={project} enableTransition={false} />
+            </swiper-slide>
+          ))
+        }
+      </swiper-container>
+    </div>
+
+    <ProjectFilter />
+
+    <div class="selected-work__grid" data-project-grid>
+      {
+        sortedProjects.map((project) => (
+          <ProjectCard project={project} enableTransition={!project.flagship} />
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { ensureSwiperRegistered } from '../../scripts/swiper-init';
+
+  document.addEventListener('astro:page-load', () => ensureSwiperRegistered());
+</script>
+
+<style>
+  .selected-work {
+    padding-block: var(--spacing-section);
+  }
+
+  .selected-work__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .selected-work__featured {
+    margin-bottom: 3rem;
+  }
+
+  .selected-work__featured--reduced {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .selected-work__featured--motion {
+      display: none;
+    }
+
+    .selected-work__featured--reduced {
+      display: block;
+    }
+
+    .selected-work__featured--reduced swiper-slide {
+      width: 100%;
+      max-width: 100%;
+      flex: 1 0 100%;
+    }
+  }
+
+  swiper-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding-block: 1.5rem 2.5rem;
+  }
+
+  swiper-slide {
+    display: block;
+    flex: 0 0 auto;
+    width: 300px;
+    max-width: 300px;
+  }
+
+  .selected-work__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .selected-work__grid :global(.is-filtered-out) {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .selected-work__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .selected-work__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 479px) {
+    swiper-slide {
+      width: 82vw;
+      max-width: 82vw;
+    }
+  }
+</style>

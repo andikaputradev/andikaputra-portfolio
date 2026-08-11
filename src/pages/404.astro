@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+Astro.response.status = 404;
+---
+
+<BaseLayout
+  title="404 — Halaman Tidak Ditemukan"
+  description="Halaman yang Anda cari tidak ditemukan atau sudah dipindahkan."
+  ogImage="/og/index.png"
+  additionalSchemas={[]}
+>
+  <main id="main-content" class="not-found">
+    <div class="not-found__content container-site">
+      <p class="not-found__code font-mono">404</p>
+      <h1 class="not-found__heading font-display">Halaman tidak ditemukan.</h1>
+      <p class="not-found__body">
+        URL yang Anda tuju tidak ada, sudah dipindahkan, atau proyek terkait belum dipublikasikan.
+      </p>
+      <a href="/" class="not-found__link">← Kembali ke beranda</a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: calc(100dvh - var(--header-h));
+    display: flex;
+    align-items: center;
+  }
+
+  .not-found__content {
+    padding-block: 4rem;
+  }
+
+  .not-found__code {
+    font-size: 1rem;
+    color: var(--color-accent-phosphor);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+
+  .not-found__heading {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 1rem;
+  }
+
+  .not-found__body {
+    color: var(--color-text-muted);
+    max-width: 48ch;
+    margin-bottom: 2rem;
+  }
+
+  .not-found__link {
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.9rem;
+  }
+
+  .not-found__link:hover {
+    text-decoration: underline;
+  }
+</style>
