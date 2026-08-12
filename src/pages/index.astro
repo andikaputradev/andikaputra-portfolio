@@ -16,7 +16,7 @@ export const prerender = false;
 trackVisit(Astro.request, '/');
 
 const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
-Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+Astro.response.headers.set('Cache-Control', 's-maxage=0, stale-while-revalidate=86400');
 ---
 
 <BaseLayout
