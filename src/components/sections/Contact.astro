@@ -17,7 +17,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   <div class="contact__inner container-site">
     <h2 class="contact__heading font-display">Get in touch</h2>
     <p class="contact__lead">
-      Available for security engagements, Web2 product work, and Web3 protocol builds — reach
+      Available for security engagements, Web2 product work, and Web3 protocol builds, reach
       out directly or through the form.
     </p>
 
@@ -144,6 +144,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   .contact__heading {
     font-size: clamp(1.75rem, 3.5vw, 2.5rem);
     margin-bottom: 1rem;
+    letter-spacing: -0.01em;
   }
 
   .contact__lead {
@@ -200,12 +201,14 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     border-radius: var(--radius-md);
     padding: 0.7rem 0.9rem;
     resize: vertical;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
   .contact__field input:focus-visible,
   .contact__field textarea:focus-visible {
-    outline: 2px solid var(--color-accent-phosphor);
-    outline-offset: 1px;
+    outline: none;
+    border-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 0 3px oklch(72% 0.14 55 / 15%);
   }
 
   .contact__field input[aria-invalid='true'],
@@ -258,9 +261,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
     text-decoration: none;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+    display: inline-block;
   }
 
   .contact__socials a:hover {
     color: var(--color-accent-phosphor);
+    transform: translateY(-1px);
   }
 </style>

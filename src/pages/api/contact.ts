@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
   const turnstileResult = (await turnstileVerify.json()) as TurnstileVerifyResponse;
 
   if (!turnstileResult.success) {
-    console.error('contact.ts: verifikasi Turnstile gagal —', turnstileResult['error-codes']);
+    console.error('contact.ts: verifikasi Turnstile gagal', turnstileResult['error-codes']);
     return new Response(JSON.stringify({ error: 'turnstile_failed' }), { status: 403 });
   }
 
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
       from: 'onboarding@resend.dev',
       to: 'wahyuandikaputra.co.id@gmail.com',
       reply_to: parsed.data.email,
-      subject: `Portfolio contact — ${parsed.data.name}`,
+      subject: `Portfolio contact from ${parsed.data.name}`,
       text: parsed.data.message,
     }),
   });

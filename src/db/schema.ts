@@ -127,7 +127,7 @@ export type PageView = typeof pageViews.$inferSelect;
 export type NewPageView = typeof pageViews.$inferInsert;
 
 // Tabel di bawah ini dihasilkan `npx @better-auth/cli generate` terhadap
-// src/lib/auth.ts (better-auth@1.6.25) — jangan diedit manual. Field/tabel
+// src/lib/auth.ts (better-auth@1.6.25), jangan diedit manual. Field/tabel
 // baru dari perubahan plugin (mis. menambah plugin Better Auth lain) wajib
 // lewat regenerasi CLI yang sama, bukan ditambah tangan, agar tidak drift
 // dari kontrak yang benar-benar diharapkan adapter versi terpasang.

@@ -8,7 +8,7 @@
         >Most software is built to work.</span
       >
       <span class="philosophy__sentence" data-philosophy-sentence
-        >Less of it is built to survive someone trying to make it fail — a malformed request, a
+        >Less of it is built to survive someone trying to make it fail: a malformed request, a
         race condition, an attacker who read the same documentation you did.</span
       >
       <span class="philosophy__sentence" data-philosophy-sentence
@@ -17,7 +17,7 @@
         results they can trust in a report.</span
       >
       <span class="philosophy__sentence" data-philosophy-sentence
-        >Web2 or Web3, the discipline doesn't change — authorized, documented, reproducible.</span
+        >Web2 or Web3, the discipline doesn't change: authorized, documented, reproducible.</span
       >
     </blockquote>
   </div>
@@ -49,9 +49,22 @@
     line-height: 1.4;
     color: var(--color-text-primary);
     overflow-wrap: break-word;
+    letter-spacing: -0.01em;
   }
 
   .philosophy__sentence:first-child {
     color: var(--color-accent-phosphor);
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .philosophy__sentence:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.3em;
+    width: 0.75rem;
+    height: 2px;
+    background-color: var(--color-accent-phosphor);
   }
 </style>

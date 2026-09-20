@@ -27,7 +27,7 @@ export const GET: APIRoute = async ({ request }) => {
   // disimpan di penyimpanan offsite pihak ketiga (jika folder ini bocor, second-factor
   // jadi tidak berarti), sementara analytics/rate-limit tidak bernilai untuk disaster
   // recovery konten. Untuk memulihkan identitas admin pasca kehilangan database, buat
-  // ulang lewat `npm run seed:admin` — bukan restore dari backup ini.
+  // ulang lewat `npm run seed:admin`, bukan restore dari backup ini.
   const snapshot = {
     generatedAt: new Date().toISOString(),
     tables: {
@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ request }) => {
       },
     );
   } catch (error) {
-    console.error('cron/backup: upload Cloudinary gagal —', error);
+    console.error('cron/backup: upload Cloudinary gagal', error);
     return new Response(JSON.stringify({ error: 'upload_failed' }), { status: 502 });
   }
 
@@ -93,7 +93,7 @@ async function cleanupOldBackups(): Promise<number> {
     }
     return stale.length;
   } catch (error) {
-    console.error('cron/backup: cleanup backup lama gagal —', error);
+    console.error('cron/backup: cleanup backup lama gagal', error);
     return 0;
   }
 }

@@ -29,7 +29,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
     {coverSrc ? (
       <img
         src={coverSrc}
-        alt={`${project.title} — cover screenshot`}
+        alt={`${project.title} cover screenshot`}
         class="project-detail__cover js-cover-image"
         loading="eager"
         decoding="async"
@@ -116,6 +116,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
     font-size: clamp(2rem, 5vw, 3.25rem);
     line-height: 1.1;
     max-width: 24ch;
+    letter-spacing: -0.02em;
   }
 
   .project-detail__summary {
@@ -135,6 +136,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
     border-radius: var(--radius-lg);
     background-color: var(--color-surface-raised);
     border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
   }
 
   .project-detail__body {
@@ -189,9 +191,11 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
     font-size: 0.9375rem;
     color: var(--color-accent-phosphor);
     text-decoration: none;
+    transition: color var(--transition-fast);
   }
 
   .project-detail__link-list a:hover {
+    color: var(--color-text-primary);
     text-decoration: underline;
   }
 

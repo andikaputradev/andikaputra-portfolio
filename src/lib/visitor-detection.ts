@@ -20,7 +20,7 @@ interface DailyVisitorHashInput {
 /**
  * Hash berputar harian untuk menghitung pengunjung unik tanpa cookie dan
  * tanpa menyimpan IP. IP+UA hanya dipakai SESAAT sebagai input hash pada
- * request ini — hash SHA-256 satu arah, dipotong 16 karakter heksadesimal,
+ * request ini, hash SHA-256 satu arah, dipotong 16 karakter heksadesimal,
  * dan salt tanggal berganti tiap hari sehingga hash yang sama tidak pernah
  * cocok lintas hari (tidak ada pelacakan pengunjung antar sesi/hari).
  */

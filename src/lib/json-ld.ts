@@ -7,11 +7,13 @@ export function buildPersonSchema(siteUrl?: string) {
     '@type': 'Person',
     '@id': siteUrl ? `${siteUrl}#person` : undefined,
     name: IDENTITY.fullName,
+    alternateName: ['WAP', 'Wahyu Andika Putra'],
     jobTitle: IDENTITY.role,
     description:
       'Software engineer dan cybersecurity specialist berbasis di Indonesia, fokus pada pengembangan web/aplikasi production-grade serta audit keamanan dan protokol Web3.',
     url: siteUrl,
     image: siteUrl ? `${siteUrl}og/index.png` : undefined,
+    email: IDENTITY.email,
     knowsAbout: [
       'Software Engineering',
       'Web Application Development',
@@ -23,6 +25,11 @@ export function buildPersonSchema(siteUrl?: string) {
       'Smart Contract Security',
       'DeFi Risk Analysis',
     ],
+    hasOccupation: {
+      '@type': 'Occupation',
+      name: IDENTITY.role,
+      occupationCategory: 'Software Engineer',
+    },
     sameAs: [IDENTITY.social.github, IDENTITY.social.linkedin, IDENTITY.social.instagram],
   };
 }
@@ -31,11 +38,15 @@ export function buildWebsiteSchema(siteUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: `${IDENTITY.fullName} — Portfolio`,
+    name: `${IDENTITY.fullName} | Portfolio`,
     url: siteUrl,
+    description:
+      'Software engineer and cybersecurity specialist working across Web2 product engineering and Web3 protocol security.',
+    inLanguage: ['en', 'id'],
     author: {
       '@type': 'Person',
       name: IDENTITY.fullName,
+      url: siteUrl,
     },
   };
 }
@@ -44,7 +55,7 @@ export function buildServiceSchema(siteUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
-    name: `${IDENTITY.fullName} — Jasa Pembuatan Website, Aplikasi & Keamanan Siber`,
+    name: `${IDENTITY.fullName} | Jasa Pembuatan Website, Aplikasi & Keamanan Siber`,
     description:
       'Jasa pembuatan website dan aplikasi, security hardening, serta audit smart contract Web3 oleh software engineer dan profesional keamanan siber berbasis di Indonesia.',
     serviceType: [
@@ -121,6 +132,7 @@ export function buildProjectSchema(
     ...(stack.length > 0 ? { keywords: stack.join(', ') } : {}),
     author: {
       '@type': 'Person',
+      '@id': `${siteUrl}#person`,
       name: IDENTITY.fullName,
     },
   };

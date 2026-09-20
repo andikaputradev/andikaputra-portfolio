@@ -5,7 +5,7 @@ Astro.response.status = 404;
 ---
 
 <BaseLayout
-  title="404 — Halaman Tidak Ditemukan"
+  title="404 | Halaman Tidak Ditemukan"
   description="Halaman yang Anda cari tidak ditemukan atau sudah dipindahkan."
   ogImage="/og/index.png"
   additionalSchemas={[]}
@@ -43,6 +43,7 @@ Astro.response.status = 404;
   .not-found__heading {
     font-size: clamp(2rem, 5vw, 3rem);
     margin-bottom: 1rem;
+    letter-spacing: -0.02em;
   }
 
   .not-found__body {
@@ -56,9 +57,11 @@ Astro.response.status = 404;
     text-decoration: none;
     font-family: var(--font-mono), monospace;
     font-size: 0.9rem;
+    transition: color var(--transition-fast);
   }
 
   .not-found__link:hover {
+    color: var(--color-text-primary);
     text-decoration: underline;
   }
 </style>

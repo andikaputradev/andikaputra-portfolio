@@ -20,6 +20,8 @@ interface Props {
   additionalSchemas?: Array<Record<string, unknown>>;
   noindex?: boolean;
   lang?: 'en' | 'id';
+  ogType?: 'website' | 'article';
+  keywords?: string[];
 }
 
 const {
@@ -30,11 +32,14 @@ const {
   additionalSchemas = [],
   noindex = false,
   lang = 'en',
+  ogType = 'website',
+  keywords,
 } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 const allSchemas = [buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined), ...additionalSchemas];
+const siteName = 'Wahyu Andika Putra';
 ---
 
 <!doctype html>
@@ -47,19 +52,32 @@ const allSchemas = [buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined), ...a
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    {keywords && keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <link rel="canonical" href={canonical} />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageAbsolute} />
-    <meta property="og:type" content="website" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content="Wahyu Andika Putra" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content={lang === 'id' ? 'id_ID' : 'en_US'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageAbsolute} />
+    <meta name="twitter:image:alt" content={title} />
+
+    <meta name="theme-color" content="#0E0F13" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content={siteName} />
+    <meta name="application-name" content={siteName} />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="x-dns-prefetch-control" content="on" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 

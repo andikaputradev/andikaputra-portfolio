@@ -48,6 +48,11 @@ import { RD_LAB } from '../../data/rd-lab';
     gap: 0.35rem;
     padding-block: 1.25rem;
     border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--transition-fast);
+  }
+
+  .rd-lab-item:hover {
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 3%, transparent);
   }
 
   .rd-lab-item__tag {

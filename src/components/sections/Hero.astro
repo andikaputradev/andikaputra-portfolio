@@ -16,7 +16,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
   <div class="hero__content container-site">
     <div class="hero__text">
       <p class="hero__eyebrow font-mono js-reveal" data-hero-eyebrow>
-        SOFTWARE ENGINEER — SECURITY SPECIALIST — WEB3
+        SOFTWARE ENGINEER | SECURITY SPECIALIST | WEB3
       </p>
 
       <h1 class="hero__heading font-display js-reveal" data-hero-heading>
@@ -24,7 +24,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
       </h1>
 
       <p class="hero__subhead js-reveal" data-hero-subhead>
-        Wahyu Andika Putra — software engineer and cybersecurity specialist working across Web2
+        Wahyu Andika Putra, software engineer and cybersecurity specialist working across Web2
         product engineering and Web3 protocol security. Based in Indonesia, building for systems
         that need to hold.
       </p>
@@ -99,6 +99,19 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
     letter-spacing: 0.12em;
     color: var(--color-text-muted);
     margin-bottom: 1.5rem;
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .hero__eyebrow::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1px;
+    background-color: var(--color-accent-phosphor);
   }
 
   .hero__heading {
@@ -106,6 +119,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
     line-height: 1.05;
     max-width: 16ch;
     margin-bottom: 1.75rem;
+    letter-spacing: -0.02em;
   }
 
   .hero__heading :global(.hero-char) {
@@ -132,6 +146,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
     aspect-ratio: 4 / 5;
     justify-self: center;
     padding: 0.9rem;
+    filter: drop-shadow(0 8px 24px oklch(0% 0 0 / 20%));
   }
 
   .hero__photo-frame::before,

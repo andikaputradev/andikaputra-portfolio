@@ -24,7 +24,7 @@ const fullUrl = hasAsset
 <article class="cert-card border-subtle">
   <div class="cert-card__thumb-wrap">
     {thumbUrl ? (
-      <img src={thumbUrl} alt={`Sertifikat ${name} — ${issuer}`} loading="lazy" class="cert-card__thumb" />
+      <img src={thumbUrl} alt={`Sertifikat ${name} oleh ${issuer}`} loading="lazy" class="cert-card__thumb" />
     ) : (
       <div class="cert-card__thumb-fallback mono" aria-hidden="true">{issuer.slice(0, 2).toUpperCase()}</div>
     )}
@@ -56,12 +56,14 @@ const fullUrl = hasAsset
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
-    transition: border-color var(--transition-fast), transform var(--transition-fast);
+    transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-sm);
   }
 
   .cert-card:hover {
     border-color: var(--color-accent-phosphor);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
   }
 
   .cert-card__thumb-wrap {

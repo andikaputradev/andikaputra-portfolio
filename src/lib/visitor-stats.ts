@@ -59,7 +59,7 @@ export async function getVisitorSummary(days = 30): Promise<VisitorSummary> {
     .groupBy(pageViews.deviceType);
 
   // COUNT(DISTINCT ...) mengabaikan NULL secara otomatis, sehingga baris
-  // page_views lama (sebelum visitor_hash ada) tidak memengaruhi angka ini —
+  // page_views lama (sebelum visitor_hash ada) tidak memengaruhi angka ini,
   // hanya tidak ikut dihitung, bukan menyebabkan galat.
   const [{ uniqueVisitors }] = await db
     .select({ uniqueVisitors: sql<number>`count(distinct ${pageViews.visitorHash})::int` })

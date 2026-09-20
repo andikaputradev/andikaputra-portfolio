@@ -5,7 +5,7 @@ import { db } from '../db';
 import { user, session, account, verification, twoFactor as twoFactorTable } from '../db/schema';
 
 export const auth = betterAuth({
-  appName: 'Wahyu Andika Putra — Admin',
+  appName: 'Wahyu Andika Putra | Admin',
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: { user, session, account, verification, twoFactor: twoFactorTable },

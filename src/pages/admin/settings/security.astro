@@ -18,7 +18,7 @@ const twoFactorEnabled = Boolean((Astro.locals.admin as { twoFactorEnabled?: boo
           <p class="field__hint">
             Kode backup memungkinkan login darurat jika Anda kehilangan akses ke aplikasi
             authenticator. <strong>Men-generate ulang akan membatalkan seluruh kode backup lama
-            secara permanen</strong> — pastikan kode sebelumnya (jika ada) tidak sedang
+            secara permanen</strong>, pastikan kode sebelumnya (jika ada) tidak sedang
             dibutuhkan sebelum melanjutkan.
           </p>
           <form id="regenerate-form">
@@ -39,7 +39,7 @@ const twoFactorEnabled = Boolean((Astro.locals.admin as { twoFactorEnabled?: boo
 
         <div id="backup-codes-reveal" hidden>
           <p class="field__hint backup-codes-warning">
-            Simpan kode ini di tempat aman sekarang — <strong>tidak akan ditampilkan lagi</strong>
+            Simpan kode ini di tempat aman sekarang, <strong>tidak akan ditampilkan lagi</strong>
             setelah halaman ini ditutup atau dimuat ulang. Setiap kode hanya berlaku sekali pakai.
           </p>
           <ul id="new-backup-codes" class="backup-codes"></ul>
@@ -186,7 +186,7 @@ const twoFactorEnabled = Boolean((Astro.locals.admin as { twoFactorEnabled?: boo
       await navigator.clipboard.writeText(codes.join('\n'));
       if (copyFeedback) copyFeedback.textContent = 'Tersalin ke clipboard.';
     } catch {
-      if (copyFeedback) copyFeedback.textContent = 'Gagal menyalin — salin manual.';
+      if (copyFeedback) copyFeedback.textContent = 'Gagal menyalin, salin manual.';
     }
   });
 </script>

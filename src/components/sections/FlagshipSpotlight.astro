@@ -10,7 +10,7 @@ import { renderProjectBody } from '../../lib/render-markdown';
 
 const [darkstar] = await db.select().from(projects).where(eq(projects.slug, 'darkstar-tools'));
 if (!darkstar) {
-  throw new Error('Proyek "darkstar-tools" tidak ditemukan di database — dibutuhkan FlagshipSpotlight');
+  throw new Error('Proyek "darkstar-tools" tidak ditemukan di database, dibutuhkan FlagshipSpotlight');
 }
 
 const coverSrc = resolveCoverImage(darkstar, 'f_auto,q_auto,w_900,h_675,c_fill');
@@ -25,7 +25,7 @@ const bodyHtml = renderProjectBody(darkstar.bodyMarkdown);
       {coverSrc ? (
         <img
           src={coverSrc}
-          alt={`${darkstar.title} — product interface`}
+          alt={`${darkstar.title} product interface`}
           class="flagship__image js-cover-image"
           loading="lazy"
           decoding="async"
@@ -101,6 +101,12 @@ const bodyHtml = renderProjectBody(darkstar.bodyMarkdown);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     background-color: var(--color-surface-raised);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--transition-base);
+  }
+
+  .flagship:hover .flagship__image {
+    box-shadow: var(--shadow-xl);
   }
 
   .flagship__label {
@@ -114,6 +120,7 @@ const bodyHtml = renderProjectBody(darkstar.bodyMarkdown);
     font-size: clamp(2rem, 4vw, 3rem);
     line-height: 1.1;
     margin-block: 1rem 1.5rem;
+    letter-spacing: -0.01em;
   }
 
   .flagship__copy {

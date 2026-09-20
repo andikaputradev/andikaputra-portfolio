@@ -10,7 +10,7 @@ export const prerender = false;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Login — Admin</title>
+    <title>Login | Admin</title>
   </head>
   <body class="login-body">
     <main class="login-card surface-raised border-subtle">
@@ -155,6 +155,7 @@ export const prerender = false;
     padding: 2.5rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
   }
 
   .login-card__brand {
@@ -188,10 +189,13 @@ export const prerender = false;
     border-radius: var(--radius-sm);
     color: var(--color-text-primary);
     font-size: 1rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
   .field input:focus-visible {
     border-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 0 3px oklch(72% 0.14 55 / 15%);
+    outline: none;
   }
 
   [role='alert']:empty {
@@ -213,11 +217,12 @@ export const prerender = false;
     border-radius: var(--radius-sm);
     font-weight: 600;
     cursor: pointer;
-    transition: opacity var(--transition-fast);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
   }
 
   button[type='submit']:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
   }
 
   .link-button {

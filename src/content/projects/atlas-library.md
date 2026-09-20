@@ -2,7 +2,7 @@
 title: Atlas Library
 tag: WEB2
 flagship: false
-summary: Enterprise library management on Laravel 11 — hexagonal architecture, full RBAC, and a Bloomberg Terminal-inspired interface built for librarians who move fast through dense data.
+summary: Enterprise library management on Laravel 11 with hexagonal architecture, full RBAC, and a Bloomberg Terminal-inspired interface built for librarians who move fast through dense data.
 stack: [Laravel 11, PHP, Spatie RBAC, Blade, DDD/Hexagonal Architecture]
 coverImage: /assets/projects/atlas-library/cover.jpg
 order: 5

@@ -2,7 +2,7 @@
 title: ChainSec Auditor
 tag: WEB3
 flagship: false
-summary: A static-analysis vulnerability scanner for Solidity smart contracts — the security-research discipline behind DarkStar, applied to on-chain code.
+summary: A static-analysis vulnerability scanner for Solidity smart contracts, applying the security-research discipline behind DarkStar to on-chain code.
 stack: [Python 3.12, Slither, Web3.py, FastAPI, Next.js 15, PostgreSQL]
 coverImage: /assets/projects/chainsec-auditor/cover.jpg
 order: 7

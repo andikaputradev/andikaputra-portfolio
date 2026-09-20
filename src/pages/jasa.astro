@@ -17,7 +17,7 @@ const SERVICES = [
     tag: 'WEB2',
     title: 'Pengembangan Web & Aplikasi',
     description:
-      'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack — dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
+      'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
   },
   {
     tag: 'SECURITY',
@@ -42,11 +42,12 @@ const PROCESS = [
 ---
 
 <BaseLayout
-  title="Jasa Pembuatan Website & Aplikasi, Security Hardening, Web3 — Wahyu Andika Putra"
-  description="Jasa pembuatan website dan aplikasi, profesional keamanan siber untuk security hardening & audit defensif, serta web3 specialist untuk audit smart contract — oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
+  title="Jasa Pembuatan Website & Aplikasi, Security Hardening, Web3 | Wahyu Andika Putra"
+  description="Jasa pembuatan website dan aplikasi, profesional keamanan siber untuk security hardening & audit defensif, serta web3 specialist untuk audit smart contract oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
   ogImage="/og/index.png"
   additionalSchemas={[buildServiceSchema(siteUrl)]}
   lang="id"
+  keywords={['jasa pembuatan website', 'jasa pembuatan aplikasi', 'security hardening', 'audit defensif', 'web3 specialist', 'smart contract audit', 'cybersecurity consultant', 'Indonesia']}
 >
   <main id="main-content">
     <section class="jasa-hero section-spacing" data-telemetry-section="jasa">
@@ -56,7 +57,7 @@ const PROCESS = [
           Pembuatan Website & Aplikasi, dengan Keamanan Sebagai Bagian dari Desain.
         </h1>
         <p class="jasa-hero__lead">
-          Bukan sekadar dibuat agar tampil — dirancang agar tahan diserang, mudah dirawat, dan
+          Bukan sekadar dibuat agar tampil, dirancang agar tahan diserang, mudah dirawat, dan
           jelas arsitekturnya. Cocok untuk kebutuhan bisnis, riset, maupun proyek Web3.
         </p>
         <div class="jasa-hero__ctas">
@@ -102,7 +103,7 @@ const PROCESS = [
       <div class="container-site jasa-cta__inner">
         <h2 class="jasa-cta__heading font-display">Ada proyek yang ingin didiskusikan?</h2>
         <p class="jasa-cta__lead">
-          Ceritakan kebutuhan Anda — saya akan merespons dengan penilaian teknis awal, bukan
+          Ceritakan kebutuhan Anda, saya akan merespons dengan penilaian teknis awal, bukan
           janji generik.
         </p>
         <div class="jasa-cta__direct">
@@ -129,6 +130,7 @@ const PROCESS = [
     line-height: 1.1;
     max-width: 22ch;
     margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
   }
 
   .jasa-hero__lead {
@@ -159,6 +161,14 @@ const PROCESS = [
     padding: 1.75rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .jasa-service-card:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
 
   .jasa-service-card__tag {
@@ -239,9 +249,11 @@ const PROCESS = [
     color: var(--color-accent-phosphor);
     text-decoration: none;
     font-size: 0.9rem;
+    transition: color var(--transition-fast);
   }
 
   .jasa-cta__link:hover {
+    color: var(--color-text-primary);
     text-decoration: underline;
   }
 

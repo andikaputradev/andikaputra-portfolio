@@ -2,7 +2,7 @@
 title: PhantomDrop
 tag: WEB3
 flagship: false
-summary: A white-label NFT stealth-launch platform — ERC-721A, Merkle-proof whitelisting, and delayed reveal, with a mint interface held to the same dark-premium standard as the rest of this work.
+summary: A white-label NFT stealth-launch platform powered by ERC-721A, with Merkle-proof whitelisting and delayed reveal, with a mint interface held to the same dark-premium standard.
 stack: [Solidity 0.8, Hardhat, OpenZeppelin, Wagmi v2, Next.js 15, Pinata IPFS]
 coverImage: /assets/projects/phantomdrop/cover.jpg
 order: 9

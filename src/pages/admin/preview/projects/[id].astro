@@ -28,7 +28,7 @@ const viewData = resolveProjectView(project);
   noindex={true}
 >
   <div class="preview-banner mono">
-    MODE PRATINJAU — {hasDraft ? 'menampilkan draft belum dipublikasikan' : 'menampilkan versi live saat ini'}
+    MODE PRATINJAU, {hasDraft ? 'menampilkan draft belum dipublikasikan' : 'menampilkan versi live saat ini'}
     <a href={`/admin/projects/${project.id}/edit`}>Kembali ke form edit</a>
   </div>
   <main id="main-content">

@@ -24,7 +24,7 @@ const contentValues = resolveProjectView(project);
 const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
 ---
 
-<AdminLayout title={`Edit — ${project.title}`}>
+<AdminLayout title={`Edit | ${project.title}`}>
   {hasDraft && (
     <div class="draft-banner" id="draft-banner">
       Ada draft belum dipublikasikan.

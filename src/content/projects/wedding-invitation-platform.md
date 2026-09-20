@@ -2,7 +2,7 @@
 title: Wedding Invitation Platform
 tag: WEB2
 flagship: false
-summary: A bespoke digital wedding invitation platform — guest-specific personalization, real-time RSVP, an interactive guestbook, and a mobile-first ceremony of its own.
+summary: A bespoke digital wedding invitation platform with guest-specific personalization, real-time RSVP, an interactive guestbook, and a mobile-first ceremony of its own.
 stack: [Next.js 15, React 19, Framer Motion, Google Apps Script]
 coverImage: /assets/projects/wedding-invitation-platform/cover.jpg
 order: 4

@@ -28,7 +28,7 @@ if (!profile) {
       {profile.cvPublicId && (
         <p class="field__hint">
           Public ID saat ini: <code>{profile.cvPublicId}</code>
-          {profile.cvUpdatedAt && ` — diperbarui ${profile.cvUpdatedAt.toISOString().slice(0, 10)}`}
+          {profile.cvUpdatedAt && `, diperbarui ${profile.cvUpdatedAt.toISOString().slice(0, 10)}`}
         </p>
       )}
       <input type="file" id="cv-file" accept="application/pdf" />

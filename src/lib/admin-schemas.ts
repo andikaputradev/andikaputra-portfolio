@@ -5,7 +5,7 @@ const FALSY_STRINGS = new Set(['false', 'off', '0', 'no', '']);
 
 /**
  * htmx (hx-ext="json-enc") mem-proxy parameter form lewat FormData sebelum
- * di-serialize sebagai JSON — setiap value, termasuk boolean yang sudah
+ * di-serialize sebagai JSON, setiap value, termasuk boolean yang sudah
  * dikonversi di sisi klien, dipaksa menjadi string oleh FormData.append().
  * Skema ini menerima boolean asli (test/consumer non-form) MAUPUN string
  * hasil pipeline tersebut, tanpa melonggarkan validasi untuk input lain.
@@ -22,7 +22,7 @@ const zBooleanLike = z.preprocess((value) => {
 
 /**
  * Field array (mis. `stack`) yang di-assign sebagai Array lewat proxy
- * parameter htmx berubah menjadi entri FormData berganda dengan key sama —
+ * parameter htmx berubah menjadi entri FormData berganda dengan key sama,
  * Object.fromEntries() di dalam pipeline json-enc menyisakan HANYA entri
  * TERAKHIR. Klien wajib mengirim array ini sebagai string JSON (lihat
  * ProjectForm.astro/ProjectSettingsForm.astro); skema ini mem-parse-nya,

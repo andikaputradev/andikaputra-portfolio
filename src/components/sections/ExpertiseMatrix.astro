@@ -79,7 +79,8 @@ const GROUPS = [
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
     overflow: hidden;
-    transition: border-color var(--transition-base), transform 0.55s ease, opacity 0.55s ease;
+    transition: border-color var(--transition-base), transform 0.55s ease, opacity 0.55s ease, box-shadow var(--transition-base);
+    box-shadow: var(--shadow-sm);
   }
 
   :root[data-js-ready] .expertise-panel.js-reveal {
@@ -88,6 +89,7 @@ const GROUPS = [
 
   .expertise-panel:hover {
     border-color: color-mix(in oklch, var(--color-accent-phosphor) 35%, var(--color-border));
+    box-shadow: var(--shadow-md);
   }
 
   .expertise-panel[data-category='web3-blockchain']:hover {
@@ -171,12 +173,14 @@ const GROUPS = [
     transition:
       border-color var(--transition-fast),
       color var(--transition-fast),
-      transform var(--transition-fast);
+      transform var(--transition-fast),
+      background-color var(--transition-fast);
   }
 
   .expertise-chip:hover {
     color: var(--color-text-primary);
     border-color: color-mix(in oklch, var(--color-accent-phosphor) 50%, var(--color-border));
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 5%, transparent);
     transform: translateY(-1px);
   }
 

@@ -10,15 +10,16 @@ interface Props {
 
 const { project } = Astro.props;
 const ogImage = `/og/${project.slug}.png`;
-const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.dev/';
+const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
 const projectSchema = buildProjectSchema(project, siteUrl);
 ---
 
 <BaseLayout
-  title={`${project.title} — Wahyu Andika Putra`}
+  title={`${project.title} | Wahyu Andika Putra`}
   description={project.summary}
   ogImage={ogImage}
   additionalSchemas={[projectSchema]}
+  keywords={project.stack ?? []}
 >
   <main id="main-content">
     <ProjectDetailView project={project} />
