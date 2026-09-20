@@ -1,0 +1,497 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db';
+import { articles } from '../../db/schema';
+import { and, eq, desc, ne } from 'drizzle-orm';
+import { renderProjectBody } from '../../lib/render-markdown';
+import { cloudinaryImageUrl } from '../../lib/cloudinary-url';
+import { trackVisit } from '../../lib/track-visit';
+import { IDENTITY } from '../../data/identity';
+
+export const prerender = false;
+
+const slug = Astro.params.slug;
+
+const [article] = await db
+  .select()
+  .from(articles)
+  .where(and(eq(articles.slug, slug!), eq(articles.published, true)));
+
+if (!article) {
+  return Astro.rewrite('/404');
+}
+
+trackVisit(Astro.request, `/artikel/${article.slug}`);
+
+Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+
+const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+const bodyHtml = renderProjectBody(article.bodyMarkdown);
+const coverSrc = article.coverImagePublicId
+  ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1600')
+  : null;
+
+const CATEGORY_LABELS: Record<string, string> = {
+  SECURITY: 'Security',
+  WEB3: 'Web3',
+  WEBDEV: 'Web Dev',
+  GENERAL: 'General',
+};
+
+const publishedDate = new Intl.DateTimeFormat('id-ID', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(article.publishedAt);
+
+const articleUrl = `${siteUrl}artikel/${article.slug}/`;
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.title,
+  description: article.metaDescription || article.summary,
+  author: {
+    '@type': 'Person',
+    '@id': `${siteUrl}#person`,
+    name: IDENTITY.fullName,
+  },
+  datePublished: article.publishedAt.toISOString(),
+  dateModified: article.updatedAt.toISOString(),
+  url: articleUrl,
+  publisher: {
+    '@type': 'Person',
+    '@id': `${siteUrl}#person`,
+    name: IDENTITY.fullName,
+  },
+  ...(coverSrc ? { image: coverSrc } : {}),
+  ...(article.tags && article.tags.length > 0 ? { keywords: article.tags.join(', ') } : {}),
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+    { '@type': 'ListItem', position: 2, name: 'Artikel', item: `${siteUrl}artikel/` },
+    { '@type': 'ListItem', position: 3, name: article.title, item: articleUrl },
+  ],
+};
+
+const relatedArticles = await db
+  .select()
+  .from(articles)
+  .where(
+    and(
+      eq(articles.published, true),
+      eq(articles.category, article.category),
+      ne(articles.slug, article.slug),
+    ),
+  )
+  .orderBy(desc(articles.displayOrder))
+  .limit(3);
+
+const whatsappText = encodeURIComponent(`Baca artikel ini: ${article.title} ${articleUrl}`);
+const twitterText = encodeURIComponent(`${article.title} ${articleUrl}`);
+const linkedInUrl = encodeURIComponent(articleUrl);
+---
+
+<BaseLayout
+  title={article.metaTitle || `${article.title} | Wahyu Andika Putra`}
+  description={article.metaDescription || article.summary}
+  ogImage={coverSrc ?? '/og/index.png'}
+  ogType="article"
+  additionalSchemas={[articleSchema, breadcrumbSchema]}
+  keywords={article.tags ?? []}
+  lang="id"
+>
+  <main id="main-content">
+    <article class="article-detail">
+      <header class="article-detail__header container-site">
+        <a href="/artikel/" class="article-detail__back">← Kembali ke artikel</a>
+        <span class={`article-card__category font-mono article-card__category--${article.category.toLowerCase()}`}>
+          [{CATEGORY_LABELS[article.category] ?? article.category}]
+        </span>
+        <h1 class="article-detail__title font-display">{article.title}</h1>
+        <div class="article-detail__meta font-mono">
+          <time datetime={article.publishedAt.toISOString()}>{publishedDate}</time>
+          {article.readingTimeMinutes && (
+            <span class="article-detail__separator">·</span>
+            <span>{article.readingTimeMinutes} min read</span>
+          )}
+        </div>
+      </header>
+
+      {coverSrc && (
+        <div class="article-detail__cover-wrap container-site">
+          <img
+            src={coverSrc}
+            alt={`${article.title} cover`}
+            class="article-detail__cover"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </div>
+      )}
+
+      <div class="article-detail__body container-site">
+        <div class="article-detail__content" set:html={bodyHtml} />
+      </div>
+
+      <div class="article-detail__sharing container-site">
+        <p class="article-detail__sharing-label font-mono">Share artikel ini:</p>
+        <div class="article-detail__sharing-links">
+          <a
+            href={`https://wa.me/?text=${whatsappText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="article-detail__share-link"
+          >
+            WhatsApp
+          </a>
+          <a
+            href={`https://twitter.com/intent/tweet?text=${twitterText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="article-detail__share-link"
+          >
+            Twitter
+          </a>
+          <a
+            href={`https://www.linkedin.com/shareArticle?mini=true&url=${linkedInUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="article-detail__share-link"
+          >
+            LinkedIn
+          </a>
+        </div>
+      </div>
+
+      {relatedArticles.length > 0 && (
+        <section class="article-detail__related section-spacing" data-telemetry-section="article-related">
+          <div class="container-site">
+            <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>
+            <div class="article-detail__related-grid">
+              {relatedArticles.map((related) => (
+                <article class="article-card">
+                  <a href={`/artikel/${related.slug}/`} class="article-card__link">
+                    <div class="article-card__header">
+                      <span class={`article-card__category font-mono article-card__category--${related.category.toLowerCase()}`}>
+                        [{CATEGORY_LABELS[related.category] ?? related.category}]
+                      </span>
+                      {related.readingTimeMinutes && (
+                        <span class="article-card__reading-time font-mono">{related.readingTimeMinutes} min read</span>
+                      )}
+                    </div>
+                    <h3 class="article-card__title">{related.title}</h3>
+                    <p class="article-card__summary">{related.summary}</p>
+                    <div class="article-card__meta font-mono">
+                      <time datetime={related.publishedAt.toISOString()}>
+                        {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(related.publishedAt)}
+                      </time>
+                    </div>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .article-detail__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    padding-bottom: 2rem;
+  }
+
+  .article-detail__back {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .article-detail__back:hover {
+    color: var(--color-accent-phosphor);
+  }
+
+  .article-card__category {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    width: fit-content;
+  }
+
+  .article-card__category--security {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 40%, transparent);
+  }
+
+  .article-card__category--web3 {
+    color: var(--color-accent-steel);
+    border-color: color-mix(in oklch, var(--color-accent-steel) 40%, transparent);
+  }
+
+  .article-card__category--webdev {
+    color: #a78bfa;
+    border-color: color-mix(in oklch, #a78bfa 40%, transparent);
+  }
+
+  .article-card__category--general {
+    color: var(--color-text-muted);
+  }
+
+  .article-detail__title {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.1;
+    max-width: 28ch;
+    letter-spacing: -0.02em;
+  }
+
+  .article-detail__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .article-detail__separator {
+    opacity: 0.4;
+  }
+
+  .article-detail__cover-wrap {
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .article-detail__cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .article-detail__body {
+    max-width: 68ch;
+    padding-bottom: 2rem;
+  }
+
+  .article-detail__content {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  .article-detail__content :global(p + p) {
+    margin-top: 1.25rem;
+  }
+
+  .article-detail__content :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-detail__content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .article-detail__content :global(pre) {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .article-detail__content :global(code) {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.9em;
+  }
+
+  .article-detail__content :global(:not(pre) > code) {
+    background-color: var(--color-surface);
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+  }
+
+  .article-detail__content :global(blockquote) {
+    border-left: 3px solid var(--color-accent-phosphor);
+    padding-left: 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .article-detail__content :global(ul),
+  .article-detail__content :global(ol) {
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+  }
+
+  .article-detail__content :global(li + li) {
+    margin-top: 0.35rem;
+  }
+
+  .article-detail__content :global(a) {
+    color: var(--color-accent-phosphor);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color var(--transition-fast);
+  }
+
+  .article-detail__content :global(a:hover) {
+    color: var(--color-text-primary);
+  }
+
+  .article-detail__content :global(strong) {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .article-detail__sharing {
+    padding-block: 2rem;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-section);
+  }
+
+  .article-detail__sharing-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .article-detail__sharing-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .article-detail__share-link {
+    font-size: 0.875rem;
+    font-family: var(--font-mono), monospace;
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    padding: 0.45rem 1rem;
+    border: 1px solid color-mix(in oklch, var(--color-accent-phosphor) 40%, transparent);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+
+  .article-detail__share-link:hover {
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 10%, transparent);
+    border-color: var(--color-accent-phosphor);
+  }
+
+  .article-detail__related-heading {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 2rem;
+  }
+
+  .article-detail__related-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .article-detail__related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .article-detail__related-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .article-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article-card__link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-card__link:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .article-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-card__reading-time {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .article-card__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    transition: color var(--transition-fast);
+  }
+
+  .article-card__link:hover .article-card__title {
+    color: var(--color-accent-phosphor);
+  }
+
+  .article-card__summary {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    flex: 1;
+    margin-bottom: 1.25rem;
+  }
+
+  .article-card__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

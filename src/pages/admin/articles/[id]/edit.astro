@@ -1,0 +1,59 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import ArticleForm from '../../../../components/admin/ArticleForm.astro';
+import { db } from '../../../../db';
+import { articles } from '../../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+export const prerender = false;
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id)) {
+  return Astro.redirect('/admin/articles');
+}
+
+const [article] = await db.select().from(articles).where(eq(articles.id, id));
+if (!article) {
+  return Astro.redirect('/admin/articles');
+}
+---
+
+<AdminLayout title={`Edit | ${article.title}`}>
+  <div class="edit-grid">
+    <section class="edit-section">
+      <h2>Konten</h2>
+      <ArticleForm article={article} action={`/api/admin/articles/${article.id}`} method="PUT" />
+    </section>
+  </div>
+</AdminLayout>
+
+<script>
+  import { showToast } from '../../../../scripts/admin/htmx-toast';
+
+  const params = new URLSearchParams(window.location.search);
+  const flash = params.get('flash');
+  if (flash === 'updated') {
+    showToast('Artikel diperbarui', 'success');
+  } else if (flash === 'published') {
+    showToast('Artikel dipublikasikan', 'success');
+  }
+  if (flash) {
+    params.delete('flash');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }
+</script>
+
+<style>
+  .edit-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .edit-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-muted);
+  }
+</style>

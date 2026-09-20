@@ -1,0 +1,295 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { db } from '../db';
+import { articles } from '../db/schema';
+import { eq, desc } from 'drizzle-orm';
+import { trackVisit } from '../lib/track-visit';
+
+export const prerender = false;
+
+trackVisit(Astro.request, '/artikel');
+
+Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+
+const allArticles = await db
+  .select()
+  .from(articles)
+  .where(eq(articles.published, true))
+  .orderBy(desc(articles.displayOrder));
+
+const categories = ['ALL', 'SECURITY', 'WEB3', 'WEBDEV', 'GENERAL'] as const;
+
+const CATEGORY_LABELS: Record<string, string> = {
+  ALL: 'Semua',
+  SECURITY: 'Security',
+  WEB3: 'Web3',
+  WEBDEV: 'Web Dev',
+  GENERAL: 'General',
+};
+
+---
+
+<BaseLayout
+  title="Artikel & Insights | Wahyu Andika Putra"
+  description="Artikel tentang jasa pembuatan website, development aplikasi, security hardening, Web3, smart contract audit, dan upload Play Store oleh Wahyu Andika Putra."
+  ogImage="/og/index.png"
+  keywords={['artikel web development', 'jasa pembuatan website', 'jasa pembuatan aplikasi', 'jasa upload play store', 'security hardening', 'smart contract audit', 'web3 indonesia', 'tips website']}
+  lang="id"
+>
+  <main id="main-content">
+    <section class="artikel-hero section-spacing" data-telemetry-section="artikel">
+      <div class="container-site">
+        <p class="artikel-hero__eyebrow font-mono">ARTIKEL</p>
+        <h1 class="artikel-hero__heading font-display">Artikel & Insights</h1>
+        <p class="artikel-hero__lead">
+          Tulisan seputar pengembangan web & aplikasi, keamanan siber, Web3, dan topik teknis lainnya.
+        </p>
+      </div>
+    </section>
+
+    <section class="artikel-listing section-spacing" data-telemetry-section="artikel-listing">
+      <div class="container-site">
+        <div class="artikel-filters" data-article-filters>
+          {categories.map((cat) => (
+            <button
+              class={`artikel-filter-btn font-mono${cat === 'ALL' ? ' is-active' : ''}`}
+              data-filter-category={cat}
+              type="button"
+            >
+              {CATEGORY_LABELS[cat]}
+            </button>
+          ))}
+        </div>
+
+        <div class="artikel-grid" data-article-grid>
+          {allArticles.map((article) => (
+            <article class="article-card" data-article-card data-article-category={article.category}>
+              <a href={`/artikel/${article.slug}/`} class="article-card__link">
+                <div class="article-card__header">
+                  <span class={`article-card__category font-mono article-card__category--${article.category.toLowerCase()}`}>
+                    [{CATEGORY_LABELS[article.category] ?? article.category}]
+                  </span>
+                  {article.readingTimeMinutes && (
+                    <span class="article-card__reading-time font-mono">{article.readingTimeMinutes} min read</span>
+                  )}
+                </div>
+                <h2 class="article-card__title">{article.title}</h2>
+                <p class="article-card__summary">{article.summary}</p>
+                <div class="article-card__meta font-mono">
+                  <time datetime={article.publishedAt.toISOString()}>
+                    {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(article.publishedAt)}
+                  </time>
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+
+        {allArticles.length === 0 && (
+          <p class="artikel-empty">Belum ada artikel yang dipublikasikan.</p>
+        )}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const filterButtons = document.querySelectorAll<HTMLElement>('[data-filter-category]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-article-card]');
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach((b) => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+
+        const category = btn.dataset.filterCategory;
+
+        cards.forEach((card) => {
+          if (category === 'ALL' || card.dataset.articleCategory === category) {
+            card.classList.remove('is-filtered-out');
+          } else {
+            card.classList.add('is-filtered-out');
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .artikel-hero {
+    padding-top: clamp(4rem, 10vw, 7rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .artikel-hero__eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .artikel-hero__heading {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    max-width: 22ch;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .artikel-hero__lead {
+    font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+    color: var(--color-text-muted);
+    max-width: 56ch;
+  }
+
+  .artikel-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .artikel-filter-btn {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .artikel-filter-btn:hover,
+  .artikel-filter-btn.is-active {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 50%, var(--color-border));
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 8%, transparent);
+  }
+
+  .artikel-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .artikel-grid :global(.is-filtered-out) {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .artikel-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .artikel-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .article-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article-card__link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-card__link:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .article-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-card__category {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    width: fit-content;
+  }
+
+  .article-card__category--security {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 40%, transparent);
+  }
+
+  .article-card__category--web3 {
+    color: var(--color-accent-steel);
+    border-color: color-mix(in oklch, var(--color-accent-steel) 40%, transparent);
+  }
+
+  .article-card__category--webdev {
+    color: #a78bfa;
+    border-color: color-mix(in oklch, #a78bfa 40%, transparent);
+  }
+
+  .article-card__category--general {
+    color: var(--color-text-muted);
+  }
+
+  .article-card__reading-time {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .article-card__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    transition: color var(--transition-fast);
+  }
+
+  .article-card__link:hover .article-card__title {
+    color: var(--color-accent-phosphor);
+  }
+
+  .article-card__summary {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    flex: 1;
+    margin-bottom: 1.25rem;
+  }
+
+  .article-card__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .artikel-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: 4rem 0;
+    font-size: 1.0625rem;
+  }
+</style>

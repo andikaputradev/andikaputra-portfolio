@@ -1,0 +1,196 @@
+---
+import { db } from '../../db';
+import { articles } from '../../db/schema';
+import { eq, desc } from 'drizzle-orm';
+
+const latestArticles = await db
+  .select()
+  .from(articles)
+  .where(eq(articles.published, true))
+  .orderBy(desc(articles.displayOrder))
+  .limit(3);
+
+const CATEGORY_LABELS: Record<string, string> = {
+  SECURITY: 'Security',
+  WEB3: 'Web3',
+  WEBDEV: 'Web Dev',
+  GENERAL: 'General',
+};
+---
+
+<section id="articles" class="home-articles" data-telemetry-section="articles">
+  <div class="container-site">
+    <h2 class="home-articles__heading font-display">Artikel Terbaru</h2>
+
+    <div class="home-articles__grid">
+      {latestArticles.map((article) => (
+        <article class="article-card">
+          <a href={`/artikel/${article.slug}/`} class="article-card__link">
+            <div class="article-card__header">
+              <span class={`article-card__category font-mono article-card__category--${article.category.toLowerCase()}`}>
+                [{CATEGORY_LABELS[article.category] ?? article.category}]
+              </span>
+              {article.readingTimeMinutes && (
+                <span class="article-card__reading-time font-mono">{article.readingTimeMinutes} min read</span>
+              )}
+            </div>
+            <h3 class="article-card__title">{article.title}</h3>
+            <p class="article-card__summary">{article.summary}</p>
+            <div class="article-card__meta font-mono">
+              <time datetime={article.publishedAt.toISOString()}>
+                {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(article.publishedAt)}
+              </time>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    {latestArticles.length > 0 && (
+      <div class="home-articles__cta">
+        <a href="/artikel/" class="home-articles__link font-mono">Lihat semua artikel →</a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .home-articles {
+    padding-block: var(--spacing-section);
+  }
+
+  .home-articles__heading {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .home-articles__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .home-articles__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .home-articles__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .home-articles__cta {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    text-align: center;
+  }
+
+  .home-articles__link {
+    font-size: 0.875rem;
+    letter-spacing: 0.06em;
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .home-articles__link:hover {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+  }
+
+  .article-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article-card__link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-card__link:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .article-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-card__category {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    width: fit-content;
+  }
+
+  .article-card__category--security {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 40%, transparent);
+  }
+
+  .article-card__category--web3 {
+    color: var(--color-accent-steel);
+    border-color: color-mix(in oklch, var(--color-accent-steel) 40%, transparent);
+  }
+
+  .article-card__category--webdev {
+    color: #a78bfa;
+    border-color: color-mix(in oklch, #a78bfa 40%, transparent);
+  }
+
+  .article-card__category--general {
+    color: var(--color-text-muted);
+  }
+
+  .article-card__reading-time {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .article-card__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    transition: color var(--transition-fast);
+  }
+
+  .article-card__link:hover .article-card__title {
+    color: var(--color-accent-phosphor);
+  }
+
+  .article-card__summary {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    flex: 1;
+    margin-bottom: 1.25rem;
+  }
+
+  .article-card__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

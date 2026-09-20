@@ -1,0 +1,10 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ArticleForm from '../../../components/admin/ArticleForm.astro';
+
+export const prerender = false;
+---
+
+<AdminLayout title="Artikel Baru">
+  <ArticleForm action="/api/admin/articles" method="POST" />
+</AdminLayout>

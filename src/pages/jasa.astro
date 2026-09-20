@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MagneticButton from '../components/ui/MagneticButton.astro';
 import { IDENTITY } from '../data/identity';
-import { buildServiceSchema } from '../lib/json-ld';
+import { buildServiceSchema, buildFAQSchema } from '../lib/json-ld';
 import { trackVisit } from '../lib/track-visit';
 
 export const prerender = false;
@@ -10,7 +10,7 @@ export const prerender = false;
 trackVisit(Astro.request, '/jasa');
 Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
-const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.dev/';
+const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
 
 const SERVICES = [
   {
@@ -18,6 +18,12 @@ const SERVICES = [
     title: 'Pengembangan Web & Aplikasi',
     description:
       'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
+  },
+  {
+    tag: 'MOBILE',
+    title: 'Upload & Publish Aplikasi ke Play Store / App Store',
+    description:
+      'Jasa upload, publikasi, dan optimasi aplikasi ke Google Play Store dan Apple App Store. Termasuk setup developer account, listing optimasi (ASO), screenshot preparation, dan review preparation agar aplikasi lolos review.',
   },
   {
     tag: 'SECURITY',
@@ -39,15 +45,26 @@ const PROCESS = [
   { step: '03', title: 'Harden', description: 'Review keamanan dan aksesibilitas sebelum rilis, bukan sesudah insiden.' },
   { step: '04', title: 'Ship & Support', description: 'Deploy, dokumentasi serah terima, dan dukungan pasca-rilis sesuai kesepakatan.' },
 ] as const;
+
+const FAQS = [
+  { question: 'Berapa biaya jasa pembuatan website?', answer: 'Biaya disesuaikan dengan kompleksitas proyek, fitur yang dibutuhkan, dan stack teknologi yang dipilih. Hubungi kami untuk konsultasi gratis dan penawaran harga yang akurat.' },
+  { question: 'Apakah menerima jasa upload Play Store?', answer: 'Ya, kami menerima jasa upload dan publish aplikasi ke Google Play Store maupun Apple App Store, termasuk optimasi listing (ASO) agar aplikasi lebih mudah ditemukan.' },
+  { question: 'Bagaimana proses kerja jasa pembuatan website?', answer: 'Proses dimulai dari discovery (analisis kebutuhan), lalu build secara iteratif dengan checkpoint yang bisa ditinjau, hardening keamanan, dan terakhir deploy dengan dokumentasi.' },
+  { question: 'Apakah bisa konsultasi security untuk website yang sudah berjalan?', answer: 'Ya, kami menyediakan security audit dan hardening untuk website atau aplikasi yang sudah berjalan, termasuk review kode, konfigurasi header keamanan, dan remediation.' },
+  { question: 'Apakah menerima proyek Web3 dan smart contract audit?', answer: 'Ya, kami adalah Web3 specialist yang menerima audit keamanan smart contract, desain tokenomics, dan review risiko protokol DeFi dari sudut pandang defensif.' },
+];
+
+// FIX BUG: Memanggil buildFAQSchema dengan data FAQS
+const faqSchema = buildFAQSchema(FAQS);
 ---
 
 <BaseLayout
   title="Jasa Pembuatan Website & Aplikasi, Security Hardening, Web3 | Wahyu Andika Putra"
   description="Jasa pembuatan website dan aplikasi, profesional keamanan siber untuk security hardening & audit defensif, serta web3 specialist untuk audit smart contract oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
   ogImage="/og/index.png"
-  additionalSchemas={[buildServiceSchema(siteUrl)]}
+  additionalSchemas={[buildServiceSchema(siteUrl), faqSchema]}
   lang="id"
-  keywords={['jasa pembuatan website', 'jasa pembuatan aplikasi', 'security hardening', 'audit defensif', 'web3 specialist', 'smart contract audit', 'cybersecurity consultant', 'Indonesia']}
+  keywords={['jasa pembuatan website', 'jasa pembuatan aplikasi', 'jasa upload play store', 'jasa upload app store', 'security hardening', 'audit defensif', 'web3 specialist', 'smart contract audit', 'cybersecurity consultant', 'jasa bikin website', 'jasa web application', 'developer Indonesia']}
 >
   <main id="main-content">
     <section class="jasa-hero section-spacing" data-telemetry-section="jasa">
@@ -94,6 +111,20 @@ const PROCESS = [
               <h3 class="jasa-process__title">{item.title}</h3>
               <p class="jasa-process__description">{item.description}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="jasa-faq section-spacing" data-telemetry-section="jasa-faq">
+      <div class="container-site">
+        <h2 class="jasa-section-heading font-display">Pertanyaan Umum</h2>
+        <div class="jasa-faq__list">
+          {FAQS.map((faq) => (
+            <details class="jasa-faq__item border-subtle">
+              <summary class="jasa-faq__question">{faq.question}</summary>
+              <p class="jasa-faq__answer">{faq.answer}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -257,9 +288,64 @@ const PROCESS = [
     text-decoration: underline;
   }
 
+  .jasa-faq__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 64ch;
+  }
+
+  .jasa-faq__item {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .jasa-faq__item[open] {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .jasa-faq__question {
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .jasa-faq__question::marker {
+    content: '';
+  }
+
+  .jasa-faq__question::after {
+    content: '+';
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    color: var(--color-accent-phosphor);
+    transition: transform var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .jasa-faq__item[open] .jasa-faq__question::after {
+    transform: rotate(45deg);
+  }
+
+  .jasa-faq__answer {
+    margin-top: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
   @media (min-width: 640px) {
     .jasa-services__grid {
-      grid-template-columns: repeat(3, 1fr);
+      /* Diubah ke 2 kolom agar 4 kartu tersusun rapi 2x2, bukan 3+1 */
+      grid-template-columns: repeat(2, 1fr);
     }
 
     .jasa-process__grid {

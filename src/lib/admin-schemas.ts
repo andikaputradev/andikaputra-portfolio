@@ -71,6 +71,27 @@ export const ProjectSettingsSchema = ProjectInputSchema.pick({
 
 export type ProjectSettingsInput = z.infer<typeof ProjectSettingsSchema>;
 
+export const ArticleInputSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, 'Slug hanya boleh huruf kecil, angka, dan tanda hubung'),
+  title: z.string().min(1).max(200),
+  category: z.enum(['SECURITY', 'WEB3', 'WEBDEV', 'GENERAL']),
+  summary: z.string().min(1).max(300),
+  bodyMarkdown: z.string().min(1),
+  coverImagePublicId: z.string().optional(),
+  tags: zJsonArray(z.string()).default([]),
+  readingTimeMinutes: z.coerce.number().int().default(5),
+  displayOrder: z.coerce.number().int().default(0),
+  published: zBooleanLike.default(true),
+  metaTitle: z.string().max(60).optional(),
+  metaDescription: z.string().max(160).optional(),
+});
+
+export type ArticleInput = z.infer<typeof ArticleInputSchema>;
+
 export const CertificationInputSchema = z.object({
   name: z.string().min(1).max(150),
   issuer: z.string().min(1).max(150),

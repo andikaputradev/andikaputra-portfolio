@@ -1,0 +1,190 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { db } from '../../../db';
+import { articles } from '../../../db/schema';
+import { desc } from 'drizzle-orm';
+import { CSRF_COOKIE_NAME } from '../../../lib/csrf';
+
+export const prerender = false;
+
+const allArticles = await db.select().from(articles).orderBy(desc(articles.displayOrder));
+const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
+---
+
+<AdminLayout title="Artikel">
+  <div class="toolbar">
+    <a href="/admin/articles/new" class="btn-primary">+ Artikel baru</a>
+  </div>
+
+  {allArticles.length === 0 ? (
+    <p class="empty-state">Belum ada artikel. Buat yang baru untuk memulai.</p>
+  ) : (
+    <div class="admin-table" id="article-sortable" data-csrf={csrfToken}>
+      {allArticles.map((a) => (
+        <div class="admin-row border-subtle" id={`article-row-${a.id}`} data-id={a.id}>
+          <span class="drag-handle" aria-label="Seret untuk mengubah urutan" role="button" tabindex="0">⠿</span>
+          <span class="mono admin-row__tag">{a.category}</span>
+          <span class="admin-row__title">
+            {a.title}
+            {!a.published && <em class="draft-badge">belum publish</em>}
+          </span>
+          <a href={`/admin/preview/articles/${a.id}`} target="_blank" rel="noopener">Pratinjau</a>
+          <a href={`/admin/articles/${a.id}/edit`}>Edit</a>
+          <button
+            type="button"
+            hx-delete={`/api/admin/articles/${a.id}`}
+            hx-target={`#article-row-${a.id}`}
+            hx-swap="outerHTML swap:0.2s"
+            hx-confirm={`Hapus artikel "${a.title}" secara permanen?`}
+            class="btn-danger"
+          >
+            Hapus
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { initReorder } from '../../../scripts/admin/reorder';
+  import { showToast } from '../../../scripts/admin/htmx-toast';
+
+  initReorder({ containerId: 'article-sortable', endpoint: '/api/admin/articles/reorder' });
+
+  const params = new URLSearchParams(window.location.search);
+  const flash = params.get('flash');
+  if (flash === 'created') {
+    showToast('Artikel dibuat', 'success');
+  } else if (flash === 'published') {
+    showToast('Artikel dipublikasikan', 'success');
+  } else if (flash === 'draft-saved') {
+    showToast('Draft disimpan', 'success');
+  }
+  if (flash) {
+    params.delete('flash');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }
+</script>
+
+<style>
+  .toolbar {
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .empty-state {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .admin-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-row {
+    display: grid;
+    grid-template-columns: 1.5rem 6rem 1fr auto auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    background-color: var(--color-bg);
+    opacity: 0;
+    animation: row-in 320ms ease forwards;
+  }
+
+  .admin-row:nth-child(1) { animation-delay: 0ms; }
+  .admin-row:nth-child(2) { animation-delay: 30ms; }
+  .admin-row:nth-child(3) { animation-delay: 60ms; }
+  .admin-row:nth-child(4) { animation-delay: 90ms; }
+  .admin-row:nth-child(5) { animation-delay: 120ms; }
+  .admin-row:nth-child(n + 6) { animation-delay: 150ms; }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .admin-row--ghost {
+    opacity: 0.4;
+  }
+
+  .drag-handle {
+    cursor: grab;
+    color: var(--color-text-muted);
+    text-align: center;
+    user-select: none;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .admin-row__tag {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .admin-row__title {
+    font-weight: 500;
+  }
+
+  .draft-badge {
+    color: var(--color-accent-steel);
+    font-style: normal;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  .admin-row a {
+    color: var(--color-accent-steel);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+  .admin-row a:hover {
+    text-decoration: underline;
+  }
+
+  .btn-danger {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-error);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.82rem;
+  }
+
+  .btn-danger:hover {
+    background-color: var(--color-error);
+    color: var(--color-bg);
+  }
+
+  @media (max-width: 860px) {
+    .admin-row {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+  }
+</style>

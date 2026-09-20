@@ -6,6 +6,7 @@ import Philosophy from '../components/sections/Philosophy.astro';
 import ExpertiseMatrix from '../components/sections/ExpertiseMatrix.astro';
 import Certification from '../components/sections/Certification.astro';
 import SelectedWork from '../components/sections/SelectedWork.astro';
+import Articles from '../components/sections/Articles.astro';
 import RDLab from '../components/sections/RDLab.astro';
 import Contact from '../components/sections/Contact.astro';
 import { buildWebsiteSchema } from '../lib/json-ld';
@@ -33,6 +34,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate'
     <ExpertiseMatrix />
     <Certification />
     <SelectedWork />
+    <Articles />
     <RDLab />
     <Contact />
   </main>

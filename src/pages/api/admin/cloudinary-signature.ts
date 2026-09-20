@@ -8,6 +8,8 @@ const ALLOWED_FOLDERS = new Set([
   'portfolio/profile/cv',
   'portfolio/certifications',
   'portfolio/projects',
+  'portfolio/projects/body',
+  'portfolio/articles',
 ]);
 
 export const GET: APIRoute = async ({ locals, url }) => {

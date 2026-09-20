@@ -4,7 +4,7 @@ import { auditLog } from '../db/schema';
 interface RecordAuditParams {
   actorEmail: string;
   action: 'create' | 'update' | 'delete';
-  entityType: 'project' | 'certification' | 'profile';
+  entityType: 'project' | 'certification' | 'profile' | 'article';
   entityId?: string | null;
   ipAddress?: string | null;
 }

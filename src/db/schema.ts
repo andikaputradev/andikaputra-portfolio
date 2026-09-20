@@ -14,6 +14,7 @@ import type { ProjectDraftFields } from './draft-types';
 
 export const projectTagEnum = pgEnum('project_tag', ['SECURITY', 'WEB2', 'WEB3']);
 export const schemaTypeEnum = pgEnum('schema_type', ['CreativeWork', 'SoftwareApplication']);
+export const articleCategoryEnum = pgEnum('article_category', ['SECURITY', 'WEB3', 'WEBDEV', 'GENERAL']);
 
 export const projects = pgTable(
   'projects',
@@ -39,6 +40,29 @@ export const projects = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('projects_published_display_order_idx').on(table.published, table.displayOrder.desc())],
+);
+
+export const articles = pgTable(
+  'articles',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    category: articleCategoryEnum('category').notNull(),
+    summary: text('summary').notNull(),
+    bodyMarkdown: text('body_markdown').notNull(),
+    coverImagePublicId: text('cover_image_public_id'),
+    tags: jsonb('tags').$type<string[]>().notNull().default([]),
+    readingTimeMinutes: integer('reading_time_minutes'),
+    published: boolean('published').notNull().default(true),
+    displayOrder: integer('display_order').notNull().default(0),
+    metaTitle: text('meta_title'),
+    metaDescription: text('meta_description'),
+    publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('articles_published_display_order_idx').on(table.published, table.displayOrder.desc())],
 );
 
 export const certifications = pgTable(
@@ -76,6 +100,7 @@ export const auditEntityType = pgEnum('audit_entity_type', [
   'project',
   'certification',
   'profile',
+  'article',
 ]);
 
 export const auditLog = pgTable('audit_log', {
@@ -120,6 +145,8 @@ export const rateLimitLog = pgTable(
 
 export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
+export type Article = typeof articles.$inferSelect;
+export type NewArticle = typeof articles.$inferInsert;
 export type Certification = typeof certifications.$inferSelect;
 export type NewCertification = typeof certifications.$inferInsert;
 export type SiteProfile = typeof siteProfile.$inferSelect;

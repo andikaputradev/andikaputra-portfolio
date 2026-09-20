@@ -1,0 +1,195 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import { db } from '../../../../db';
+import { articles } from '../../../../db/schema';
+import { eq } from 'drizzle-orm';
+import { renderProjectBody } from '../../../../lib/render-markdown';
+
+export const prerender = false;
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id)) {
+  return Astro.redirect('/admin/articles');
+}
+
+const [article] = await db.select().from(articles).where(eq(articles.id, id));
+if (!article) {
+  return Astro.redirect('/admin/articles');
+}
+
+const bodyHtml = renderProjectBody(article.bodyMarkdown);
+const tags = article.tags ?? [];
+const publishedDate = article.publishedAt?.toLocaleDateString('id-ID', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}) ?? '';
+---
+
+<BaseLayout
+  title={`[Pratinjau] ${article.title}`}
+  description={article.summary}
+  noindex={true}
+>
+  <div class="preview-banner mono">
+    MODE PRATINJAU
+    <a href={`/admin/articles/${article.id}/edit`}>Kembali ke form edit</a>
+  </div>
+  <main id="main-content" class="container-site">
+    <article class="article-preview">
+      <header class="article-preview__header">
+        <span class="article-preview__category mono">{article.category}</span>
+        <h1 class="article-preview__title">{article.title}</h1>
+        <p class="article-preview__summary">{article.summary}</p>
+        <div class="article-preview__meta mono">
+          {publishedDate && <time>{publishedDate}</time>}
+          {article.readingTimeMinutes && <span>{article.readingTimeMinutes} menit baca</span>}
+        </div>
+      </header>
+
+      <div class="article-preview__body" set:html={bodyHtml} />
+
+      {tags.length > 0 && (
+        <footer class="article-preview__footer">
+          <div class="article-preview__tags mono">
+            {tags.map((tag) => (
+              <span class="article-preview__tag">{tag}</span>
+            ))}
+          </div>
+        </footer>
+      )}
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .preview-banner {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .preview-banner a {
+    color: var(--color-bg);
+    text-decoration: underline;
+  }
+
+  .article-preview {
+    max-width: 72ch;
+    margin: 0 auto;
+    padding-block: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .article-preview__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .article-preview__category {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-phosphor);
+  }
+
+  .article-preview__title {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .article-preview__summary {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    color: var(--color-text-muted);
+  }
+
+  .article-preview__meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+  }
+
+  .article-preview__body {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  .article-preview__body :global(p + p) {
+    margin-top: 1.25rem;
+  }
+
+  .article-preview__body :global(h2) {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-preview__body :global(h3) {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .article-preview__body :global(blockquote) {
+    border-left: 3px solid var(--color-accent-phosphor);
+    padding-left: 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .article-preview__body :global(code) {
+    font-family: var(--font-mono), monospace;
+    background-color: var(--color-surface);
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+  }
+
+  .article-preview__body :global(pre) {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .article-preview__body :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .article-preview__footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .article-preview__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .article-preview__tag {
+    padding: 0.3rem 0.65rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+  }
+</style>
