@@ -4,7 +4,7 @@ import { auditLog } from '../db/schema';
 interface RecordAuditParams {
   actorEmail: string;
   action: 'create' | 'update' | 'delete';
-  entityType: 'project' | 'certification' | 'profile' | 'article';
+  entityType: 'project' | 'certification' | 'profile' | 'article' | 'comment';
   entityId?: string | null;
   ipAddress?: string | null;
 }
@@ -19,8 +19,6 @@ export async function recordAudit(params: RecordAuditParams): Promise<void> {
   });
 }
 
-export function getClientIp(request: Request): string | null {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]?.trim() ?? null;
-  return request.headers.get('x-real-ip');
-}
+export { getClientIp, isValidIp } from './client-ip';
+
+

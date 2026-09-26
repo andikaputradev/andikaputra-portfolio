@@ -9,6 +9,11 @@ cloudinary.config({
 
 export { cloudinary };
 
+export const ALLOWED_IMAGE_FORMATS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif']);
+export const ALLOWED_RAW_FORMATS = new Set(['pdf']);
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
+export const MAX_RAW_BYTES = 15 * 1024 * 1024; // 15MB
+
 export async function verifyCloudinaryResource(
   publicId: string,
   expectedResourceType: 'image' | 'raw',
@@ -17,8 +22,33 @@ export async function verifyCloudinaryResource(
     const resource = await cloudinary.api.resource(publicId, {
       resource_type: expectedResourceType,
     });
-    return resource.public_id === publicId;
+
+    if (resource.public_id !== publicId) {
+      return false;
+    }
+
+    const format = (resource.format ?? '').toLowerCase();
+    const bytes = typeof resource.bytes === 'number' ? resource.bytes : 0;
+
+    if (expectedResourceType === 'image') {
+      if (!ALLOWED_IMAGE_FORMATS.has(format)) {
+        return false;
+      }
+      if (bytes > MAX_IMAGE_BYTES) {
+        return false;
+      }
+    } else if (expectedResourceType === 'raw') {
+      if (!ALLOWED_RAW_FORMATS.has(format)) {
+        return false;
+      }
+      if (bytes > MAX_RAW_BYTES) {
+        return false;
+      }
+    }
+
+    return true;
   } catch {
     return false;
   }
 }
+

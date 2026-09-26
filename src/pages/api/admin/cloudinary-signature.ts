@@ -17,14 +17,24 @@ export const GET: APIRoute = async ({ locals, url }) => {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const folder = url.searchParams.get('folder') ?? 'portfolio/misc';
-  const resourceType = url.searchParams.get('resource_type') === 'raw' ? 'raw' : 'image';
+  const folder = url.searchParams.get('folder');
+  const rawParam = url.searchParams.get('resource_type');
 
-  if (!ALLOWED_FOLDERS.has(folder) && !folder.startsWith('portfolio/projects/')) {
+  if (!folder || !ALLOWED_FOLDERS.has(folder)) {
     return new Response(JSON.stringify({ error: 'Folder upload tidak diizinkan' }), {
       status: 400,
     });
   }
+
+  const expectedResourceType = folder === 'portfolio/profile/cv' ? 'raw' : 'image';
+  if (rawParam && rawParam !== expectedResourceType) {
+    return new Response(
+      JSON.stringify({ error: `Folder ${folder} hanya menerima resource type ${expectedResourceType}` }),
+      { status: 400 },
+    );
+  }
+  const resourceType = expectedResourceType;
+
 
   const timestamp = Math.round(Date.now() / 1000);
   const paramsToSign: Record<string, string | number> = { timestamp, folder };

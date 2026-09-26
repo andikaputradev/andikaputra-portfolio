@@ -2,8 +2,9 @@ import crypto from 'node:crypto';
 
 /**
  * Constant-time comparison untuk secret / token autentikasi.
- * Mencegah serangan timing analysis dengan membandingkan byte buffer
- * secara konsisten terlepas dari kecocokan sebagian (partial match).
+ * Menggunakan HMAC-SHA256 untuk memetakan input berapa pun panjangnya
+ * ke digest 32-byte konstan, sehingga panjang input tidak pernah bocor
+ * melalui timing analysis sebelum timingSafeEqual dieksekusi.
  */
 export function timingSafeSecretCompare(
   providedHeader: string | null | undefined,
@@ -11,12 +12,12 @@ export function timingSafeSecretCompare(
 ): boolean {
   if (!providedHeader || !expectedSecret) return false;
   const expectedHeader = `Bearer ${expectedSecret}`;
-  const providedBuffer = Buffer.from(providedHeader);
-  const expectedBuffer = Buffer.from(expectedHeader);
 
-  if (providedBuffer.length !== expectedBuffer.length) {
-    crypto.timingSafeEqual(expectedBuffer, expectedBuffer);
-    return false;
-  }
-  return crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+  // Menggunakan key acak atau statis internal per proses untuk HMAC
+  const hmacKey = 'wap-auth-timing-guard';
+  const providedHash = crypto.createHmac('sha256', hmacKey).update(providedHeader).digest();
+  const expectedHash = crypto.createHmac('sha256', hmacKey).update(expectedHeader).digest();
+
+  return crypto.timingSafeEqual(providedHash, expectedHash);
 }
+

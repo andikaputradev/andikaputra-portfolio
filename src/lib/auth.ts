@@ -26,6 +26,13 @@ export const auth = betterAuth({
       }
     }),
   },
+  session: {
+    expiresIn: 60 * 60 * 24, // 24 jam untuk admin session (OWASP ASVS Level 3)
+    updateAge: 60 * 60 * 2,
+  },
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === 'production',
+  },
   rateLimit: {
     enabled: true,
     window: 60,
@@ -33,8 +40,11 @@ export const auth = betterAuth({
     customRules: {
       '/sign-in/email': { window: 60, max: 5 },
       '/two-factor/verify-totp': { window: 60, max: 5 },
+      '/two-factor/verify-backup-code': { window: 60, max: 5 },
+      '/two-factor/enable': { window: 60, max: 5 },
     },
   },
   secret: import.meta.env.BETTER_AUTH_SECRET,
   baseURL: import.meta.env.BETTER_AUTH_URL,
 });
+
