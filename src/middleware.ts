@@ -6,7 +6,8 @@ import { checkRateLimit } from './lib/rate-limit';
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  if (pathname.startsWith('/api/auth/sign-up')) {
+  const normalizedPath = pathname.toLowerCase();
+  if (normalizedPath.startsWith('/api/auth/sign-up') || normalizedPath.startsWith('/api/auth/register')) {
     return new Response(JSON.stringify({ error: 'Sign-up publik dinonaktifkan' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' },

@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { twoFactor } from 'better-auth/plugins';
+import { createAuthMiddleware } from 'better-auth/api';
 import { db } from '../db';
 import { user, session, account, verification, twoFactor as twoFactorTable } from '../db/schema';
 
@@ -16,6 +17,15 @@ export const auth = betterAuth({
     minPasswordLength: 12,
   },
   plugins: [twoFactor()],
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/change-password') {
+        if (ctx.body && typeof ctx.body === 'object') {
+          (ctx.body as Record<string, unknown>).revokeOtherSessions = true;
+        }
+      }
+    }),
+  },
   rateLimit: {
     enabled: true,
     window: 60,
