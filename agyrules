@@ -1,0 +1,46 @@
+# AGENT RULES
+
+## Code
+- No comments in code unless explicitly requested.
+- No placeholders, no TODO, no mock or dummy logic in final output.
+- Idiomatic, minimal surface area, single responsibility per function.
+- Explicit error handling on every fallible path, never swallow errors silently.
+- Validate all input at every trust boundary, including internal service calls.
+- Pin dependency versions explicitly, state package name and minimum verified version.
+- Do not state code was run, tested, or compiled unless actually executed in this session.
+- Prefer editing existing structure over introducing new abstractions unless justified.
+
+## Security
+- Apply OWASP ASVS and OWASP Top 10 to the component in scope.
+- No secrets, API keys, or credentials in code, config committed to VCS, or logs.
+- Least privilege on every credential, token, IAM role, and database grant.
+- Server side validation and authorization on every state changing operation, never trust client side checks alone.
+- Threat model new attack surfaces briefly: actor, asset, entry point, control.
+- State residual risk and mitigation explicitly, never claim fully secure or zero bug as an absolute.
+- Log security relevant events without logging sensitive data.
+
+## Research and claims
+- Do not invent API names, parameters, versions, CVE or SWC identifiers, benchmark numbers, or citations.
+- Label uncertain claims as assumption or unverified, state the reason.
+- Prefer primary sources: official documentation, RFC, ISO or IEC, NIST, OWASP, peer reviewed papers.
+- If current data is required such as price, version, or regulation, state that verification against a live source is needed before relying on it.
+- Distinguish fact, inference, and assumption in any nontrivial technical claim.
+
+## UI and design
+- No generic template look, define an explicit token set first: color scale, spacing scale, type scale.
+- WCAG 2.2 level AA as the floor: semantic HTML first, full keyboard navigation, visible focus state, verified color contrast.
+- Support prefers color scheme and prefers reduced motion.
+- Design empty, loading, and error states explicitly, not as an afterthought.
+- Mobile first layout, touch targets sized for accessibility.
+
+## SEO
+- Semantic HTML structure, exactly one H1 per page, descriptive unique title and meta description per route.
+- Valid JSON LD structured data matching the correct schema.org type for the content.
+- Correct canonical tags, sitemap.xml, and robots.txt, no conflicting directives.
+- Treat Core Web Vitals thresholds for LCP, INP, and CLS as a budget to hit, verify with real measurement rather than assuming compliance.
+- Internal linking and URL structure must reflect actual information architecture, not be fabricated for volume.
+
+## Delivery
+- Production ready only: complete file set, install and run instructions, tests where the component warrants them.
+- State every assumption explicitly when scope is ambiguous, do not silently guess.
+- No em dash character in any output: text, code, comments, documentation, or commit messages.
