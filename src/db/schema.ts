@@ -101,6 +101,7 @@ export const auditEntityType = pgEnum('audit_entity_type', [
   'certification',
   'profile',
   'article',
+  'comment',
 ]);
 
 export const auditLog = pgTable('audit_log', {
@@ -112,6 +113,24 @@ export const auditLog = pgTable('audit_log', {
   ipAddress: text('ip_address'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const articleComments = pgTable(
+  'article_comments',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    articleId: integer('article_id')
+      .notNull()
+      .references(() => articles.id, { onDelete: 'cascade' }),
+    authorName: text('author_name').notNull(),
+    rating: integer('rating').notNull(),
+    content: text('content').notNull(),
+    approved: boolean('approved').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('article_comments_article_id_approved_idx').on(table.articleId, table.approved, table.createdAt.desc()),
+  ],
+);
 
 export const deviceTypeEnum = pgEnum('device_type', ['desktop', 'mobile', 'tablet']);
 
@@ -147,6 +166,8 @@ export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
 export type Article = typeof articles.$inferSelect;
 export type NewArticle = typeof articles.$inferInsert;
+export type ArticleComment = typeof articleComments.$inferSelect;
+export type NewArticleComment = typeof articleComments.$inferInsert;
 export type Certification = typeof certifications.$inferSelect;
 export type NewCertification = typeof certifications.$inferInsert;
 export type SiteProfile = typeof siteProfile.$inferSelect;
@@ -266,5 +287,14 @@ export const twoFactorRelations = relations(twoFactor, ({ one }) => ({
   user: one(user, { fields: [twoFactor.userId], references: [user.id] }),
 }));
 
+export const articlesRelations = relations(articles, ({ many }) => ({
+  comments: many(articleComments),
+}));
+
+export const articleCommentsRelations = relations(articleComments, ({ one }) => ({
+  article: one(articles, { fields: [articleComments.articleId], references: [articles.id] }),
+}));
+
 export type AuthUser = typeof user.$inferSelect;
 export type AuthSession = typeof session.$inferSelect;
+

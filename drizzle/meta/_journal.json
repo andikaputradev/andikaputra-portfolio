@@ -50,6 +50,13 @@
       "when": 1789886004260,
       "tag": "0006_rapid_mikhail_rasputin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790418816475,
+      "tag": "0007_shiny_blacklash",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { cloudinary } from '../../../lib/cloudinary';
 import { db } from '../../../db';
-import { projects, certifications, siteProfile, auditLog, articles } from '../../../db/schema';
+import { projects, certifications, siteProfile, auditLog, articles, articleComments } from '../../../db/schema';
 import { timingSafeSecretCompare } from '../../../lib/timing-safe';
 
 export const prerender = false;
@@ -17,13 +17,15 @@ export const GET: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const [projectRows, certificationRows, profileRows, auditRows, articleRows] = await Promise.all([
-    db.select().from(projects),
-    db.select().from(certifications),
-    db.select().from(siteProfile),
-    db.select().from(auditLog),
-    db.select().from(articles),
-  ]);
+  const [projectRows, certificationRows, profileRows, auditRows, articleRows, commentRows] =
+    await Promise.all([
+      db.select().from(projects),
+      db.select().from(certifications),
+      db.select().from(siteProfile),
+      db.select().from(auditLog),
+      db.select().from(articles),
+      db.select().from(articleComments),
+    ]);
 
   // Sengaja TIDAK menyertakan tabel Better Auth (user/session/account/verification/
   // twoFactor) maupun page_views/rate_limit_log: kredensial & secret 2FA tidak layak
@@ -39,6 +41,7 @@ export const GET: APIRoute = async ({ request }) => {
       siteProfile: profileRows,
       auditLog: auditRows,
       articles: articleRows,
+      articleComments: commentRows,
     },
   };
 
@@ -72,6 +75,7 @@ export const GET: APIRoute = async ({ request }) => {
         siteProfile: profileRows.length,
         auditLog: auditRows.length,
         articles: articleRows.length,
+        articleComments: commentRows.length,
       },
       deletedOldBackups: cleanupResult.deleted,
       cleanupWarning: cleanupResult.error,
@@ -79,6 +83,7 @@ export const GET: APIRoute = async ({ request }) => {
     { status: 200, headers: { 'Content-Type': 'application/json' } },
   );
 };
+
 
 async function cleanupOldBackups(): Promise<{ deleted: number; error: string | null }> {
   try {

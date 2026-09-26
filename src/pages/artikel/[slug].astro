@@ -1,12 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { db } from '../../db';
-import { articles } from '../../db/schema';
+import { articles, articleComments } from '../../db/schema';
 import { and, eq, desc, ne } from 'drizzle-orm';
 import { renderProjectBody } from '../../lib/render-markdown';
 import { cloudinaryImageUrl } from '../../lib/cloudinary-url';
 import { trackVisit } from '../../lib/track-visit';
 import { buildArticleSchema, buildBreadcrumbSchema } from '../../lib/json-ld';
+import ArticleComments from '../../components/article/ArticleComments.astro';
 
 export const prerender = false;
 
@@ -34,6 +35,37 @@ const coverSrc = article.coverImagePublicId
   ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1600')
   : null;
 
+let rawComments: Array<{
+  id: number;
+  authorName: string;
+  rating: number;
+  content: string;
+  createdAt: Date;
+}> = [];
+
+try {
+  rawComments = await db
+    .select({
+      id: articleComments.id,
+      authorName: articleComments.authorName,
+      rating: articleComments.rating,
+      content: articleComments.content,
+      createdAt: articleComments.createdAt,
+    })
+    .from(articleComments)
+    .where(and(eq(articleComments.articleId, article.id), eq(articleComments.approved, true)))
+    .orderBy(desc(articleComments.createdAt));
+} catch (error) {
+  console.error('Gagal mengambil komentar artikel:', error instanceof Error ? error.message : error);
+}
+
+const commentsCount = rawComments.length;
+
+const avgRating =
+  commentsCount > 0
+    ? Number((rawComments.reduce((acc, c) => acc + c.rating, 0) / commentsCount).toFixed(1))
+    : 0;
+
 const CATEGORY_LABELS: Record<string, string> = {
   SECURITY: 'Security',
   WEB3: 'Web3',
@@ -49,7 +81,11 @@ const publishedDate = new Intl.DateTimeFormat('id-ID', {
 
 const articleUrl = `${siteUrl}artikel/${article.slug}/`;
 
-const articleSchema = buildArticleSchema(article, siteUrl);
+const articleSchema = buildArticleSchema(
+  article,
+  siteUrl,
+  commentsCount > 0 ? { ratingValue: avgRating, reviewCount: commentsCount } : undefined,
+);
 const breadcrumbSchema = buildBreadcrumbSchema(
   [
     { name: 'Home', url: '/' },
@@ -58,6 +94,7 @@ const breadcrumbSchema = buildBreadcrumbSchema(
   ],
   siteUrl,
 );
+
 
 const relatedArticles = await db
   .select()
@@ -151,7 +188,15 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
         </div>
       </div>
 
+      <ArticleComments
+        articleId={article.id}
+        articleSlug={article.slug}
+        comments={rawComments}
+        stats={{ count: commentsCount, averageRating: avgRating }}
+      />
+
       {relatedArticles.length > 0 && (
+
         <section class="article-detail__related section-spacing" data-telemetry-section="article-related">
           <div class="container-site">
             <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>

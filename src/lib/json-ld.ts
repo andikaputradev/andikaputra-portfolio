@@ -180,6 +180,7 @@ export function buildProjectSchema(
 export function buildArticleSchema(
   article: Pick<Article, 'title' | 'summary' | 'slug' | 'category' | 'coverImagePublicId' | 'publishedAt' | 'updatedAt' | 'tags' | 'readingTimeMinutes'>,
   siteUrl: string,
+  ratingData?: { ratingValue: number; reviewCount: number },
 ) {
   const url = combineUrl(siteUrl, `artikel/${article.slug}/`);
   const cloudName = import.meta.env?.CLOUDINARY_CLOUD_NAME;
@@ -213,8 +214,20 @@ export function buildArticleSchema(
     },
     ...(article.tags && article.tags.length > 0 ? { keywords: article.tags.join(', ') } : {}),
     ...(article.readingTimeMinutes ? { timeRequired: `PT${article.readingTimeMinutes}M` } : {}),
+    ...(ratingData && ratingData.reviewCount > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: ratingData.ratingValue,
+            reviewCount: ratingData.reviewCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
   };
 }
+
 
 export function buildBreadcrumbSchema(
   items: Array<{ name: string; url: string }>,

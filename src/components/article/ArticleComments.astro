@@ -1,0 +1,604 @@
+---
+interface CommentItem {
+  id: number;
+  authorName: string;
+  rating: number;
+  content: string;
+  createdAt: Date;
+}
+
+interface Props {
+  articleId: number;
+  articleSlug: string;
+  comments: CommentItem[];
+  stats: {
+    count: number;
+    averageRating: number;
+  };
+}
+
+const { articleSlug, comments, stats } = Astro.props;
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+
+function renderStars(rating: number): string {
+  const full = Math.min(Math.max(rating, 1), 5);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+---
+
+{
+  turnstileSiteKey && (
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline />
+  )
+}
+
+<section
+  id="comments-section"
+  class="article-comments section-spacing container-site"
+  data-telemetry-section="article-comments"
+  data-article-slug={articleSlug}
+>
+  <div class="article-comments__header">
+    <span class="article-comments__badge font-mono">[COMMUNITY_REVIEWS]</span>
+    <h2 class="article-comments__title font-display">Ulasan & Komentar Pembaca</h2>
+    <p class="article-comments__lead">
+      Bagikan analisis, kritik konstruktif, atau rating bintang mengenai artikel ini.
+    </p>
+  </div>
+
+  <div class="article-comments__summary surface-raised border-subtle">
+    <div class="summary-score">
+      <span class="summary-score__num font-mono">{stats.count > 0 ? stats.averageRating.toFixed(1) : '—'}</span>
+      <span class="summary-score__max font-mono">/ 5.0</span>
+    </div>
+    <div class="summary-info">
+      <div class="summary-stars font-mono" aria-label={`Rating ${stats.averageRating} dari 5 bintang`}>
+        {renderStars(Math.round(stats.averageRating) || 5)}
+      </div>
+      <p class="summary-count font-mono" id="reviews-count-label">
+        {stats.count > 0 ? `${stats.count} ulasan pembaca terverifikasi` : 'Belum ada ulasan. Jadilah yang pertama!'}
+      </p>
+    </div>
+  </div>
+
+  <div class="article-comments__grid">
+    <div class="article-comments__form-wrapper surface-raised border-subtle">
+      <h3 class="form-heading font-display">Tulis Komentar & Ulasan</h3>
+
+      <form id="comment-form" class="comment-form" novalidate>
+        <div class="comment-field">
+          <label class="comment-label font-mono">Rating Bintang</label>
+          <div class="star-rating-picker" role="radiogroup" aria-label="Pilih rating 1 hingga 5 bintang">
+            {
+              [1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  class="star-btn"
+                  data-star-value={star}
+                  role="radio"
+                  aria-checked={star === 5 ? 'true' : 'false'}
+                  aria-label={`${star} Bintang`}
+                  title={`${star} Bintang`}
+                >
+                  ★
+                </button>
+              ))
+            }
+          </div>
+          <input type="hidden" id="selected-rating" name="rating" value="5" />
+        </div>
+
+        <div class="comment-field">
+          <label for="comment-author" class="comment-label font-mono">Nama Anda</label>
+          <input
+            type="text"
+            id="comment-author"
+            name="authorName"
+            class="comment-input"
+            placeholder="Contoh: Faiz Pratama"
+            required
+            minlength="2"
+            maxlength="50"
+            autocomplete="name"
+          />
+          <p id="comment-author-error" class="field-error font-mono" aria-live="polite"></p>
+        </div>
+
+        <div class="comment-field">
+          <label for="comment-content" class="comment-label font-mono">Komentar / Ulasan</label>
+          <textarea
+            id="comment-content"
+            name="content"
+            rows="4"
+            class="comment-textarea"
+            placeholder="Tulis ulasan, tanggapan, atau pengalaman Anda..."
+            required
+            minlength="3"
+            maxlength="1000"
+          ></textarea>
+          <p id="comment-content-error" class="field-error font-mono" aria-live="polite"></p>
+        </div>
+
+        <!-- Honeypot anti-bot spam (OWASP ASVS V13) -->
+        <input
+          type="text"
+          id="comment-honeypot"
+          name="honeypot"
+          tabindex="-1"
+          autocomplete="off"
+          style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;"
+          aria-hidden="true"
+        />
+
+        {
+          turnstileSiteKey && (
+            <div class="turnstile-container">
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="dark" />
+            </div>
+          )
+        }
+
+        <p id="comment-form-status" class="form-status font-mono" role="status" aria-live="polite"></p>
+
+        <button type="submit" id="comment-submit-btn" class="comment-submit-btn font-mono">
+          [KIRIM_ULASAN]
+        </button>
+      </form>
+    </div>
+
+    <div class="article-comments__list-wrapper">
+      <h3 class="list-heading font-display">Semua Ulasan</h3>
+
+      <div id="comments-list" class="comments-list">
+        {
+          comments.length === 0 ? (
+            <div id="no-comments-msg" class="no-comments surface-raised border-subtle">
+              <p class="font-mono text-muted">Belum ada komentar untuk artikel ini.</p>
+              <p class="font-mono text-xs text-muted mt-1">Gunakan formulir di samping untuk mengirimkan ulasan Anda.</p>
+            </div>
+          ) : (
+            comments.map((c) => (
+              <article class="comment-card surface-raised border-subtle">
+                <header class="comment-card__header">
+                  <span class="comment-card__stars font-mono" aria-label={`Rating ${c.rating} dari 5 bintang`}>
+                    {renderStars(c.rating)}
+                  </span>
+                  <time datetime={c.createdAt.toISOString()} class="comment-card__date font-mono">
+                    {formatDate(c.createdAt)}
+                  </time>
+                </header>
+                <h4 class="comment-card__author font-mono">{c.authorName}</h4>
+                <p class="comment-card__body">{c.content}</p>
+              </article>
+            ))
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initComments() {
+    const section = document.getElementById('comments-section');
+    if (!section) return;
+
+    const articleSlug = section.getAttribute('data-article-slug');
+    if (!articleSlug) return;
+
+    const form = document.getElementById('comment-form') as HTMLFormElement | null;
+    if (!form) return;
+
+    const starButtons = section.querySelectorAll<HTMLButtonElement>('.star-btn');
+    const ratingInput = document.getElementById('selected-rating') as HTMLInputElement | null;
+    const authorInput = document.getElementById('comment-author') as HTMLInputElement | null;
+    const contentInput = document.getElementById('comment-content') as HTMLTextAreaElement | null;
+    const honeypotInput = document.getElementById('comment-honeypot') as HTMLInputElement | null;
+    const authorError = document.getElementById('comment-author-error');
+    const contentError = document.getElementById('comment-content-error');
+    const statusMsg = document.getElementById('comment-form-status');
+    const submitBtn = document.getElementById('comment-submit-btn') as HTMLButtonElement | null;
+    const commentsList = document.getElementById('comments-list');
+    const noCommentsMsg = document.getElementById('no-comments-msg');
+    const reviewsCountLabel = document.getElementById('reviews-count-label');
+
+    function updateStars(val: number) {
+      if (ratingInput) ratingInput.value = String(val);
+      starButtons.forEach((btn) => {
+        const btnVal = Number(btn.getAttribute('data-star-value'));
+        if (btnVal <= val) {
+          btn.classList.add('star-btn--active');
+          btn.setAttribute('aria-checked', btnVal === val ? 'true' : 'false');
+        } else {
+          btn.classList.remove('star-btn--active');
+          btn.setAttribute('aria-checked', 'false');
+        }
+      });
+    }
+
+    // Default 5 stars
+    updateStars(5);
+
+    starButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = Number(btn.getAttribute('data-star-value')) || 5;
+        updateStars(val);
+      });
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (authorError) authorError.textContent = '';
+      if (contentError) contentError.textContent = '';
+      if (statusMsg) {
+        statusMsg.textContent = '';
+        statusMsg.removeAttribute('data-state');
+      }
+
+      const author = authorInput?.value.trim() ?? '';
+      const content = contentInput?.value.trim() ?? '';
+      const rating = Number(ratingInput?.value) || 5;
+      const honeypot = honeypotInput?.value ?? '';
+
+      let hasError = false;
+      if (author.length < 2) {
+        if (authorError) authorError.textContent = 'Nama minimal 2 karakter';
+        hasError = true;
+      }
+      if (content.length < 3) {
+        if (contentError) contentError.textContent = 'Komentar minimal 3 karakter';
+        hasError = true;
+      }
+      if (hasError) return;
+
+      let turnstileToken = '';
+      const turnstileInput = form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]');
+      if (turnstileInput) turnstileToken = turnstileInput.value;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Mengirim...';
+      }
+
+      try {
+        const res = await fetch(`/api/public/articles/${encodeURIComponent(articleSlug)}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            authorName: author,
+            content,
+            rating,
+            honeypot,
+            turnstileToken,
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (res.status === 429) {
+            if (statusMsg) {
+              statusMsg.textContent = 'Terlalu banyak permintaan. Silakan tunggu beberapa menit.';
+              statusMsg.setAttribute('data-state', 'error');
+            }
+          } else if (data.fields) {
+            if (data.fields.authorName && authorError) authorError.textContent = data.fields.authorName[0];
+            if (data.fields.content && contentError) contentError.textContent = data.fields.content[0];
+          } else {
+            if (statusMsg) {
+              statusMsg.textContent = data.error ?? 'Gagal mengirim ulasan.';
+              statusMsg.setAttribute('data-state', 'error');
+            }
+          }
+          return;
+        }
+
+        // Sukses
+        if (statusMsg) {
+          statusMsg.textContent = '✓ Ulasan Anda berhasil diterbitkan!';
+          statusMsg.setAttribute('data-state', 'success');
+        }
+
+        form.reset();
+        updateStars(5);
+
+        if (noCommentsMsg) noCommentsMsg.remove();
+
+        if (data.comment && commentsList) {
+          const card = document.createElement('article');
+          card.className = 'comment-card surface-raised border-subtle';
+          const fullStars = Math.min(Math.max(data.comment.rating, 1), 5);
+          const starsStr = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+
+          card.innerHTML = `
+            <header class="comment-card__header">
+              <span class="comment-card__stars font-mono">${starsStr}</span>
+              <time class="comment-card__date font-mono">Baru saja</time>
+            </header>
+            <h4 class="comment-card__author font-mono">${data.comment.authorName}</h4>
+            <p class="comment-card__body">${data.comment.content}</p>
+          `;
+          commentsList.prepend(card);
+
+          if (reviewsCountLabel) {
+            reviewsCountLabel.textContent = 'Ulasan terbaru telah ditambahkan';
+          }
+        }
+      } catch (err) {
+        if (statusMsg) {
+          statusMsg.textContent = 'Terjadi kesalahan jaringan. Coba lagi nanti.';
+          statusMsg.setAttribute('data-state', 'error');
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '[KIRIM_ULASAN]';
+        }
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initComments);
+  } else {
+    initComments();
+  }
+  document.addEventListener('astro:page-load', initComments);
+</script>
+
+<style>
+  .article-comments {
+    border-top: 1px solid var(--color-border);
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .article-comments__badge {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+
+  .article-comments__title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .article-comments__lead {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .article-comments__summary {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 1.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    margin-bottom: 2.5rem;
+  }
+
+  .summary-score {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .summary-score__num {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--color-accent-phosphor);
+  }
+
+  .summary-score__max {
+    font-size: 1rem;
+    color: var(--color-text-secondary, #a1a1aa);
+  }
+
+  .summary-stars {
+    font-size: 1.25rem;
+    color: var(--color-accent-phosphor);
+    letter-spacing: 0.1em;
+  }
+
+  .summary-count {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary, #a1a1aa);
+    margin-top: 0.2rem;
+  }
+
+  .article-comments__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 900px) {
+    .article-comments__grid {
+      grid-template-columns: 1fr 1.2fr;
+      align-items: start;
+    }
+  }
+
+  .article-comments__form-wrapper {
+    padding: 1.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .form-heading {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .comment-field {
+    margin-bottom: 1.25rem;
+  }
+
+  .comment-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary, #a1a1aa);
+    margin-bottom: 0.5rem;
+  }
+
+
+  .star-rating-picker {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    color: var(--color-border);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.1rem;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .star-btn:hover,
+  .star-btn:focus-visible {
+    transform: scale(1.15);
+    outline: none;
+  }
+
+  .star-btn--active {
+    color: var(--color-accent-phosphor);
+  }
+
+  .comment-input,
+  .comment-textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-size: 0.9375rem;
+    transition: border-color var(--transition-fast);
+  }
+
+  .comment-input:focus-visible,
+  .comment-textarea:focus-visible {
+    border-color: var(--color-accent-phosphor);
+    outline: none;
+  }
+
+  .field-error {
+    font-size: 0.75rem;
+    color: var(--color-error, #f87171);
+    margin-top: 0.35rem;
+  }
+
+  .turnstile-container {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-status {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-status[data-state='success'] {
+    color: var(--color-accent-phosphor);
+  }
+
+  .form-status[data-state='error'] {
+    color: var(--color-error, #f87171);
+  }
+
+  .comment-submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--color-surface-raised);
+    color: var(--color-accent-phosphor);
+    border: 1px solid var(--color-accent-phosphor);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .comment-submit-btn:hover:not(:disabled) {
+    background-color: var(--color-accent-phosphor);
+    color: var(--color-bg);
+  }
+
+  .comment-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .list-heading {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .no-comments {
+    padding: 2rem;
+    text-align: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .comment-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .comment-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-card__stars {
+    color: var(--color-accent-phosphor);
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .comment-card__date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .comment-card__author {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .comment-card__body {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #d1d5db);
+    word-break: break-word;
+  }
+</style>
