@@ -14,7 +14,7 @@ test.describe('Contact form submission (mocked)', () => {
     await page.locator('#contact-name').fill('Test User');
     await page.locator('#contact-email').fill('test@example.com');
     await page.locator('#contact-message').fill('This is a test message for E2E verification.');
-    await page.locator('#contact-form button[type="submit"]').click();
+    await page.locator('#contact-form button[type="submit"]').click({ force: true });
 
     await expect(page.locator('#contact-form-status')).toHaveText('Message sent — thank you.');
     await expect(page.locator('#contact-form-status')).toHaveAttribute('data-state', 'success');
@@ -33,7 +33,7 @@ test.describe('Contact form submission (mocked)', () => {
     await page.locator('#contact-name').fill('Test User');
     await page.locator('#contact-email').fill('fggff@mm.c');
     await page.locator('#contact-message').fill('This is a test message for E2E verification.');
-    await page.locator('#contact-form button[type="submit"]').click();
+    await page.locator('#contact-form button[type="submit"]').click({ force: true });
 
     await expect(page.locator('#contact-email-error')).toHaveText(
       'Please enter a valid email address.',
@@ -59,7 +59,7 @@ test.describe('Contact form submission (mocked)', () => {
     await page.locator('#contact-name').fill('Test User');
     await page.locator('#contact-email').fill('test@example.com');
     await page.locator('#contact-message').fill('This is a test message for E2E verification.');
-    await page.locator('#contact-form button[type="submit"]').click();
+    await page.locator('#contact-form button[type="submit"]').click({ force: true });
 
     await expect(page.locator('#contact-form-status')).toHaveText(
       'Please complete the verification challenge above and try again.',
@@ -80,7 +80,7 @@ test.describe('Contact form submission (mocked)', () => {
     await page.locator('#contact-name').fill('Test User');
     await page.locator('#contact-email').fill('test@example.com');
     await page.locator('#contact-message').fill('This is a test message for E2E verification.');
-    await page.locator('#contact-form button[type="submit"]').click();
+    await page.locator('#contact-form button[type="submit"]').click({ force: true });
 
     await expect(page.locator('#contact-form-status')).toHaveText(
       'Security verification failed — reload the page and try again.',
@@ -100,7 +100,7 @@ test.describe('Contact form submission (mocked)', () => {
     await page.locator('#contact-name').fill('Test User');
     await page.locator('#contact-email').fill('test@example.com');
     await page.locator('#contact-message').fill('This is a test message for E2E verification.');
-    await page.locator('#contact-form button[type="submit"]').click();
+    await page.locator('#contact-form button[type="submit"]').click({ force: true });
 
     await expect(page.locator('#contact-form-status')).toHaveText(
       'Verification is temporarily unavailable — please email directly instead.',

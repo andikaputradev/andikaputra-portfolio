@@ -5,6 +5,10 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://andikaputra.vercel.app',
 
+  devToolbar: {
+    enabled: false,
+  },
+
   adapter: vercel(),
 
   vite: {

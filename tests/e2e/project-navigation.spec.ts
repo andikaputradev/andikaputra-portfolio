@@ -7,7 +7,7 @@ test.describe('Project detail navigation', () => {
     const firstCard = page.locator('[data-project-grid] [data-project-card]').first();
     const cardTitle = await firstCard.locator('.project-card__title').textContent();
 
-    await firstCard.locator('a').click();
+    await firstCard.locator('a.project-card__link').click();
 
     await expect(page).toHaveURL(/\/work\/[a-z0-9-]+\/?$/);
     await expect(page.locator('h1')).toHaveText(cardTitle ?? '');

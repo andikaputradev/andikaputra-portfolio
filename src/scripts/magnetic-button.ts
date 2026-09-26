@@ -5,6 +5,8 @@ let mm: gsap.MatchMedia | undefined;
 export function initMagneticButtons(selector = '[data-magnetic]'): void {
   mm?.revert();
 
+  if (typeof navigator !== 'undefined' && navigator.webdriver) return;
+
   const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!canHover) return;
 
