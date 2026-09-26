@@ -1,9 +1,11 @@
 import type { APIRoute } from 'astro';
 import { cloudinary } from '../../../lib/cloudinary';
 import { db } from '../../../db';
-import { projects, certifications, siteProfile, auditLog } from '../../../db/schema';
+import { projects, certifications, siteProfile, auditLog, articles } from '../../../db/schema';
+import { timingSafeSecretCompare } from '../../../lib/timing-safe';
 
 export const prerender = false;
+export { timingSafeSecretCompare };
 
 const BACKUP_FOLDER = 'portfolio/db-backups';
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -11,15 +13,16 @@ const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const GET: APIRoute = async ({ request }) => {
   const cronSecret = import.meta.env.CRON_SECRET;
   const authHeader = request.headers.get('authorization');
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !timingSafeSecretCompare(authHeader, cronSecret)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const [projectRows, certificationRows, profileRows, auditRows] = await Promise.all([
+  const [projectRows, certificationRows, profileRows, auditRows, articleRows] = await Promise.all([
     db.select().from(projects),
     db.select().from(certifications),
     db.select().from(siteProfile),
     db.select().from(auditLog),
+    db.select().from(articles),
   ]);
 
   // Sengaja TIDAK menyertakan tabel Better Auth (user/session/account/verification/
@@ -35,6 +38,7 @@ export const GET: APIRoute = async ({ request }) => {
       certifications: certificationRows,
       siteProfile: profileRows,
       auditLog: auditRows,
+      articles: articleRows,
     },
   };
 
@@ -56,7 +60,7 @@ export const GET: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'upload_failed' }), { status: 502 });
   }
 
-  const deletedCount = await cleanupOldBackups();
+  const cleanupResult = await cleanupOldBackups();
 
   return new Response(
     JSON.stringify({
@@ -67,14 +71,16 @@ export const GET: APIRoute = async ({ request }) => {
         certifications: certificationRows.length,
         siteProfile: profileRows.length,
         auditLog: auditRows.length,
+        articles: articleRows.length,
       },
-      deletedOldBackups: deletedCount,
+      deletedOldBackups: cleanupResult.deleted,
+      cleanupWarning: cleanupResult.error,
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } },
   );
 };
 
-async function cleanupOldBackups(): Promise<number> {
+async function cleanupOldBackups(): Promise<{ deleted: number; error: string | null }> {
   try {
     const { resources } = await cloudinary.api.resources({
       type: 'upload',
@@ -91,9 +97,10 @@ async function cleanupOldBackups(): Promise<number> {
     if (stale.length > 0) {
       await cloudinary.api.delete_resources(stale, { resource_type: 'raw' });
     }
-    return stale.length;
+    return { deleted: stale.length, error: null };
   } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown cleanup error';
     console.error('cron/backup: cleanup backup lama gagal', error);
-    return 0;
+    return { deleted: 0, error: msg };
   }
 }
