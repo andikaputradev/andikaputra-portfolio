@@ -10,7 +10,7 @@ export const prerender = false;
 trackVisit(Astro.request, '/jasa');
 Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
-const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.my.id/';
 
 const SERVICES = [
   {

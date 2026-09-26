@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = () => {
-  const site = import.meta.env.SITE ?? 'https://andikaputra.vercel.app';
+  const site = (import.meta.env.SITE ?? 'https://wahyuandikaputra.my.id').replace(/\/$/, '');
   const body = `User-agent: *
 Allow: /
 Disallow: /admin

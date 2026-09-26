@@ -1,4 +1,4 @@
-# AGENTS.md — Portfolio wahyuandikaputra.dev
+# AGENTS.md — Portfolio wahyuandikaputra.my.id
 
 Berkas ini dibaca otomatis oleh Antigravity CLI (agy) setiap sesi di workspace ini. Simpan di root repositori.
 

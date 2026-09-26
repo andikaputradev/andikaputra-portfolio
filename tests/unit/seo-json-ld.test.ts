@@ -21,7 +21,7 @@ describe('JSON-LD Schema Builder — BlogPosting', () => {
     wordCount: 1450,
   };
 
-  const siteUrl = 'https://andikaputra.vercel.app/';
+  const siteUrl = 'https://wahyuandikaputra.my.id/';
 
   it('menghasilkan schema BlogPosting dengan atribut wajib dan tipe data valid', () => {
     const schema = buildArticleSchema(mockArticle, siteUrl);
@@ -30,7 +30,7 @@ describe('JSON-LD Schema Builder — BlogPosting', () => {
     expect(schema['@type']).toBe('BlogPosting');
     expect(schema.headline).toBe('Panduan Audit Smart Contract Web3');
     expect(schema.description).toBe(mockArticle.summary);
-    expect(schema.url).toBe('https://andikaputra.vercel.app/artikel/panduan-audit-smart-contract/');
+    expect(schema.url).toBe('https://wahyuandikaputra.my.id/artikel/panduan-audit-smart-contract/');
     expect(schema.datePublished).toBe('2026-03-01T10:00:00.000Z');
     expect(schema.dateModified).toBe('2026-03-02T12:00:00.000Z');
     expect(schema.inLanguage).toBe('id');
@@ -51,7 +51,7 @@ describe('JSON-LD Schema Builder — BlogPosting', () => {
     });
     expect(schema.mainEntityOfPage).toEqual({
       '@type': 'WebPage',
-      '@id': 'https://andikaputra.vercel.app/artikel/panduan-audit-smart-contract/',
+      '@id': 'https://wahyuandikaputra.my.id/artikel/panduan-audit-smart-contract/',
     });
   });
 
@@ -85,7 +85,7 @@ describe('JSON-LD Schema Builder — BlogPosting', () => {
 
 describe('JSON-LD Schema Builder — BreadcrumbList', () => {
   it('menghasilkan BreadcrumbList terpisah dengan hierarki yang tepat', () => {
-    const siteUrl = 'https://andikaputra.vercel.app/';
+    const siteUrl = 'https://wahyuandikaputra.my.id/';
     const breadcrumb = buildBreadcrumbSchema(
       [
         { name: 'Home', url: '/' },
@@ -102,25 +102,25 @@ describe('JSON-LD Schema Builder — BreadcrumbList', () => {
       '@type': 'ListItem',
       position: 1,
       name: 'Home',
-      item: 'https://andikaputra.vercel.app/',
+      item: 'https://wahyuandikaputra.my.id/',
     });
     expect(breadcrumb.itemListElement[1]).toEqual({
       '@type': 'ListItem',
       position: 2,
       name: 'Artikel',
-      item: 'https://andikaputra.vercel.app/artikel/',
+      item: 'https://wahyuandikaputra.my.id/artikel/',
     });
     expect(breadcrumb.itemListElement[2]).toEqual({
       '@type': 'ListItem',
       position: 3,
       name: 'Detail Artikel',
-      item: 'https://andikaputra.vercel.app/artikel/detail/',
+      item: 'https://wahyuandikaputra.my.id/artikel/detail/',
     });
   });
 });
 
 describe('JSON-LD Schema Builder — Person, WebSite & Service', () => {
-  const siteUrl = 'https://andikaputra.vercel.app/';
+  const siteUrl = 'https://wahyuandikaputra.my.id/';
 
   it('menghasilkan Person schema lengkap', () => {
     const person = buildPersonSchema(siteUrl);

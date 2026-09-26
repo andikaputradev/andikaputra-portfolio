@@ -12,7 +12,7 @@ interface Props {
 
 const { project } = Astro.props;
 const ogImage = `/og/${project.slug}.png`;
-const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.my.id/';
 const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 const projectSchema = buildProjectSchema(project, cleanSiteUrl);
 const canonicalUrl = `${cleanSiteUrl}work/${project.slug}/`;

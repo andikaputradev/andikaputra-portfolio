@@ -341,7 +341,7 @@ Keamanan adalah proses mitigasi berkelanjutan, bukan status absolut. Konfigurasi
 
 | # | Item | Status | Keterangan |
 |---|---|---|---|
-| 1 | Domain final | Tertunda | Ganti placeholder di `astro.config.mjs` (`site:`) dan `api/contact.ts` (email `from:`) |
+| 1 | Domain final | Selesai | Dikonfigurasi ke `https://wahyuandikaputra.my.id` |
 | 2 | Foto profesional | Selesai via CMS | Upload melalui `/admin/profile` |
 | 3 | Screenshot 9 proyek | Tertunda | Capture manual, simpan di `public/assets/projects/{id}/cover.jpg` |
 | 4 | Live URL dan andikaputra-portfolio URL per proyek | Dapat diedit via admin | Field konten pada editor, bukan lagi file Markdown |

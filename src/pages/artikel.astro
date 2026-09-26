@@ -11,7 +11,7 @@ trackVisit(Astro.request, '/artikel');
 
 Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
-const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.my.id/';
 const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 
 const categories = ['ALL', 'SECURITY', 'WEB3', 'WEBDEV', 'GENERAL'] as const;

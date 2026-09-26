@@ -16,7 +16,7 @@ function escapeXml(value: string | null | undefined): string {
 }
 
 export const GET: APIRoute = async ({ site }) => {
-  const rawSiteUrl = site?.toString() ?? 'https://andikaputra.vercel.app/';
+  const rawSiteUrl = site?.toString() ?? 'https://wahyuandikaputra.my.id/';
   const siteUrl = rawSiteUrl.endsWith('/') ? rawSiteUrl : `${rawSiteUrl}/`;
 
   const rows = await db

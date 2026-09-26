@@ -39,7 +39,7 @@ function escapeXml(value: string): string {
 }
 
 export const GET: APIRoute = async ({ site }) => {
-  const rawSiteUrl = site?.toString() ?? 'https://andikaputra.vercel.app/';
+  const rawSiteUrl = site?.toString() ?? 'https://wahyuandikaputra.my.id/';
 
   const [publishedProjects, publishedArticles] = await Promise.all([
     db
