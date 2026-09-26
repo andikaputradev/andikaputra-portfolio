@@ -56,7 +56,7 @@ export const ProjectInputSchema = z.object({
   coverImagePublicId: z.string().optional(),
   displayOrder: z.coerce.number().int().default(0),
   published: zBooleanLike.default(true),
-});
+}).strict();
 
 export type ProjectInput = z.infer<typeof ProjectInputSchema>;
 
@@ -67,7 +67,7 @@ export const ProjectSettingsSchema = ProjectInputSchema.pick({
   stack: true,
   coverImagePublicId: true,
   published: true,
-});
+}).strict();
 
 export type ProjectSettingsInput = z.infer<typeof ProjectSettingsSchema>;
 
@@ -88,7 +88,7 @@ export const ArticleInputSchema = z.object({
   published: zBooleanLike.default(true),
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
-});
+}).strict();
 
 export type ArticleInput = z.infer<typeof ArticleInputSchema>;
 
@@ -103,18 +103,19 @@ export const CertificationInputSchema = z.object({
   assetFormat: z.enum(['jpg', 'jpeg', 'png', 'pdf']).optional(),
   displayOrder: z.coerce.number().int().default(0),
   published: zBooleanLike.default(true),
-});
+}).strict();
 
 export type CertificationInput = z.infer<typeof CertificationInputSchema>;
 
 export const ProfileInputSchema = z.object({
   photoPublicId: z.string().optional(),
   cvPublicId: z.string().optional(),
-});
+}).strict();
 
 export type ProfileInput = z.infer<typeof ProfileInputSchema>;
 
 export const CloudinaryResourceVerifySchema = z.object({
   publicId: z.string().min(1),
   expectedResourceType: z.enum(['image', 'raw']),
-});
+}).strict();
+

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   ProjectInputSchema,
+  ProjectSettingsSchema,
+  ArticleInputSchema,
   CertificationInputSchema,
   ProfileInputSchema,
 } from '../../src/lib/admin-schemas';
+
 
 const validProject = {
   slug: 'akademi-crypto',
@@ -153,4 +156,54 @@ describe('ProfileInputSchema', () => {
     const result = ProfileInputSchema.safeParse({ photoPublicId: 'portfolio/profile/photo/x' });
     expect(result.success).toBe(true);
   });
+
+  it('menolak field tidak dikenal via .strict()', () => {
+    const result = ProfileInputSchema.safeParse({
+      photoPublicId: 'portfolio/profile/photo/x',
+      injectedField: 'malicious',
+    });
+    expect(result.success).toBe(false);
+  });
 });
+
+describe('Strict schema validation across mutation models (OWASP ASVS V5.1)', () => {
+  it('ProjectInputSchema menolak field tidak dikenal', () => {
+    const result = ProjectInputSchema.safeParse({
+      ...validProject,
+      adminOverrideRole: 'root',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('ProjectSettingsSchema menolak field tidak dikenal', () => {
+    const result = ProjectSettingsSchema.safeParse({
+      tag: 'SECURITY',
+      published: true,
+      extraUnauthorizedKey: 123,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('ArticleInputSchema menolak field tidak dikenal', () => {
+    const result = ArticleInputSchema.safeParse({
+      slug: 'security-audit-2026',
+      title: 'Security Audit',
+      category: 'SECURITY',
+      summary: 'Summary of audit',
+      bodyMarkdown: '# Content',
+      isSecretInternalArticle: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('CertificationInputSchema menolak field tidak dikenal', () => {
+    const result = CertificationInputSchema.safeParse({
+      name: 'OSCP',
+      issuer: 'OffSec',
+      issueDate: new Date(),
+      fakeVerifiedBadge: true,
+    });
+    expect(result.success).toBe(false);
+  });
+});
+

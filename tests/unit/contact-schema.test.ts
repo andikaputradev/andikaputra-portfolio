@@ -76,4 +76,14 @@ describe('ContactSchema', () => {
       expect(fieldErrors.email).toBeUndefined();
     }
   });
+
+  it('rejects unknown or injected fields via .strict()', () => {
+    const result = ContactSchema.safeParse({
+      ...validInput,
+      injectedAdminFlag: true,
+      extraParam: 'attack',
+    });
+    expect(result.success).toBe(false);
+  });
 });
+
