@@ -3,6 +3,7 @@ import { certifications } from '../../../../db/schema';
 import { ReorderInputSchema } from '../../../../lib/reorder-schema';
 import { isCsrfValid, csrfError } from '../../../../lib/require-csrf';
 import { bulkUpdateDisplayOrder } from '../../../../lib/bulk-reorder';
+import { recordAudit, getClientIp } from '../../../../lib/audit';
 
 export const prerender = false;
 
@@ -28,6 +29,14 @@ export const POST: APIRoute = async (context) => {
   }
 
   await bulkUpdateDisplayOrder(certifications, parsed.data);
+
+  await recordAudit({
+    actorEmail: locals.admin.email,
+    action: 'update',
+    entityType: 'certification',
+    entityId: parsed.data.map((item) => item.id).join(','),
+    ipAddress: getClientIp(request),
+  });
 
   return new Response(null, { status: 204 });
 };
