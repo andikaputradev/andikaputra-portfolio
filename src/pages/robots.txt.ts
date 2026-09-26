@@ -4,7 +4,9 @@ export const GET: APIRoute = () => {
   const site = import.meta.env.SITE ?? 'https://andikaputra.vercel.app';
   const body = `User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /admin/
+Disallow: /api
 Disallow: /api/
 
 User-agent: GPTBot

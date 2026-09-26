@@ -1,0 +1,111 @@
+---
+import type { HeadingItem } from '../../lib/article-toc';
+
+interface Props {
+  headings: HeadingItem[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  headings.length >= 2 && (
+    <aside class="article-toc" aria-label="Daftar Isi Artikel">
+      <div class="article-toc__header font-mono">
+        <span class="article-toc__prefix">[//]</span>
+        <span class="article-toc__title">DAFTAR ISI</span>
+      </div>
+      <nav class="article-toc__nav">
+        <ol class="article-toc__list font-mono">
+          {headings.map((heading) => (
+            <li class={`article-toc__item article-toc__item--depth-${heading.depth}`}>
+              <a href={`#${heading.slug}`} class="article-toc__link">
+                <span class="article-toc__bullet" aria-hidden="true">
+                  {heading.depth === 2 ? '▶' : '↳'}
+                </span>
+                <span class="article-toc__text">{heading.text}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
+  )
+}
+
+<style>
+  .article-toc {
+    margin-bottom: 2.5rem;
+    padding: 1.25rem 1.5rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-accent-phosphor);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-toc__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--color-border);
+  }
+
+  .article-toc__prefix {
+    opacity: 0.8;
+  }
+
+  .article-toc__title {
+    font-weight: 600;
+  }
+
+  .article-toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .article-toc__item--depth-3 {
+    padding-left: 1.25rem;
+  }
+
+  .article-toc__link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .article-toc__bullet {
+    font-size: 0.6875rem;
+    color: var(--color-accent-phosphor);
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .article-toc__link:hover {
+    color: var(--color-text-primary);
+  }
+
+  .article-toc__link:hover .article-toc__bullet {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+
+  .article-toc__text {
+    word-break: break-word;
+  }
+</style>

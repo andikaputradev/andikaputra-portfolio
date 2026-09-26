@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { calculateReadingTime } from '../../src/lib/reading-time';
+import { calculateReadingTime, countWords } from '../../src/lib/reading-time';
+
+describe('countWords', () => {
+  it('returns 0 for empty or whitespace-only strings', () => {
+    expect(countWords(null)).toBe(0);
+    expect(countWords(undefined)).toBe(0);
+    expect(countWords('')).toBe(0);
+    expect(countWords('   \n\t  ')).toBe(0);
+  });
+
+  it('counts words accurately while ignoring code blocks and markdown symbols', () => {
+    const md = `
+# Judul Artikel
+
+Ini adalah paragraf pertama dengan **lima** kata.
+
+\`\`\`typescript
+const a = 1;
+const b = 2;
+\`\`\`
+
+Dan ini paragraf kedua.
+`;
+    // Judul Artikel (2) + Ini adalah paragraf pertama dengan lima kata (7) + Dan ini paragraf kedua (4) = 13 kata
+    expect(countWords(md)).toBe(13);
+  });
+});
 
 describe('calculateReadingTime', () => {
   it('returns 1 for null, undefined, or empty string', () => {

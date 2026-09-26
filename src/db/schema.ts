@@ -58,6 +58,8 @@ export const articles = pgTable(
     displayOrder: integer('display_order').notNull().default(0),
     metaTitle: text('meta_title'),
     metaDescription: text('meta_description'),
+    canonicalUrlOverride: text('canonical_url_override'),
+    ogImageOverride: text('og_image_override'),
     publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

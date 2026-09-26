@@ -88,6 +88,8 @@ export const ArticleInputSchema = z.object({
   published: zBooleanLike.default(true),
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
+  canonicalUrlOverride: z.union([z.url(), z.literal('')]).optional(),
+  ogImageOverride: z.string().optional(),
 }).strict();
 
 export type ArticleInput = z.infer<typeof ArticleInputSchema>;

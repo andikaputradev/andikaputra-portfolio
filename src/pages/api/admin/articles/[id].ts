@@ -97,6 +97,8 @@ export const PUT: APIRoute = async (context) => {
   if (d.published !== undefined) updateData.published = d.published;
   if (d.metaTitle !== undefined) updateData.metaTitle = d.metaTitle ?? null;
   if (d.metaDescription !== undefined) updateData.metaDescription = d.metaDescription ?? null;
+  if (d.canonicalUrlOverride !== undefined) updateData.canonicalUrlOverride = d.canonicalUrlOverride || null;
+  if (d.ogImageOverride !== undefined) updateData.ogImageOverride = d.ogImageOverride || null;
 
   const [updated] = await db
     .update(articles)

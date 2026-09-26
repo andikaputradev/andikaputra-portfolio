@@ -11,14 +11,18 @@ interface Props {
 const { project } = Astro.props;
 const ogImage = `/og/${project.slug}.png`;
 const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
-const projectSchema = buildProjectSchema(project, siteUrl);
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+const projectSchema = buildProjectSchema(project, cleanSiteUrl);
+const canonicalUrl = `${cleanSiteUrl}work/${project.slug}/`;
 ---
 
 <BaseLayout
   title={`${project.title} | Wahyu Andika Putra`}
   description={project.summary}
+  canonical={canonicalUrl}
   ogImage={ogImage}
   additionalSchemas={[projectSchema]}
+  lang="id"
   keywords={project.stack ?? []}
 >
   <main id="main-content">

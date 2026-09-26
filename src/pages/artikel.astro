@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { db } from '../db';
 import { articles } from '../db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { trackVisit } from '../lib/track-visit';
 
 export const prerender = false;
@@ -11,15 +11,13 @@ trackVisit(Astro.request, '/artikel');
 
 Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
-const allArticles = await db
-  .select()
-  .from(articles)
-  .where(eq(articles.published, true))
-  .orderBy(desc(articles.displayOrder));
+const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 
 const categories = ['ALL', 'SECURITY', 'WEB3', 'WEBDEV', 'GENERAL'] as const;
+type CategoryType = (typeof categories)[number];
 
-const CATEGORY_LABELS: Record<string, string> = {
+const CATEGORY_LABELS: Record<CategoryType, string> = {
   ALL: 'Semua',
   SECURITY: 'Security',
   WEB3: 'Web3',
@@ -27,13 +25,94 @@ const CATEGORY_LABELS: Record<string, string> = {
   GENERAL: 'General',
 };
 
+// Baca parameter query untuk kategori dan paginasi
+const rawCategory = (Astro.url.searchParams.get('category')?.toUpperCase() ?? 'ALL') as CategoryType;
+const selectedCategory: CategoryType = categories.includes(rawCategory) ? rawCategory : 'ALL';
+
+const rawPage = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const pageNumber = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+
+const PAGE_SIZE = 6;
+
+// Query artikel terfilter berdasarkan status published dan kategori
+const queryFilter =
+  selectedCategory === 'ALL'
+    ? eq(articles.published, true)
+    : and(eq(articles.published, true), eq(articles.category, selectedCategory));
+
+const allMatchingArticles = await db
+  .select()
+  .from(articles)
+  .where(queryFilter)
+  .orderBy(desc(articles.displayOrder));
+
+const totalArticles = allMatchingArticles.length;
+const totalPages = Math.max(1, Math.ceil(totalArticles / PAGE_SIZE));
+const currentPage = Math.min(pageNumber, totalPages);
+
+const startIndex = (currentPage - 1) * PAGE_SIZE;
+const paginatedArticles = allMatchingArticles.slice(startIndex, startIndex + PAGE_SIZE);
+
+// Canonical self-referencing sesuai standar Google (tanpa rel=next/prev)
+function buildCanonicalUrl(): string {
+  const params = new URLSearchParams();
+  if (selectedCategory !== 'ALL') {
+    params.set('category', selectedCategory);
+  }
+  if (currentPage > 1) {
+    params.set('page', String(currentPage));
+  }
+  const qs = params.toString();
+  return qs ? `${cleanSiteUrl}artikel/?${qs}` : `${cleanSiteUrl}artikel/`;
+}
+
+function buildPageUrl(p: number): string {
+  const params = new URLSearchParams();
+  if (selectedCategory !== 'ALL') {
+    params.set('category', selectedCategory);
+  }
+  if (p > 1) {
+    params.set('page', String(p));
+  }
+  const qs = params.toString();
+  return qs ? `/artikel/?${qs}` : '/artikel/';
+}
+
+function buildCategoryUrl(cat: CategoryType): string {
+  if (cat === 'ALL') {
+    return '/artikel/';
+  }
+  return `/artikel/?category=${cat}`;
+}
+
+const canonicalUrl = buildCanonicalUrl();
+
+const pageTitle =
+  currentPage > 1
+    ? `Artikel & Insights - Halaman ${currentPage} | Wahyu Andika Putra`
+    : 'Artikel & Insights | Wahyu Andika Putra';
+
+const pageDescription =
+  currentPage > 1
+    ? `Halaman ${currentPage} kumpulan artikel seputar web development, security hardening, Web3, dan smart contract audit oleh Wahyu Andika Putra.`
+    : 'Artikel tentang pengembangan web & aplikasi, security hardening, Web3 smart contract audit, dan teknologi oleh Wahyu Andika Putra.';
 ---
 
 <BaseLayout
-  title="Artikel & Insights | Wahyu Andika Putra"
-  description="Artikel tentang jasa pembuatan website, development aplikasi, security hardening, Web3, smart contract audit, dan upload Play Store oleh Wahyu Andika Putra."
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
   ogImage="/og/index.png"
-  keywords={['artikel web development', 'jasa pembuatan website', 'jasa pembuatan aplikasi', 'jasa upload play store', 'security hardening', 'smart contract audit', 'web3 indonesia', 'tips website']}
+  keywords={[
+    'artikel web development',
+    'jasa pembuatan website',
+    'jasa pembuatan aplikasi',
+    'jasa upload play store',
+    'security hardening',
+    'smart contract audit',
+    'web3 indonesia',
+    'tips website',
+  ]}
   lang="id"
 >
   <main id="main-content">
@@ -49,20 +128,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 
     <section class="artikel-listing section-spacing" data-telemetry-section="artikel-listing">
       <div class="container-site">
-        <div class="artikel-filters" data-article-filters>
+        <nav class="artikel-filters" aria-label="Filter kategori artikel">
           {categories.map((cat) => (
-            <button
-              class={`artikel-filter-btn font-mono${cat === 'ALL' ? ' is-active' : ''}`}
-              data-filter-category={cat}
-              type="button"
+            <a
+              href={buildCategoryUrl(cat)}
+              class={`artikel-filter-btn font-mono${cat === selectedCategory ? ' is-active' : ''}`}
             >
               {CATEGORY_LABELS[cat]}
-            </button>
+            </a>
           ))}
-        </div>
+        </nav>
 
         <div class="artikel-grid" data-article-grid>
-          {allArticles.map((article) => (
+          {paginatedArticles.map((article) => (
             <article class="article-card" data-article-card data-article-category={article.category}>
               <a href={`/artikel/${article.slug}/`} class="article-card__link">
                 <div class="article-card__header">
@@ -85,37 +163,45 @@ const CATEGORY_LABELS: Record<string, string> = {
           ))}
         </div>
 
-        {allArticles.length === 0 && (
-          <p class="artikel-empty">Belum ada artikel yang dipublikasikan.</p>
+        {paginatedArticles.length === 0 && (
+          <p class="artikel-empty">Belum ada artikel dalam kategori ini.</p>
+        )}
+
+        {totalPages > 1 && (
+          <nav class="pagination font-mono" aria-label="Navigasi halaman artikel">
+            {currentPage > 1 ? (
+              <a href={buildPageUrl(currentPage - 1)} class="pagination__btn pagination__btn--prev">
+                ← Sebelumnya
+              </a>
+            ) : (
+              <span class="pagination__btn pagination__btn--disabled">← Sebelumnya</span>
+            )}
+
+            <div class="pagination__numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <a
+                  href={buildPageUrl(p)}
+                  class={`pagination__num${p === currentPage ? ' is-active' : ''}`}
+                  aria-current={p === currentPage ? 'page' : undefined}
+                >
+                  {p}
+                </a>
+              ))}
+            </div>
+
+            {currentPage < totalPages ? (
+              <a href={buildPageUrl(currentPage + 1)} class="pagination__btn pagination__btn--next">
+                Selanjutnya →
+              </a>
+            ) : (
+              <span class="pagination__btn pagination__btn--disabled">Selanjutnya →</span>
+            )}
+          </nav>
         )}
       </div>
     </section>
   </main>
 </BaseLayout>
-
-<script>
-  document.addEventListener('astro:page-load', () => {
-    const filterButtons = document.querySelectorAll<HTMLElement>('[data-filter-category]');
-    const cards = document.querySelectorAll<HTMLElement>('[data-article-card]');
-
-    filterButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        filterButtons.forEach((b) => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-
-        const category = btn.dataset.filterCategory;
-
-        cards.forEach((card) => {
-          if (category === 'ALL' || card.dataset.articleCategory === category) {
-            card.classList.remove('is-filtered-out');
-          } else {
-            card.classList.add('is-filtered-out');
-          }
-        });
-      });
-    });
-  });
-</script>
 
 <style>
   .artikel-hero {
@@ -159,7 +245,7 @@ const CATEGORY_LABELS: Record<string, string> = {
     border: 1px solid var(--color-border);
     background: transparent;
     color: var(--color-text-muted);
-    cursor: pointer;
+    text-decoration: none;
     transition: all var(--transition-fast);
   }
 
@@ -174,10 +260,6 @@ const CATEGORY_LABELS: Record<string, string> = {
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
-  }
-
-  .artikel-grid :global(.is-filtered-out) {
-    display: none;
   }
 
   @media (min-width: 768px) {
@@ -291,5 +373,50 @@ const CATEGORY_LABELS: Record<string, string> = {
     color: var(--color-text-muted);
     padding: 4rem 0;
     font-size: 1.0625rem;
+  }
+
+  .pagination {
+    margin-top: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .pagination__numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .pagination__btn,
+  .pagination__num {
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .pagination__btn:hover:not(.pagination__btn--disabled),
+  .pagination__num:hover {
+    color: var(--color-accent-phosphor);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 40%, var(--color-border));
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 6%, transparent);
+  }
+
+  .pagination__num.is-active {
+    color: var(--color-bg);
+    background-color: var(--color-accent-phosphor);
+    border-color: var(--color-accent-phosphor);
+    font-weight: 600;
+  }
+
+  .pagination__btn--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--color-border);
   }
 </style>

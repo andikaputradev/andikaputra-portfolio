@@ -56,4 +56,18 @@ describe('renderProjectBody — sanitasi XSS', () => {
     const html = renderProjectBody('```js\nconsole.log(1);\n```');
     expect(html).toContain('<pre tabindex="0">');
   });
+
+  it('menghasilkan id unik pada heading ketika opsi withHeadingIds aktif', () => {
+    const html = renderProjectBody('## Arsitektur Sistem\n\n### Lapisan Keamanan', { withHeadingIds: true });
+    expect(html).toContain('<h2 id="arsitektur-sistem">Arsitektur Sistem</h2>');
+    expect(html).toContain('<h3 id="lapisan-keamanan">Lapisan Keamanan</h3>');
+  });
+
+  it('tidak menambahkan target="_blank" pada tautan internal atau anchor hash (#)', () => {
+    const html = renderProjectBody('[Daftar Isi](#daftar-isi) dan [Artikel Lain](/artikel)');
+    expect(html).toContain('href="#daftar-isi"');
+    expect(html).not.toContain('href="#daftar-isi" target="_blank"');
+    expect(html).toContain('href="/artikel"');
+    expect(html).not.toContain('href="/artikel" target="_blank"');
+  });
 });

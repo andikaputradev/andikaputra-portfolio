@@ -2,11 +2,15 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { db } from '../../db';
 import { articles, articleComments } from '../../db/schema';
-import { and, eq, desc, ne } from 'drizzle-orm';
+import { and, eq, desc } from 'drizzle-orm';
 import { renderProjectBody } from '../../lib/render-markdown';
 import { cloudinaryImageUrl } from '../../lib/cloudinary-url';
 import { trackVisit } from '../../lib/track-visit';
 import { buildArticleSchema, buildBreadcrumbSchema } from '../../lib/json-ld';
+import { extractHeadings } from '../../lib/article-toc';
+import { countWords, calculateReadingTime } from '../../lib/reading-time';
+import { getRelatedArticles } from '../../lib/related-articles';
+import TableOfContents from '../../components/article/TableOfContents.astro';
 import ArticleComments from '../../components/article/ArticleComments.astro';
 
 export const prerender = false;
@@ -30,7 +34,14 @@ trackVisit(Astro.request, `/artikel/${article.slug}`);
 Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
 const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
-const bodyHtml = renderProjectBody(article.bodyMarkdown);
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+
+// Hitung statistik artikel & daftar isi otomatis
+const headings = extractHeadings(article.bodyMarkdown);
+const wordCount = countWords(article.bodyMarkdown);
+const readingTime = article.readingTimeMinutes || calculateReadingTime(article.bodyMarkdown);
+const bodyHtml = renderProjectBody(article.bodyMarkdown, { withHeadingIds: true });
+
 const coverSrc = article.coverImagePublicId
   ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1600')
   : null;
@@ -79,13 +90,18 @@ const publishedDate = new Intl.DateTimeFormat('id-ID', {
   year: 'numeric',
 }).format(article.publishedAt);
 
-const articleUrl = `${siteUrl}artikel/${article.slug}/`;
+const articleUrl = `${cleanSiteUrl}artikel/${article.slug}/`;
 
 const articleSchema = buildArticleSchema(
-  article,
+  {
+    ...article,
+    wordCount,
+    ogImageOverride: article.ogImageOverride,
+  },
   siteUrl,
   commentsCount > 0 ? { ratingValue: avgRating, reviewCount: commentsCount } : undefined,
 );
+
 const breadcrumbSchema = buildBreadcrumbSchema(
   [
     { name: 'Home', url: '/' },
@@ -95,29 +111,25 @@ const breadcrumbSchema = buildBreadcrumbSchema(
   siteUrl,
 );
 
-
-const relatedArticles = await db
+// Ambil artikel terkait berdasarkan overlap tag (SKILL.md)
+const allPublishedArticles = await db
   .select()
   .from(articles)
-  .where(
-    and(
-      eq(articles.published, true),
-      eq(articles.category, article.category),
-      ne(articles.slug, article.slug),
-    ),
-  )
-  .orderBy(desc(articles.displayOrder))
-  .limit(3);
+  .where(eq(articles.published, true));
+
+const relatedArticles = getRelatedArticles(article, allPublishedArticles, 3);
 
 const whatsappText = encodeURIComponent(`Baca artikel ini: ${article.title} ${articleUrl}`);
 const twitterText = encodeURIComponent(`${article.title} ${articleUrl}`);
 const linkedInUrl = encodeURIComponent(articleUrl);
-const ogImage = coverSrc ?? `/og/${article.slug}.png`;
+const canonicalUrl = article.canonicalUrlOverride || articleUrl;
+const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`;
 ---
 
 <BaseLayout
   title={article.metaTitle || `${article.title} | Wahyu Andika Putra`}
   description={article.metaDescription || article.summary}
+  canonical={canonicalUrl}
   ogImage={ogImage}
   ogType="article"
   additionalSchemas={[articleSchema, breadcrumbSchema]}
@@ -134,10 +146,10 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
         <h1 class="article-detail__title font-display">{article.title}</h1>
         <div class="article-detail__meta font-mono">
           <time datetime={article.publishedAt.toISOString()}>{publishedDate}</time>
-          {article.readingTimeMinutes && (
-            <span class="article-detail__separator">·</span>
-            <span>{article.readingTimeMinutes} min read</span>
-          )}
+          <span class="article-detail__separator">·</span>
+          <span>{wordCount.toLocaleString('id-ID')} kata</span>
+          <span class="article-detail__separator">·</span>
+          <span>{readingTime} min read</span>
         </div>
       </header>
 
@@ -155,6 +167,7 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
       )}
 
       <div class="article-detail__body container-site">
+        <TableOfContents headings={headings} />
         <div class="article-detail__content" set:html={bodyHtml} />
       </div>
 
@@ -196,7 +209,6 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
       />
 
       {relatedArticles.length > 0 && (
-
         <section class="article-detail__related section-spacing" data-telemetry-section="article-related">
           <div class="container-site">
             <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>
@@ -332,6 +344,7 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
     font-weight: 600;
     margin-top: 2.5rem;
     margin-bottom: 1rem;
+    scroll-margin-top: 5rem;
   }
 
   .article-detail__content :global(h3) {
@@ -339,6 +352,7 @@ const ogImage = coverSrc ?? `/og/${article.slug}.png`;
     font-weight: 600;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
+    scroll-margin-top: 5rem;
   }
 
   .article-detail__content :global(pre) {

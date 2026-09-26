@@ -55,14 +55,17 @@ const FAQS = [
 ];
 
 // FIX BUG: Memanggil buildFAQSchema dengan data FAQS
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+const jasaCanonical = `${cleanSiteUrl}jasa/`;
 const faqSchema = buildFAQSchema(FAQS);
 ---
 
 <BaseLayout
-  title="Jasa Pembuatan Website & Aplikasi, Security Hardening, Web3 | Wahyu Andika Putra"
-  description="Jasa pembuatan website dan aplikasi, profesional keamanan siber untuk security hardening & audit defensif, serta web3 specialist untuk audit smart contract oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
+  title="Jasa Pembuatan Website, Aplikasi & Security | Wahyu Andika Putra"
+  description="Jasa pembuatan website & aplikasi, security hardening, dan audit smart contract Web3 oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
+  canonical={jasaCanonical}
   ogImage="/og/index.png"
-  additionalSchemas={[buildServiceSchema(siteUrl), faqSchema]}
+  additionalSchemas={[buildServiceSchema(cleanSiteUrl), faqSchema]}
   lang="id"
   keywords={['jasa pembuatan website', 'jasa pembuatan aplikasi', 'jasa upload play store', 'jasa upload app store', 'security hardening', 'audit defensif', 'web3 specialist', 'smart contract audit', 'cybersecurity consultant', 'jasa bikin website', 'jasa web application', 'developer Indonesia']}
 >

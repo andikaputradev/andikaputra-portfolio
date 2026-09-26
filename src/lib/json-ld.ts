@@ -178,25 +178,51 @@ export function buildProjectSchema(
 }
 
 export function buildArticleSchema(
-  article: Pick<Article, 'title' | 'summary' | 'slug' | 'category' | 'coverImagePublicId' | 'publishedAt' | 'updatedAt' | 'tags' | 'readingTimeMinutes'>,
+  article: Pick<
+    Article,
+    | 'title'
+    | 'summary'
+    | 'slug'
+    | 'category'
+    | 'coverImagePublicId'
+    | 'publishedAt'
+    | 'updatedAt'
+    | 'tags'
+    | 'readingTimeMinutes'
+  > & {
+    wordCount?: number;
+    ogImageOverride?: string | null;
+  },
   siteUrl: string,
   ratingData?: { ratingValue: number; reviewCount: number },
 ) {
   const url = combineUrl(siteUrl, `artikel/${article.slug}/`);
   const cloudName = import.meta.env?.CLOUDINARY_CLOUD_NAME;
-  const imageUrl = article.coverImagePublicId && cloudName
-    ? `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_1200,h_630,c_fill/${article.coverImagePublicId}.jpg`
-    : combineUrl(siteUrl, 'og/index.png');
+  const defaultImage = combineUrl(siteUrl, 'og/index.png');
+
+  let imageUrl = defaultImage;
+  if (article.ogImageOverride) {
+    imageUrl = article.ogImageOverride.startsWith('http')
+      ? article.ogImageOverride
+      : combineUrl(siteUrl, article.ogImageOverride);
+  } else if (article.coverImagePublicId && cloudName) {
+    imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_1200,h_630,c_fill/${article.coverImagePublicId}.jpg`;
+  }
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'BlogPosting',
     headline: article.title,
     description: article.summary,
     url,
     image: imageUrl,
     datePublished: new Date(article.publishedAt).toISOString(),
     dateModified: new Date(article.updatedAt).toISOString(),
+    inLanguage: 'id',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
     author: {
       '@type': 'Person',
       '@id': getPersonId(siteUrl),
@@ -207,11 +233,10 @@ export function buildArticleSchema(
       '@type': 'Person',
       '@id': getPersonId(siteUrl),
       name: IDENTITY.fullName,
+      url: siteUrl,
+      image: combineUrl(siteUrl, 'og/index.png'),
     },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': url,
-    },
+    ...(article.wordCount ? { wordCount: article.wordCount } : {}),
     ...(article.tags && article.tags.length > 0 ? { keywords: article.tags.join(', ') } : {}),
     ...(article.readingTimeMinutes ? { timeRequired: `PT${article.readingTimeMinutes}M` } : {}),
     ...(ratingData && ratingData.reviewCount > 0

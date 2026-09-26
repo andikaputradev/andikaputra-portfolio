@@ -18,13 +18,15 @@ trackVisit(Astro.request, '/');
 
 const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
 
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 ---
 
 <BaseLayout
   title="Wahyu Andika Putra | Software Engineer & Cybersecurity Specialist"
   description="Software engineer and cybersecurity specialist working across Web2 product engineering and Web3 protocol security. Based in Indonesia."
-  additionalSchemas={[buildWebsiteSchema(siteUrl)]}
+  canonical={cleanSiteUrl}
+  additionalSchemas={[buildWebsiteSchema(cleanSiteUrl)]}
+  lang="id"
   keywords={['software engineer', 'cybersecurity specialist', 'web2', 'web3', 'portfolio', 'Indonesia', 'security hardening', 'smart contract audit', 'full-stack developer']}
 >
   <main id="main-content">

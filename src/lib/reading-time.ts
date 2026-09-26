@@ -35,3 +35,28 @@ export function calculateReadingTime(markdown: string | null | undefined, wordsP
   const speed = wordsPerMinute > 0 ? wordsPerMinute : 200;
   return Math.max(1, Math.ceil(wordCount / speed));
 }
+
+/**
+ * Menghitung total jumlah kata bersih dari teks markdown.
+ */
+export function countWords(markdown: string | null | undefined): number {
+  if (!markdown || typeof markdown !== 'string') {
+    return 0;
+  }
+
+  const cleaned = markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[.*?\]\(.*?\)/g, ' ')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/#{1,6}\s+/g, ' ')
+    .replace(/[*_~>]/g, ' ')
+    .trim();
+
+  if (!cleaned) {
+    return 0;
+  }
+
+  return cleaned.split(/\s+/).filter((word) => word.length > 0).length;
+}
+

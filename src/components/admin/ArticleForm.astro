@@ -96,6 +96,29 @@ const tagsValue = article?.tags?.join(', ') ?? '';
     <textarea id="metaDescription" name="metaDescription" maxlength="160" rows="2">{article?.metaDescription ?? ''}</textarea>
   </div>
 
+  <div class="field">
+    <label for="canonicalUrlOverride">Canonical URL Override (opsional)</label>
+    <input
+      type="url"
+      id="canonicalUrlOverride"
+      name="canonicalUrlOverride"
+      value={article?.canonicalUrlOverride ?? ''}
+      placeholder="https://example.com/artikel-asli"
+    />
+    <p class="field__hint">Isi hanya jika artikel ini sindikasi atau dipublikasikan ulang dari sumber lain.</p>
+  </div>
+
+  <div class="field">
+    <label for="ogImageOverride">OG Image Override URL (opsional)</label>
+    <input
+      type="text"
+      id="ogImageOverride"
+      name="ogImageOverride"
+      value={article?.ogImageOverride ?? ''}
+      placeholder="https://example.com/custom-og.png"
+    />
+  </div>
+
   <button type="submit">{method === 'POST' ? 'Buat Artikel' : 'Simpan Perubahan'}</button>
 </form>
 

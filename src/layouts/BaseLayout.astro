@@ -28,18 +28,21 @@ const {
   title,
   description,
   ogImage = '/og/index.png',
-  canonical = Astro.url.href,
+  canonical: explicitCanonical,
   additionalSchemas = [],
   noindex = false,
-  lang = 'en',
+  lang = 'id',
   ogType = 'website',
   keywords,
 } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const defaultCanonical = siteUrl ? `${siteUrl}${Astro.url.pathname}` : Astro.url.href;
+const canonical = explicitCanonical || defaultCanonical;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 const allSchemas = [buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined), ...additionalSchemas];
 const siteName = 'Wahyu Andika Putra';
+const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
 ---
 
 <!doctype html>
@@ -54,6 +57,9 @@ const siteName = 'Wahyu Andika Putra';
     <meta name="description" content={description} />
     {keywords && keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteName} - Artikel & Insights`} href={rssUrl} />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

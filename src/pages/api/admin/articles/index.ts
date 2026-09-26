@@ -56,6 +56,8 @@ export const POST: APIRoute = async (context) => {
 
   const insertData = {
     ...parsed.data,
+    canonicalUrlOverride: parsed.data.canonicalUrlOverride || null,
+    ogImageOverride: parsed.data.ogImageOverride || null,
     readingTimeMinutes:
       parsed.data.readingTimeMinutes && parsed.data.readingTimeMinutes > 0
         ? parsed.data.readingTimeMinutes
