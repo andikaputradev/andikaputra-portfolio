@@ -5,10 +5,10 @@ const FIELD_ERROR_MESSAGES: Record<string, string> = {
 };
 
 const STATUS_MESSAGES: Record<string, string> = {
-  turnstile_unavailable: 'Verification is temporarily unavailable, please email directly instead.',
-  turnstile_failed: 'Security verification failed, reload the page and try again.',
-  email_unavailable: 'Message service is temporarily unavailable, please email directly instead.',
-  email_failed: 'Message could not be sent, please email directly instead.',
+  turnstile_unavailable: 'Verification is temporarily unavailable — please email directly instead.',
+  turnstile_failed: 'Security verification failed — reload the page and try again.',
+  email_unavailable: 'Message service is temporarily unavailable — please email directly instead.',
+  email_failed: 'Message could not be sent — please email directly instead.',
 };
 
 function clearFieldErrors(form: HTMLFormElement): void {
@@ -66,7 +66,7 @@ export function initContactForm(): void {
       });
 
       if (response.ok) {
-        statusEl.textContent = 'Message sent, thank you.';
+        statusEl.textContent = 'Message sent — thank you.';
         statusEl.dataset.state = 'success';
         form.reset();
         return;

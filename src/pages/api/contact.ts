@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { z } from 'astro/zod';
 import { ContactSchema } from '../../lib/contact-schema';
+import { checkRateLimit } from '../../lib/rate-limit';
+import { getClientIp } from '../../lib/audit';
 
 export const prerender = false;
 
@@ -25,6 +27,24 @@ export const POST: APIRoute = async ({ request }) => {
   if (!parsed.success) {
     const fields = z.flattenError(parsed.error).fieldErrors;
     return new Response(JSON.stringify({ error: 'validation', fields }), { status: 422 });
+  }
+
+  const clientIp = getClientIp(request) ?? 'anonymous';
+  const rateLimit = await checkRateLimit(`contact:${clientIp}`, {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+  });
+
+  if (!rateLimit.allowed) {
+    return new Response(JSON.stringify({ error: 'rate_limited' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000)),
+        'X-RateLimit-Limit': String(rateLimit.limit),
+        'X-RateLimit-Remaining': '0',
+      },
+    });
   }
 
   const turnstileSecret = import.meta.env.TURNSTILE_SECRET_KEY;

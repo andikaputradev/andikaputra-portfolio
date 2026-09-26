@@ -6,6 +6,8 @@ import { articles } from '../../../../db/schema';
 import { ArticleInputSchema } from '../../../../lib/admin-schemas';
 import { isCsrfValid, csrfError } from '../../../../lib/require-csrf';
 import { recordAudit, getClientIp } from '../../../../lib/audit';
+import { verifyCloudinaryResource } from '../../../../lib/cloudinary';
+import { calculateReadingTime } from '../../../../lib/reading-time';
 
 export const prerender = false;
 
@@ -42,10 +44,28 @@ export const POST: APIRoute = async (context) => {
     return new Response(JSON.stringify({ error: z.treeifyError(parsed.error) }), { status: 422 });
   }
 
+  if (parsed.data.coverImagePublicId) {
+    const valid = await verifyCloudinaryResource(parsed.data.coverImagePublicId, 'image');
+    if (!valid) {
+      return new Response(
+        JSON.stringify({ error: 'Cover image tidak ditemukan di akun Cloudinary' }),
+        { status: 422 },
+      );
+    }
+  }
+
+  const insertData = {
+    ...parsed.data,
+    readingTimeMinutes:
+      parsed.data.readingTimeMinutes && parsed.data.readingTimeMinutes > 0
+        ? parsed.data.readingTimeMinutes
+        : calculateReadingTime(parsed.data.bodyMarkdown),
+  };
+
   try {
     const [created] = await db
       .insert(articles)
-      .values(parsed.data)
+      .values(insertData)
       .returning();
 
     await recordAudit({

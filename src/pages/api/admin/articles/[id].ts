@@ -7,6 +7,8 @@ import { ArticleInputSchema } from '../../../../lib/admin-schemas';
 import { isCsrfValid, csrfError } from '../../../../lib/require-csrf';
 import { recordAudit, getClientIp } from '../../../../lib/audit';
 import { toastTrigger } from '../../../../lib/hx-trigger';
+import { verifyCloudinaryResource } from '../../../../lib/cloudinary';
+import { calculateReadingTime } from '../../../../lib/reading-time';
 
 export const prerender = false;
 
@@ -64,6 +66,19 @@ export const PUT: APIRoute = async (context) => {
     return new Response(JSON.stringify({ error: 'Artikel tidak ditemukan' }), { status: 404 });
   }
 
+  if (
+    parsed.data.coverImagePublicId &&
+    parsed.data.coverImagePublicId !== existing.coverImagePublicId
+  ) {
+    const valid = await verifyCloudinaryResource(parsed.data.coverImagePublicId, 'image');
+    if (!valid) {
+      return new Response(
+        JSON.stringify({ error: 'Cover image tidak ditemukan di akun Cloudinary' }),
+        { status: 422 },
+      );
+    }
+  }
+
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   const d = parsed.data;
   if (d.slug !== undefined) updateData.slug = d.slug;
@@ -73,7 +88,11 @@ export const PUT: APIRoute = async (context) => {
   if (d.bodyMarkdown !== undefined) updateData.bodyMarkdown = d.bodyMarkdown;
   if (d.coverImagePublicId !== undefined) updateData.coverImagePublicId = d.coverImagePublicId ?? null;
   if (d.tags !== undefined) updateData.tags = d.tags;
-  if (d.readingTimeMinutes !== undefined) updateData.readingTimeMinutes = d.readingTimeMinutes ?? null;
+  if (d.readingTimeMinutes !== undefined) {
+    updateData.readingTimeMinutes = d.readingTimeMinutes ?? null;
+  } else if (d.bodyMarkdown !== undefined) {
+    updateData.readingTimeMinutes = calculateReadingTime(d.bodyMarkdown);
+  }
   if (d.displayOrder !== undefined) updateData.displayOrder = d.displayOrder;
   if (d.published !== undefined) updateData.published = d.published;
   if (d.metaTitle !== undefined) updateData.metaTitle = d.metaTitle ?? null;
