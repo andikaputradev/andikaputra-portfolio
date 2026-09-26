@@ -4,7 +4,7 @@ import { db } from '../../db';
 import { articles, articleComments } from '../../db/schema';
 import { and, eq, desc } from 'drizzle-orm';
 import { renderProjectBody } from '../../lib/render-markdown';
-import { cloudinaryImageUrl } from '../../lib/cloudinary-url';
+import { cloudinaryImageUrl, cloudinarySrcSet } from '../../lib/cloudinary-url';
 import { trackVisit } from '../../lib/track-visit';
 import { buildArticleSchema, buildBreadcrumbSchema } from '../../lib/json-ld';
 import { extractHeadings } from '../../lib/article-toc';
@@ -43,8 +43,11 @@ const readingTime = article.readingTimeMinutes || calculateReadingTime(article.b
 const bodyHtml = renderProjectBody(article.bodyMarkdown, { withHeadingIds: true });
 
 const coverSrc = article.coverImagePublicId
-  ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1600')
+  ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1200')
   : null;
+const coverSrcSet = article.coverImagePublicId
+  ? cloudinarySrcSet(article.coverImagePublicId, [480, 768, 1024, 1400])
+  : undefined;
 
 let rawComments: Array<{
   id: number;
@@ -54,20 +57,42 @@ let rawComments: Array<{
   createdAt: Date;
 }> = [];
 
+let allPublishedArticles: Array<any> = [];
+
 try {
-  rawComments = await db
-    .select({
-      id: articleComments.id,
-      authorName: articleComments.authorName,
-      rating: articleComments.rating,
-      content: articleComments.content,
-      createdAt: articleComments.createdAt,
-    })
-    .from(articleComments)
-    .where(and(eq(articleComments.articleId, article.id), eq(articleComments.approved, true)))
-    .orderBy(desc(articleComments.createdAt));
+  const [commentsResult, articlesResult] = await Promise.all([
+    db
+      .select({
+        id: articleComments.id,
+        authorName: articleComments.authorName,
+        rating: articleComments.rating,
+        content: articleComments.content,
+        createdAt: articleComments.createdAt,
+      })
+      .from(articleComments)
+      .where(and(eq(articleComments.articleId, article.id), eq(articleComments.approved, true)))
+      .orderBy(desc(articleComments.createdAt)),
+    db
+      .select({
+        id: articles.id,
+        slug: articles.slug,
+        title: articles.title,
+        category: articles.category,
+        summary: articles.summary,
+        coverImagePublicId: articles.coverImagePublicId,
+        tags: articles.tags,
+        readingTimeMinutes: articles.readingTimeMinutes,
+        published: articles.published,
+        displayOrder: articles.displayOrder,
+        publishedAt: articles.publishedAt,
+      })
+      .from(articles)
+      .where(eq(articles.published, true)),
+  ]);
+  rawComments = commentsResult;
+  allPublishedArticles = articlesResult;
 } catch (error) {
-  console.error('Gagal mengambil komentar artikel:', error instanceof Error ? error.message : error);
+  console.error('Gagal mengambil data artikel/komentar:', error instanceof Error ? error.message : error);
 }
 
 const commentsCount = rawComments.length;
@@ -88,6 +113,7 @@ const publishedDate = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
+  timeZone: 'UTC',
 }).format(article.publishedAt);
 
 const articleUrl = `${cleanSiteUrl}artikel/${article.slug}/`;
@@ -112,12 +138,7 @@ const breadcrumbSchema = buildBreadcrumbSchema(
 );
 
 // Ambil artikel terkait berdasarkan overlap tag (SKILL.md)
-const allPublishedArticles = await db
-  .select()
-  .from(articles)
-  .where(eq(articles.published, true));
-
-const relatedArticles = getRelatedArticles(article, allPublishedArticles, 3);
+const relatedArticles = getRelatedArticles(article, allPublishedArticles as any, 3);
 
 const whatsappText = encodeURIComponent(`Baca artikel ini: ${article.title} ${articleUrl}`);
 const twitterText = encodeURIComponent(`${article.title} ${articleUrl}`);
@@ -135,6 +156,8 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
   additionalSchemas={[articleSchema, breadcrumbSchema]}
   keywords={article.tags ?? []}
   lang="id"
+  preloadImage={coverSrc ?? undefined}
+  preloadImageSrcSet={coverSrcSet ?? undefined}
 >
   <main id="main-content">
     <article class="article-detail">
@@ -157,6 +180,10 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
         <div class="article-detail__cover-wrap container-site">
           <img
             src={coverSrc}
+            srcset={coverSrcSet}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+            width="1200"
+            height="675"
             alt={`${article.title} cover`}
             class="article-detail__cover"
             loading="eager"

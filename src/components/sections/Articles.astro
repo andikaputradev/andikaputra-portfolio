@@ -1,14 +1,20 @@
 ---
 import { db } from '../../db';
-import { articles } from '../../db/schema';
+import { articles, type Article } from '../../db/schema';
 import { eq, desc } from 'drizzle-orm';
 
-const latestArticles = await db
-  .select()
-  .from(articles)
-  .where(eq(articles.published, true))
-  .orderBy(desc(articles.displayOrder))
-  .limit(3);
+interface Props {
+  articles?: Article[];
+}
+
+const latestArticles =
+  Astro.props.articles ??
+  (await db
+    .select()
+    .from(articles)
+    .where(eq(articles.published, true))
+    .orderBy(desc(articles.displayOrder))
+    .limit(3));
 
 const CATEGORY_LABELS: Record<string, string> = {
   SECURITY: 'Security',

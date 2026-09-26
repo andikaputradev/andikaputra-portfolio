@@ -26,14 +26,18 @@ export function initHeroEntrance(): void {
     }
 
     if (heading) {
-      split = new SplitText(heading, { type: 'chars', charsClass: 'hero-char' });
-      tl.set(heading, { opacity: 1 }, eyebrow ? '-=0.2' : 0);
-      tl.fromTo(
-        split.chars,
-        { opacity: 0, yPercent: 110 },
-        { opacity: 1, yPercent: 0, duration: 0.7, stagger: 0.018 },
-        '<',
-      );
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      if (isMobile) {
+        tl.fromTo(heading, { opacity: 0.85, y: 8 }, { opacity: 1, y: 0, duration: 0.4 }, eyebrow ? '-=0.2' : 0);
+      } else {
+        split = new SplitText(heading, { type: 'chars', charsClass: 'hero-char' });
+        tl.fromTo(
+          split.chars,
+          { opacity: 0, yPercent: 110 },
+          { opacity: 1, yPercent: 0, duration: 0.7, stagger: 0.018 },
+          '<',
+        );
+      }
     }
 
     if (subhead) {

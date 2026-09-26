@@ -1,4 +1,5 @@
 import {
+  WebGLRenderer,
   Scene,
   PerspectiveCamera,
   BufferGeometry,
@@ -6,7 +7,6 @@ import {
   PointsMaterial,
   BufferAttribute,
 } from 'three';
-import { WebGPURenderer } from 'three/webgpu';
 import { prefersReducedMotion } from './gsap-core';
 
 type HeroParticlesConfig = {
@@ -18,25 +18,44 @@ type HeroParticlesConfig = {
   particleCountMobile?: number;
 };
 
+function isLowPower(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const nav = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: { saveData?: boolean; effectiveType?: string };
+  };
+  if (nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) return true;
+  if (nav.deviceMemory && nav.deviceMemory < 4) return true;
+  if (nav.connection?.saveData) return true;
+  return false;
+}
+
 export async function initHeroParticles(config: HeroParticlesConfig): Promise<() => void> {
   const {
     canvas,
     color = 0xc97d3f,
     opacity = 0.55,
     rotationSpeed = 0.0006,
-    particleCountDesktop = 4000,
-    particleCountMobile = 1200,
+    particleCountDesktop = 1600,
+    particleCountMobile = 400,
   } = config;
 
-  const renderer = new WebGPURenderer({ canvas, antialias: true, alpha: true });
-  await renderer.init();
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const lowPower = isLowPower();
+  const particleCount = isMobile
+    ? (lowPower ? 200 : particleCountMobile)
+    : (lowPower ? 800 : particleCountDesktop);
+
+  const renderer = new WebGLRenderer({
+    canvas,
+    antialias: false,
+    alpha: true,
+    powerPreference: 'low-power',
+  });
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
   camera.position.z = 8;
-
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const particleCount = isMobile ? particleCountMobile : particleCountDesktop;
 
   const geometry = new BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
@@ -57,7 +76,7 @@ export async function initHeroParticles(config: HeroParticlesConfig): Promise<()
 
   const { width, height } = canvas.getBoundingClientRect();
   renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
 
   const reduced = prefersReducedMotion();
   let animFrameId = 0;

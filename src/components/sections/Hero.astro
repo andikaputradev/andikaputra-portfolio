@@ -1,12 +1,21 @@
 ---
+import type { SiteProfile } from '../../db/schema';
 import MagneticButton from '../ui/MagneticButton.astro';
 import { getSiteProfile } from '../../lib/site-data';
-import { cloudinaryImageUrl, cloudinaryRawUrl } from '../../lib/cloudinary-url';
+import { cloudinaryImageUrl, cloudinaryRawUrl, cloudinarySrcSet } from '../../lib/cloudinary-url';
 
-const profile = await getSiteProfile();
+interface Props {
+  profile?: SiteProfile | null;
+}
+
+const profile = Astro.props.profile !== undefined ? Astro.props.profile : await getSiteProfile();
 const photoUrl = profile?.photoPublicId
-  ? cloudinaryImageUrl(profile.photoPublicId, 'f_auto,q_auto,w_640,h_640,c_fill,g_face')
+  ? cloudinaryImageUrl(profile.photoPublicId, 'f_auto,q_auto,w_640,h_800,c_fill,g_face')
   : null;
+const photoSrcSet = profile?.photoPublicId
+  ? cloudinarySrcSet(profile.photoPublicId, [320, 480, 640], 'f_auto,q_auto,ar_4:5,c_fill,g_face')
+  : undefined;
+const photoSizes = '(max-width: 640px) min(55vw, 22rem), 352px';
 const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 ---
 
@@ -19,7 +28,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
         SOFTWARE ENGINEER | SECURITY SPECIALIST | WEB3
       </p>
 
-      <h1 class="hero__heading font-display js-reveal" data-hero-heading>
+      <h1 class="hero__heading font-display" data-hero-heading>
         I build systems, then try to break them first.
       </h1>
 
@@ -44,8 +53,10 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
       <div class="hero__photo-frame">
         <img
           src={photoUrl}
-          width="320"
-          height="569"
+          srcset={photoSrcSet}
+          sizes={photoSizes}
+          width="352"
+          height="440"
           alt="Foto Wahyu Andika Putra"
           class="hero__photo"
           fetchpriority="high"
@@ -58,12 +69,25 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 </section>
 
 <script>
-  import { mountParticleCanvas } from '../../scripts/three-hero';
   import { initHeroEntrance } from '../../scripts/hero';
 
   document.addEventListener('astro:page-load', () => {
-    mountParticleCanvas('#hero-canvas');
     initHeroEntrance();
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
+    const loadParticles = () => {
+      import('../../scripts/three-hero').then(({ mountParticleCanvas }) => {
+        mountParticleCanvas('#hero-canvas');
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(loadParticles, { timeout: 2500 });
+    } else {
+      setTimeout(loadParticles, 800);
+    }
   });
 </script>
 

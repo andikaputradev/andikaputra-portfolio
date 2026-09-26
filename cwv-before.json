@@ -1,0 +1,117 @@
+[
+  {
+    "route": "Homepage",
+    "path": "/",
+    "mobile": {
+      "perfScore": 25,
+      "lcp": 33752,
+      "cls": 0,
+      "tbt": 102119,
+      "inp": 102119,
+      "fcp": 19411,
+      "si": 60404
+    },
+    "desktop": {
+      "perfScore": 53,
+      "lcp": 5103,
+      "cls": 0.0273,
+      "tbt": 321,
+      "inp": 321,
+      "fcp": 841,
+      "si": 6340
+    },
+    "browserInp": 0
+  },
+  {
+    "route": "Project Detail",
+    "path": "/work/darkstar-tools",
+    "mobile": {
+      "perfScore": 72,
+      "lcp": 4919,
+      "cls": 0,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 4169,
+      "si": 4169
+    },
+    "desktop": {
+      "perfScore": 96,
+      "lcp": 1208,
+      "cls": 0.0002,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 984,
+      "si": 1024
+    },
+    "browserInp": 0
+  },
+  {
+    "route": "Services (Jasa)",
+    "path": "/jasa",
+    "mobile": {
+      "perfScore": 76,
+      "lcp": 4146,
+      "cls": 0,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 4146,
+      "si": 4146
+    },
+    "desktop": {
+      "perfScore": 98,
+      "lcp": 908,
+      "cls": 0.0012,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 878,
+      "si": 878
+    },
+    "browserInp": 40
+  },
+  {
+    "route": "Article Index",
+    "path": "/artikel",
+    "mobile": {
+      "perfScore": 75,
+      "lcp": 4303,
+      "cls": 0,
+      "tbt": 8,
+      "inp": 8,
+      "fcp": 4148,
+      "si": 4148
+    },
+    "desktop": {
+      "perfScore": 97,
+      "lcp": 1076,
+      "cls": 0.001,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 953,
+      "si": 1044
+    },
+    "browserInp": 32
+  },
+  {
+    "route": "Article Detail",
+    "path": "/artikel/kepatuhan-uu-pdp-bagi-pengembang-kontrol-teknis",
+    "mobile": {
+      "perfScore": 64,
+      "lcp": 10874,
+      "cls": 0,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 4584,
+      "si": 4584
+    },
+    "desktop": {
+      "perfScore": 81,
+      "lcp": 2349,
+      "cls": 0.0008,
+      "tbt": 0,
+      "inp": 0,
+      "fcp": 873,
+      "si": 2460
+    },
+    "browserInp": 0
+  }
+]

@@ -1,7 +1,7 @@
 ---
 import type { Project } from '../../db/schema';
 import TagBadge from '../ui/TagBadge.astro';
-import { resolveCoverImage } from '../../lib/cloudinary-url';
+import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
 
 interface Props {
   project: Project;
@@ -10,6 +10,7 @@ interface Props {
 
 const { project, enableTransition = true } = Astro.props;
 const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
+const coverSrcSet = resolveCoverImageSrcSet(project, [300, 450, 600, 900], 'f_auto,q_auto,c_fill');
 ---
 
 <article class="project-card" data-project-card data-project-tag={project.tag}>
@@ -18,6 +19,10 @@ const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
       {coverSrc ? (
         <img
           src={coverSrc}
+          srcset={coverSrcSet}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+          width="600"
+          height="450"
           alt={`${project.title} cover`}
           class="project-card__image js-cover-image"
           loading="lazy"
@@ -27,6 +32,8 @@ const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
       ) : (
         <img
           alt=""
+          width="600"
+          height="450"
           class="project-card__image js-cover-image is-broken"
           loading="lazy"
         />

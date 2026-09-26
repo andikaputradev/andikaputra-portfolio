@@ -1,15 +1,21 @@
 ---
 import { db } from '../../db';
-import { projects } from '../../db/schema';
+import { projects, type Project } from '../../db/schema';
 import { eq, desc } from 'drizzle-orm';
 import ProjectCard from '../work/ProjectCard.astro';
 import ProjectFilter from '../work/ProjectFilter.astro';
 
-const sortedProjects = await db
-  .select()
-  .from(projects)
-  .where(eq(projects.published, true))
-  .orderBy(desc(projects.displayOrder));
+interface Props {
+  projects?: Project[];
+}
+
+const sortedProjects =
+  Astro.props.projects ??
+  (await db
+    .select()
+    .from(projects)
+    .where(eq(projects.published, true))
+    .orderBy(desc(projects.displayOrder)));
 
 const featuredProjects = sortedProjects.slice(0, 3);
 ---
@@ -72,9 +78,29 @@ const featuredProjects = sortedProjects.slice(0, 3);
 </section>
 
 <script>
-  import { ensureSwiperRegistered } from '../../scripts/swiper-init';
+  document.addEventListener('astro:page-load', () => {
+    const swiperEl = document.querySelector('swiper-container');
+    if (!swiperEl) return;
 
-  document.addEventListener('astro:page-load', () => ensureSwiperRegistered());
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            observer.disconnect();
+            import('../../scripts/swiper-init').then(({ ensureSwiperRegistered }) => {
+              ensureSwiperRegistered();
+            });
+          }
+        },
+        { rootMargin: '300px' },
+      );
+      observer.observe(swiperEl);
+    } else {
+      import('../../scripts/swiper-init').then(({ ensureSwiperRegistered }) => {
+        ensureSwiperRegistered();
+      });
+    }
+  });
 </script>
 
 <style>

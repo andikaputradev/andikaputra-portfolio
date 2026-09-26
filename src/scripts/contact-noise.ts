@@ -1,64 +1,68 @@
-import { Scene, OrthographicCamera, PlaneGeometry, Mesh } from 'three';
-import { WebGPURenderer, MeshBasicNodeMaterial } from 'three/webgpu';
-import { uv, vec2, vec3, sin, fract, dot, time } from 'three/tsl';
 import { prefersReducedMotion } from './gsap-core';
 
 let activeDisposers: Array<() => void> = [];
 
-export async function initNoiseBackground(canvas: HTMLCanvasElement): Promise<void> {
-  const renderer = new WebGPURenderer({ canvas, antialias: false, alpha: true });
-  await renderer.init();
+export function initNoiseBackground(canvas: HTMLCanvasElement): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
-  const scene = new Scene();
-  const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-  const geometry = new PlaneGeometry(2, 2);
-
-  const noiseCoord = uv().mul(160).add(vec2(0, time.mul(0.025)));
-  const randomValue = fract(sin(dot(noiseCoord, vec2(12.9898, 78.233))).mul(43758.5453123));
-
-  const material = new MeshBasicNodeMaterial({ transparent: true });
-  material.colorNode = vec3(0.788, 0.49, 0.247);
-  material.opacityNode = randomValue.mul(0.045);
-
-  const mesh = new Mesh(geometry, material);
-  scene.add(mesh);
-
-  const { width, height } = canvas.getBoundingClientRect();
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.floor(rect.width / 2) || 300;
+  const height = Math.floor(rect.height / 2) || 200;
+  canvas.width = width;
+  canvas.height = height;
 
   const reduced = prefersReducedMotion();
-  let animFrameId: number;
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+  // Pre-generate subtle grain pattern
+  const noiseCanvas = document.createElement('canvas');
+  noiseCanvas.width = 128;
+  noiseCanvas.height = 128;
+  const nCtx = noiseCanvas.getContext('2d');
+  if (nCtx) {
+    const nData = nCtx.createImageData(128, 128);
+    const buf = nData.data;
+    for (let i = 0; i < buf.length; i += 4) {
+      if (Math.random() < 0.08) {
+        buf[i] = 201;     // Phosphor Amber R
+        buf[i + 1] = 125; // G
+        buf[i + 2] = 63;  // B
+        buf[i + 3] = 10;  // Alpha
+      }
+    }
+    nCtx.putImageData(nData, 0, 0);
+  }
+
+  if (reduced || isMobile) {
+    if (nCtx) {
+      ctx.fillStyle = ctx.createPattern(noiseCanvas, 'repeat') || 'transparent';
+      ctx.fillRect(0, 0, width, height);
+    }
+    return;
+  }
+
+  let animFrameId = 0;
   let disposed = false;
+  let frame = 0;
 
-  function animate(): void {
-    if (disposed) return;
-    animFrameId = requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+  function render(): void {
+    if (disposed || !ctx) return;
+    frame++;
+    // Throttle rendering to ~20fps to keep main thread completely idle
+    if (frame % 3 === 0 && nCtx) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = ctx.createPattern(noiseCanvas, 'repeat') || 'transparent';
+      ctx.fillRect(0, 0, width, height);
+    }
+    animFrameId = requestAnimationFrame(render);
   }
 
-  if (reduced) {
-    renderer.render(scene, camera);
-  } else {
-    animate();
-  }
-
-  const handleResize = (): void => {
-    const { width: w, height: h } = canvas.getBoundingClientRect();
-    renderer.setSize(w, h);
-    if (reduced) renderer.render(scene, camera);
-  };
-
-  window.addEventListener('resize', handleResize);
+  render();
 
   function dispose(): void {
     disposed = true;
     cancelAnimationFrame(animFrameId);
-    window.removeEventListener('resize', handleResize);
-    geometry.dispose();
-    material.dispose();
-    renderer.dispose();
   }
 
   activeDisposers.push(dispose);

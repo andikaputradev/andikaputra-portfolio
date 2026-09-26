@@ -1,38 +1,42 @@
 ---
 import { db } from '../../db';
-import { projects } from '../../db/schema';
+import { projects, type Project } from '../../db/schema';
 import { and, eq, desc } from 'drizzle-orm';
 import DisclaimerNotice from '../ui/DisclaimerNotice.astro';
 import TagBadge from '../ui/TagBadge.astro';
 import MagneticButton from '../ui/MagneticButton.astro';
-import { resolveCoverImage } from '../../lib/cloudinary-url';
+import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
 import { renderProjectBody } from '../../lib/render-markdown';
 
-let [flagship] = await db
-  .select()
-  .from(projects)
-  .where(and(eq(projects.flagship, true), eq(projects.published, true)))
-  .orderBy(desc(projects.displayOrder))
-  .limit(1);
-
-if (!flagship) {
-  [flagship] = await db
-    .select()
-    .from(projects)
-    .where(and(eq(projects.slug, 'darkstar-tools'), eq(projects.published, true)))
-    .limit(1);
+interface Props {
+  flagship?: Project | null;
 }
 
-if (!flagship) {
-  [flagship] = await db
+let flagship = Astro.props.flagship;
+
+if (flagship === undefined) {
+  const [found] = await db
     .select()
     .from(projects)
-    .where(eq(projects.published, true))
+    .where(and(eq(projects.flagship, true), eq(projects.published, true)))
     .orderBy(desc(projects.displayOrder))
     .limit(1);
+
+  if (found) {
+    flagship = found;
+  } else {
+    const [fallback] = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.published, true))
+      .orderBy(desc(projects.displayOrder))
+      .limit(1);
+    flagship = fallback ?? null;
+  }
 }
 
 const coverSrc = flagship ? resolveCoverImage(flagship, 'f_auto,q_auto,w_900,h_675,c_fill') : null;
+const coverSrcSet = flagship ? resolveCoverImageSrcSet(flagship, [450, 700, 900, 1200], 'f_auto,q_auto,c_fill') : undefined;
 const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown) : '';
 ---
 
@@ -45,6 +49,10 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown) : '';
       {coverSrc ? (
         <img
           src={coverSrc}
+          srcset={coverSrcSet}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+          width="900"
+          height="675"
           alt={`${flagship.title} product interface`}
           class="flagship__image js-cover-image"
           loading="lazy"
@@ -52,7 +60,7 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown) : '';
           transition:name={`project-image-${flagship.slug}`}
         />
       ) : (
-        <img alt="" class="flagship__image js-cover-image is-broken" loading="lazy" />
+        <img alt="" width="900" height="675" class="flagship__image js-cover-image is-broken" loading="lazy" />
       )}
     </div>
 
@@ -76,17 +84,29 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown) : '';
 )}
 
 <script>
-  import { mountParticleCanvas } from '../../scripts/three-hero';
   import { initFlagshipReveal } from '../../scripts/flagship-reveal';
 
   document.addEventListener('astro:page-load', () => {
-    mountParticleCanvas('#flagship-canvas', {
-      opacity: 0.25,
-      rotationSpeed: 0.00008,
-      particleCountDesktop: 1800,
-      particleCountMobile: 600,
-    });
     initFlagshipReveal();
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (!isReduced && !isMobile) {
+      const loadParticles = () => {
+        import('../../scripts/three-hero').then(({ mountParticleCanvas }) => {
+          mountParticleCanvas('#flagship-canvas', {
+            opacity: 0.2,
+            rotationSpeed: 0.00005,
+            particleCountDesktop: 1000,
+          });
+        });
+      };
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(loadParticles, { timeout: 3500 });
+      } else {
+        setTimeout(loadParticles, 1500);
+      }
+    }
   });
 </script>
 

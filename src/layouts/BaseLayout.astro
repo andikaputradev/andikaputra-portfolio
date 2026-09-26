@@ -9,6 +9,7 @@ import { buildPersonSchema } from '../lib/json-ld';
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource-variable/fraunces';
+import frauncesWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
 
 import '../styles/global.css';
 
@@ -22,6 +23,9 @@ interface Props {
   lang?: 'en' | 'id';
   ogType?: 'website' | 'article';
   keywords?: string[];
+  preloadImage?: string;
+  preloadImageSrcSet?: string;
+  preloadImageSizes?: string;
 }
 
 const {
@@ -34,6 +38,9 @@ const {
   lang = 'id',
   ogType = 'website',
   keywords,
+  preloadImage,
+  preloadImageSrcSet,
+  preloadImageSizes,
 } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
@@ -87,6 +94,8 @@ const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
     <meta name="google-site-verification" content="Fos-Zmz6r5usOTK-AHOaKLUeebf2CWsIkI73WFVEaN8" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href={frauncesWoff2} as="font" type="font/woff2" crossorigin />
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} imagesrcset={preloadImageSrcSet} imagesizes={preloadImageSizes} fetchpriority="high" />}
 
     <JsonLd schemas={allSchemas} />
 

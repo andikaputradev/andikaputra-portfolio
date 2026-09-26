@@ -4,6 +4,8 @@ import BaseLayout from './BaseLayout.astro';
 import ProjectDetailView from '../components/work/ProjectDetailView.astro';
 import { buildProjectSchema } from '../lib/json-ld';
 
+import { resolveCoverImage, resolveCoverImageSrcSet } from '../lib/cloudinary-url';
+
 interface Props {
   project: Project;
 }
@@ -14,6 +16,8 @@ const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
 const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 const projectSchema = buildProjectSchema(project, cleanSiteUrl);
 const canonicalUrl = `${cleanSiteUrl}work/${project.slug}/`;
+const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1200');
+const coverSrcSet = resolveCoverImageSrcSet(project, [480, 768, 1024, 1400], 'f_auto,q_auto');
 ---
 
 <BaseLayout
@@ -24,6 +28,8 @@ const canonicalUrl = `${cleanSiteUrl}work/${project.slug}/`;
   additionalSchemas={[projectSchema]}
   lang="id"
   keywords={project.stack ?? []}
+  preloadImage={coverSrc ?? undefined}
+  preloadImageSrcSet={coverSrcSet ?? undefined}
 >
   <main id="main-content">
     <ProjectDetailView project={project} />

@@ -1,14 +1,20 @@
 ---
 import { db } from '../../db';
-import { certifications } from '../../db/schema';
+import { certifications, type Certification as CertificationItem } from '../../db/schema';
 import { eq, desc } from 'drizzle-orm';
 import CertificationCard from '../work/CertificationCard.astro';
 
-const items = await db
-  .select()
-  .from(certifications)
-  .where(eq(certifications.published, true))
-  .orderBy(desc(certifications.displayOrder));
+interface Props {
+  items?: CertificationItem[];
+}
+
+const items =
+  Astro.props.items ??
+  (await db
+    .select()
+    .from(certifications)
+    .where(eq(certifications.published, true))
+    .orderBy(desc(certifications.displayOrder)));
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });

@@ -1,4 +1,9 @@
 ---
+import { db } from '../db';
+import { projects, certifications, articles } from '../db/schema';
+import { eq, desc } from 'drizzle-orm';
+import { getSiteProfile } from '../lib/site-data';
+import { cloudinaryImageUrl, cloudinarySrcSet } from '../lib/cloudinary-url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/sections/Hero.astro';
 import FlagshipSpotlight from '../components/sections/FlagshipSpotlight.astro';
@@ -15,9 +20,31 @@ import { trackVisit } from '../lib/track-visit';
 export const prerender = false;
 
 trackVisit(Astro.request, '/');
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+
+// Batch seluruh query database halaman utama dalam 1 round-trip paralel tunggal (SKILL.md)
+const [profile, allProjects, allCertifications, latestArticles] = await Promise.all([
+  getSiteProfile(),
+  db.select().from(projects).where(eq(projects.published, true)).orderBy(desc(projects.displayOrder)),
+  db.select().from(certifications).where(eq(certifications.published, true)).orderBy(desc(certifications.displayOrder)),
+  db.select().from(articles).where(eq(articles.published, true)).orderBy(desc(articles.displayOrder)).limit(3),
+]);
+
+const flagship =
+  allProjects.find((p) => p.flagship) ??
+  allProjects.find((p) => p.slug === 'darkstar-tools') ??
+  allProjects[0] ??
+  null;
+
+const photoUrl = profile?.photoPublicId
+  ? cloudinaryImageUrl(profile.photoPublicId, 'f_auto,q_auto,w_640,h_800,c_fill,g_face')
+  : null;
+const photoSrcSet = profile?.photoPublicId
+  ? cloudinarySrcSet(profile.photoPublicId, [320, 480, 640], 'f_auto,q_auto,ar_4:5,c_fill,g_face')
+  : undefined;
+const photoSizes = '(max-width: 640px) min(55vw, 22rem), 352px';
 
 const siteUrl = Astro.site?.toString() ?? 'https://andikaputra.vercel.app/';
-
 const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 ---
 
@@ -28,15 +55,18 @@ const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
   additionalSchemas={[buildWebsiteSchema(cleanSiteUrl)]}
   lang="id"
   keywords={['software engineer', 'cybersecurity specialist', 'web2', 'web3', 'portfolio', 'Indonesia', 'security hardening', 'smart contract audit', 'full-stack developer']}
+  preloadImage={photoUrl ?? undefined}
+  preloadImageSrcSet={photoSrcSet}
+  preloadImageSizes={photoSizes}
 >
   <main id="main-content">
-    <Hero />
-    <FlagshipSpotlight />
+    <Hero profile={profile} />
+    <FlagshipSpotlight flagship={flagship} />
     <Philosophy />
     <ExpertiseMatrix />
-    <Certification />
-    <SelectedWork />
-    <Articles />
+    <Certification items={allCertifications} />
+    <SelectedWork projects={allProjects} />
+    <Articles articles={latestArticles} />
     <RDLab />
     <Contact />
   </main>

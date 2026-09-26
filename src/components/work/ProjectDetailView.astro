@@ -2,7 +2,7 @@
 import type { Project } from '../../db/schema';
 import TagBadge from '../ui/TagBadge.astro';
 import { formatPublishedDate } from '../../lib/format-date';
-import { resolveCoverImage } from '../../lib/cloudinary-url';
+import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
 import { renderProjectBody } from '../../lib/render-markdown';
 
 interface Props {
@@ -13,7 +13,8 @@ interface Props {
 const { project, showBackLink = true } = Astro.props;
 const stack = project.stack ?? [];
 const publishedLabel = formatPublishedDate(project.publishedAt);
-const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1600');
+const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1200');
+const coverSrcSet = resolveCoverImageSrcSet(project, [480, 768, 1024, 1400], 'f_auto,q_auto');
 const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
 ---
 
@@ -29,6 +30,10 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
     {coverSrc ? (
       <img
         src={coverSrc}
+        srcset={coverSrcSet}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+        width="1200"
+        height="675"
         alt={`${project.title} cover screenshot`}
         class="project-detail__cover js-cover-image"
         loading="eager"
@@ -37,7 +42,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
         transition:name={`project-image-${project.slug}`}
       />
     ) : (
-      <img alt="" class="project-detail__cover js-cover-image is-broken" />
+      <img alt="" width="1200" height="675" class="project-detail__cover js-cover-image is-broken" />
     )}
   </div>
 

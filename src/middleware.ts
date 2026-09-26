@@ -98,5 +98,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
   }
 
-  return next();
+  const response = await next();
+  if (isAdminApi || isAdminPage) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
+  return response;
 });
