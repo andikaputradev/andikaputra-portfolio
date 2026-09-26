@@ -45,4 +45,10 @@ describe('renderProjectBody — sanitasi XSS', () => {
     const html = renderProjectBody('<p onclick="alert(1)">teks</p>');
     expect(html).not.toContain('onclick');
   });
+
+  it('menurunkan tag h1 menjadi h2 ketika opsi demoteH1 aktif', () => {
+    const html = renderProjectBody('# Sub Judul\n\nKonten', { demoteH1: true });
+    expect(html).toContain('<h2>Sub Judul</h2>');
+    expect(html).not.toContain('<h1>');
+  });
 });

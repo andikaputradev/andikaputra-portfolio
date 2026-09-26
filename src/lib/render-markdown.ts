@@ -3,7 +3,14 @@ import sanitizeHtml from 'sanitize-html';
 
 marked.setOptions({ gfm: true, breaks: false });
 
-export function renderProjectBody(markdown: string): string {
+export interface RenderMarkdownOptions {
+  demoteH1?: boolean;
+}
+
+export function renderProjectBody(
+  markdown: string,
+  options?: RenderMarkdownOptions
+): string {
   const rawHtml = marked.parse(markdown, { async: false }) as string;
 
   return sanitizeHtml(rawHtml, {
@@ -19,6 +26,7 @@ export function renderProjectBody(markdown: string): string {
     allowedSchemes: ['https', 'http'],
     transformTags: {
       a: sanitizeHtml.simpleTransform('a', { rel: 'noopener', target: '_blank' }),
+      ...(options?.demoteH1 ? { h1: 'h2' } : {}),
     },
   });
 }

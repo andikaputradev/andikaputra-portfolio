@@ -6,16 +6,19 @@ import { and, eq, desc, ne } from 'drizzle-orm';
 import { renderProjectBody } from '../../lib/render-markdown';
 import { cloudinaryImageUrl } from '../../lib/cloudinary-url';
 import { trackVisit } from '../../lib/track-visit';
-import { IDENTITY } from '../../data/identity';
+import { buildArticleSchema, buildBreadcrumbSchema } from '../../lib/json-ld';
 
 export const prerender = false;
 
 const slug = Astro.params.slug;
+if (!slug) {
+  return Astro.rewrite('/404');
+}
 
 const [article] = await db
   .select()
   .from(articles)
-  .where(and(eq(articles.slug, slug!), eq(articles.published, true)));
+  .where(and(eq(articles.slug, slug), eq(articles.published, true)));
 
 if (!article) {
   return Astro.rewrite('/404');
@@ -46,37 +49,15 @@ const publishedDate = new Intl.DateTimeFormat('id-ID', {
 
 const articleUrl = `${siteUrl}artikel/${article.slug}/`;
 
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  headline: article.title,
-  description: article.metaDescription || article.summary,
-  author: {
-    '@type': 'Person',
-    '@id': `${siteUrl}#person`,
-    name: IDENTITY.fullName,
-  },
-  datePublished: article.publishedAt.toISOString(),
-  dateModified: article.updatedAt.toISOString(),
-  url: articleUrl,
-  publisher: {
-    '@type': 'Person',
-    '@id': `${siteUrl}#person`,
-    name: IDENTITY.fullName,
-  },
-  ...(coverSrc ? { image: coverSrc } : {}),
-  ...(article.tags && article.tags.length > 0 ? { keywords: article.tags.join(', ') } : {}),
-};
-
-const breadcrumbSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
-    { '@type': 'ListItem', position: 2, name: 'Artikel', item: `${siteUrl}artikel/` },
-    { '@type': 'ListItem', position: 3, name: article.title, item: articleUrl },
+const articleSchema = buildArticleSchema(article, siteUrl);
+const breadcrumbSchema = buildBreadcrumbSchema(
+  [
+    { name: 'Home', url: '/' },
+    { name: 'Artikel', url: 'artikel/' },
+    { name: article.title, url: `artikel/${article.slug}/` },
   ],
-};
+  siteUrl,
+);
 
 const relatedArticles = await db
   .select()
@@ -94,12 +75,13 @@ const relatedArticles = await db
 const whatsappText = encodeURIComponent(`Baca artikel ini: ${article.title} ${articleUrl}`);
 const twitterText = encodeURIComponent(`${article.title} ${articleUrl}`);
 const linkedInUrl = encodeURIComponent(articleUrl);
+const ogImage = coverSrc ?? `/og/${article.slug}.png`;
 ---
 
 <BaseLayout
   title={article.metaTitle || `${article.title} | Wahyu Andika Putra`}
   description={article.metaDescription || article.summary}
-  ogImage={coverSrc ?? '/og/index.png'}
+  ogImage={ogImage}
   ogType="article"
   additionalSchemas={[articleSchema, breadcrumbSchema]}
   keywords={article.tags ?? []}

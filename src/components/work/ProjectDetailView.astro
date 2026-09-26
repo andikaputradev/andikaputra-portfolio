@@ -14,7 +14,7 @@ const { project, showBackLink = true } = Astro.props;
 const stack = project.stack ?? [];
 const publishedLabel = formatPublishedDate(project.publishedAt);
 const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1600');
-const bodyHtml = renderProjectBody(project.bodyMarkdown);
+const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
 ---
 
 <article class="project-detail">
@@ -44,7 +44,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
   <div class="project-detail__body container-site">
     <div class="project-detail__content" set:html={bodyHtml} />
 
-    <aside class="project-detail__meta">
+    <div class="project-detail__meta">
       <div class="project-detail__meta-block">
         <h2 class="project-detail__meta-heading font-mono">Published</h2>
         <p class="project-detail__published">{publishedLabel}</p>
@@ -86,7 +86,7 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown);
           </div>
         )
       }
-    </aside>
+    </div>
   </div>
 </article>
 

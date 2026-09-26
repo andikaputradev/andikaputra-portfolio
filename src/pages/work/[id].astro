@@ -8,10 +8,14 @@ import { trackVisit } from '../../lib/track-visit';
 export const prerender = false;
 
 const slug = Astro.params.id;
+if (!slug) {
+  return Astro.rewrite('/404');
+}
+
 const [project] = await db
   .select()
   .from(projects)
-  .where(and(eq(projects.slug, slug!), eq(projects.published, true)));
+  .where(and(eq(projects.slug, slug), eq(projects.published, true)));
 
 if (!project) {
   return Astro.rewrite('/404');
