@@ -33,9 +33,10 @@ export default defineConfig({
     command: 'node ./node_modules/astro/bin/astro.mjs dev',
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
-    timeout: 30000,
+    timeout: 60000,
     env: {
       ASTRO_DEV_BACKGROUND: 'false',
     },
   },
+
 });

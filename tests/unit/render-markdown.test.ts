@@ -51,4 +51,9 @@ describe('renderProjectBody — sanitasi XSS', () => {
     expect(html).toContain('<h2>Sub Judul</h2>');
     expect(html).not.toContain('<h1>');
   });
+
+  it('menambahkan tabindex="0" pada tag <pre> untuk aksesibilitas keyboard (WCAG 2.1.1)', () => {
+    const html = renderProjectBody('```js\nconsole.log(1);\n```');
+    expect(html).toContain('<pre tabindex="0">');
+  });
 });

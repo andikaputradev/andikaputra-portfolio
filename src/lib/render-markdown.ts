@@ -22,10 +22,12 @@ export function renderProjectBody(
     allowedAttributes: {
       a: ['href', 'target', 'rel'],
       img: ['src', 'alt', 'width', 'height', 'loading'],
+      pre: ['tabindex'],
     },
     allowedSchemes: ['https', 'http'],
     transformTags: {
       a: sanitizeHtml.simpleTransform('a', { rel: 'noopener', target: '_blank' }),
+      pre: sanitizeHtml.simpleTransform('pre', { tabindex: '0' }),
       ...(options?.demoteH1 ? { h1: 'h2' } : {}),
     },
   });
