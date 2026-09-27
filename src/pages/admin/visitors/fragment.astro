@@ -4,7 +4,12 @@ import { getVisitorSummary } from '../../../lib/visitor-stats';
 
 export const prerender = false;
 
+Astro.response.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
+
 const summary = await getVisitorSummary(30);
 ---
 
 <VisitorStatsPanel summary={summary} />
+
