@@ -1,5 +1,23 @@
 {
-  "crons": [{ "path": "/api/cron/backup", "schedule": "0 18 * * *" }],
+  "crons": [
+    {
+      "path": "/api/cron/backup",
+      "schedule": "0 18 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "andikaputra.vercel.app"
+        }
+      ],
+      "destination": "https://wahyuandikaputra.my.id/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -42,7 +60,6 @@
         }
       ]
     },
-
     {
       "source": "/og/(.*)",
       "headers": [
