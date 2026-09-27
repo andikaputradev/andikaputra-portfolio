@@ -22,26 +22,44 @@ export function initHeroEntrance(): void {
     let split: SplitText | undefined;
 
     if (eyebrow) {
-      tl.fromTo(eyebrow, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5 });
+      tl.fromTo(eyebrow, { opacity: 0, y: 12, filter: 'blur(4px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5 });
     }
 
     if (heading) {
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
       if (isMobile) {
-        tl.fromTo(heading, { opacity: 0.85, y: 8 }, { opacity: 1, y: 0, duration: 0.4 }, eyebrow ? '-=0.2' : 0);
+        tl.fromTo(
+          heading,
+          { opacity: 0, y: 16, filter: 'blur(6px)' },
+          { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, ease: 'power3.out' },
+          eyebrow ? '-=0.25' : 0,
+        );
       } else {
-        split = new SplitText(heading, { type: 'chars', charsClass: 'hero-char' });
+        split = new SplitText(heading, { type: 'words,chars', charsClass: 'hero-char', wordsClass: 'hero-word' });
         tl.fromTo(
           split.chars,
-          { opacity: 0, yPercent: 110 },
-          { opacity: 1, yPercent: 0, duration: 0.7, stagger: 0.018 },
-          '<',
+          {
+            opacity: 0,
+            y: 28,
+            filter: 'blur(8px)',
+            scale: 0.94,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            scale: 1,
+            duration: 0.7,
+            stagger: 0.016,
+            ease: 'power3.out',
+          },
+          eyebrow ? '-=0.2' : 0,
         );
       }
     }
 
     if (subhead) {
-      tl.fromTo(subhead, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.35');
+      tl.fromTo(subhead, { opacity: 0, y: 16, filter: 'blur(4px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6 }, '-=0.35');
     }
 
     if (ctas) {
@@ -54,6 +72,6 @@ export function initHeroEntrance(): void {
   });
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
-    gsap.set(targets, { opacity: 1, y: 0 });
+    gsap.set(targets, { opacity: 1, y: 0, filter: 'none' });
   });
 }

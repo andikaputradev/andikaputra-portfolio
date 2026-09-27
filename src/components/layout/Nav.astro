@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
+import SoundToggle from './SoundToggle.astro';
 
 const NAV_LINKS = [
   { href: '/#philosophy', label: 'Philosophy' },
@@ -37,6 +38,7 @@ const NAV_LINKS = [
     </nav>
 
     <div class="site-nav__controls">
+      <SoundToggle />
       <ThemeToggle />
       <button
         type="button"

@@ -14,16 +14,18 @@ export function initPhilosophyReveal(): void {
     const triggers: ScrollTrigger[] = [];
 
     sentences.forEach((sentence) => {
-      gsap.set(sentence, { clipPath: 'inset(0 100% 0 0)', opacity: 1 });
+      gsap.set(sentence, { opacity: 0.22, filter: 'blur(4px)', y: 12 });
 
       const tween = gsap.to(sentence, {
-        clipPath: 'inset(0 0% 0 0)',
-        ease: 'none',
+        opacity: 1,
+        filter: 'blur(0px)',
+        y: 0,
+        ease: 'power2.out',
         scrollTrigger: {
           trigger: sentence,
-          start: 'top 82%',
-          end: 'top 42%',
-          scrub: 0.5,
+          start: 'top 85%',
+          end: 'top 50%',
+          scrub: 0.6,
         },
       });
 
@@ -38,6 +40,6 @@ export function initPhilosophyReveal(): void {
   });
 
   mm.add('(prefers-reduced-motion: reduce)', () => {
-    gsap.set(sentences, { clipPath: 'inset(0 0% 0 0)', opacity: 1 });
+    gsap.set(sentences, { opacity: 1, filter: 'blur(0px)', y: 0 });
   });
 }

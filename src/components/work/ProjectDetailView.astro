@@ -96,7 +96,8 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
               <ul class="project-detail__link-list font-mono">
                 {project.liveUrl && (
                   <li>
-                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item">
+                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item project-detail__link-item--live">
+                      <span class="project-detail__live-beacon" aria-hidden="true"></span>
                       <span>Live site</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -108,7 +109,10 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
                 )}
                 {project.repoUrl && (
                   <li>
-                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item">
+                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item project-detail__link-item--repo">
+                      <svg class="project-detail__repo-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                      </svg>
                       <span>Repository</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M7 17L17 7"></path>
@@ -329,16 +333,59 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
   .project-detail__link-item {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.875rem;
-    color: var(--color-accent-phosphor);
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
     text-decoration: none;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast),
+      transform var(--transition-fast);
+    width: fit-content;
   }
 
   .project-detail__link-item:hover {
+    transform: translateX(3px);
+  }
+
+  /* Live Link: Radiant Phosphor Amber */
+  .project-detail__link-item--live {
+    color: var(--color-accent-phosphor);
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 10%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-accent-phosphor) 45%, transparent);
+    font-weight: 500;
+  }
+
+  .project-detail__live-beacon {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 8px var(--color-accent-phosphor);
+  }
+
+  .project-detail__link-item--live:hover {
     color: var(--color-text-primary);
-    transform: translateX(2px);
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 22%, transparent);
+    border-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 14px oklch(72% 0.14 55 / 25%);
+  }
+
+  /* Repo Link: Telemetry Steel Cyan */
+  .project-detail__link-item--repo {
+    color: var(--color-accent-steel);
+    background-color: color-mix(in oklch, var(--color-surface-raised) 70%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-accent-steel) 35%, var(--color-border));
+  }
+
+  .project-detail__link-item--repo:hover {
+    color: var(--color-text-primary);
+    background-color: color-mix(in oklch, var(--color-accent-steel) 14%, transparent);
+    border-color: var(--color-accent-steel);
+    box-shadow: 0 0 12px oklch(75% 0.08 220 / 22%);
   }
 
   @media (min-width: 900px) {

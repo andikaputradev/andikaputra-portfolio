@@ -29,7 +29,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
       </p>
 
       <h1 class="hero__heading font-display" data-hero-heading>
-        I build systems, then try to break them first.
+        I build systems, then try to <span class="text-phosphor-glow">break them first.</span>
       </h1>
 
       <p class="hero__subhead js-reveal" data-hero-subhead>
@@ -151,6 +151,12 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 
   .hero__heading :global(.hero-char) {
     display: inline-block;
+  }
+
+  .text-phosphor-glow {
+    color: var(--color-accent-phosphor);
+    text-shadow: 0 0 28px color-mix(in oklch, var(--color-accent-phosphor) 35%, transparent);
+    font-style: italic;
   }
 
   .hero__subhead {

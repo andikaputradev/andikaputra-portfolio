@@ -1,0 +1,96 @@
+---
+---
+
+<button
+  type="button"
+  id="sound-toggle-btn"
+  class="sound-toggle font-mono"
+  aria-label="Toggle mechanical switch sound effects"
+  title="Toggle audio feedback"
+>
+  <span class="sound-toggle__indicator" aria-hidden="true"></span>
+  <span id="sound-toggle-label" class="sound-toggle__label">SFX: ON</span>
+</button>
+
+<script>
+  import { toggleSound, isSoundEnabled, initSoundFx } from '../../scripts/sound-fx';
+
+  function setupSoundToggle(): void {
+    initSoundFx();
+
+    const btn = document.querySelector<HTMLButtonElement>('#sound-toggle-btn');
+    const label = document.querySelector<HTMLElement>('#sound-toggle-label');
+    if (!btn || !label) return;
+
+    const updateUI = (enabled: boolean) => {
+      label.textContent = enabled ? 'SFX: ON' : 'SFX: OFF';
+      btn.setAttribute('data-enabled', String(enabled));
+      btn.setAttribute('aria-pressed', String(enabled));
+    };
+
+    updateUI(isSoundEnabled());
+
+    btn.addEventListener('click', () => {
+      const newState = toggleSound();
+      updateUI(newState);
+    });
+
+    window.addEventListener('portfolio:sfx-change', ((e: CustomEvent<{ enabled: boolean }>) => {
+      updateUI(e.detail.enabled);
+    }) as EventListener);
+  }
+
+  document.addEventListener('astro:page-load', setupSoundToggle);
+</script>
+
+<style>
+  .sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .sound-toggle:hover {
+    color: var(--color-text-primary);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 50%, var(--color-border));
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 8%, transparent);
+  }
+
+  .sound-toggle__indicator {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--color-accent-phosphor);
+    transition: background-color var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .sound-toggle[data-enabled='false'] {
+    opacity: 0.65;
+  }
+
+  .sound-toggle[data-enabled='false'] .sound-toggle__indicator {
+    background-color: var(--color-text-muted);
+    opacity: 0.4;
+  }
+
+  @media (max-width: 480px) {
+    .sound-toggle__label {
+      display: none;
+    }
+    .sound-toggle {
+      padding: 0.35rem 0.45rem;
+    }
+  }
+</style>
