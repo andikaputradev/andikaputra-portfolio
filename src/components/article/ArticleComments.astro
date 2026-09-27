@@ -166,7 +166,7 @@ function formatDate(date: Date): string {
             </div>
           ) : (
             comments.map((c) => (
-              <article class="comment-card surface-raised border-subtle">
+              <article class="comment-card surface-raised border-subtle" data-comment-id={c.id}>
                 <header class="comment-card__header">
                   <span class="comment-card__stars font-mono" aria-label={`Rating ${c.rating} dari 5 bintang`}>
                     {renderStars(c.rating)}
@@ -197,6 +197,12 @@ function formatDate(date: Date): string {
     const form = document.getElementById('comment-form') as HTMLFormElement | null;
     if (!form) return;
 
+    // Cegah double event listener registration pada elemen formulir yang sama
+    if (form.dataset.commentsInitialized === 'true') {
+      return;
+    }
+    form.dataset.commentsInitialized = 'true';
+
     const starButtons = section.querySelectorAll<HTMLButtonElement>('.star-btn');
     const ratingInput = document.getElementById('selected-rating') as HTMLInputElement | null;
     const authorInput = document.getElementById('comment-author') as HTMLInputElement | null;
@@ -209,6 +215,8 @@ function formatDate(date: Date): string {
     const commentsList = document.getElementById('comments-list');
     const noCommentsMsg = document.getElementById('no-comments-msg');
     const reviewsCountLabel = document.getElementById('reviews-count-label');
+
+    let isSubmitting = false;
 
     function updateStars(val: number) {
       if (ratingInput) ratingInput.value = String(val);
@@ -237,6 +245,9 @@ function formatDate(date: Date): string {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Guard idempotency: abaikan klik baru jika request sedang pending
+      if (isSubmitting) return;
+
       if (authorError) authorError.textContent = '';
       if (contentError) contentError.textContent = '';
       if (statusMsg) {
@@ -264,6 +275,7 @@ function formatDate(date: Date): string {
       const turnstileInput = form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]');
       if (turnstileInput) turnstileToken = turnstileInput.value;
 
+      isSubmitting = true;
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Mengirim...';
@@ -314,23 +326,29 @@ function formatDate(date: Date): string {
         if (noCommentsMsg) noCommentsMsg.remove();
 
         if (data.comment && commentsList) {
-          const card = document.createElement('article');
-          card.className = 'comment-card surface-raised border-subtle';
-          const fullStars = Math.min(Math.max(data.comment.rating, 1), 5);
-          const starsStr = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+          // Dedup by comment id sebelum render kartu komentar baru
+          const commentId = String(data.comment.id);
+          const alreadyExists = commentsList.querySelector(`[data-comment-id="${commentId}"]`);
+          if (!alreadyExists) {
+            const card = document.createElement('article');
+            card.className = 'comment-card surface-raised border-subtle';
+            card.setAttribute('data-comment-id', commentId);
+            const fullStars = Math.min(Math.max(data.comment.rating, 1), 5);
+            const starsStr = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
 
-          card.innerHTML = `
-            <header class="comment-card__header">
-              <span class="comment-card__stars font-mono">${starsStr}</span>
-              <time class="comment-card__date font-mono">Baru saja</time>
-            </header>
-            <h4 class="comment-card__author font-mono">${data.comment.authorName}</h4>
-            <p class="comment-card__body">${data.comment.content}</p>
-          `;
-          commentsList.prepend(card);
+            card.innerHTML = `
+              <header class="comment-card__header">
+                <span class="comment-card__stars font-mono">${starsStr}</span>
+                <time class="comment-card__date font-mono">Baru saja</time>
+              </header>
+              <h4 class="comment-card__author font-mono">${data.comment.authorName}</h4>
+              <p class="comment-card__body">${data.comment.content}</p>
+            `;
+            commentsList.prepend(card);
 
-          if (reviewsCountLabel) {
-            reviewsCountLabel.textContent = 'Ulasan terbaru telah ditambahkan';
+            if (reviewsCountLabel) {
+              reviewsCountLabel.textContent = 'Ulasan terbaru telah ditambahkan';
+            }
           }
         }
       } catch (err) {
@@ -339,6 +357,7 @@ function formatDate(date: Date): string {
           statusMsg.setAttribute('data-state', 'error');
         }
       } finally {
+        isSubmitting = false;
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.textContent = '[KIRIM_ULASAN]';
@@ -347,11 +366,6 @@ function formatDate(date: Date): string {
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initComments);
-  } else {
-    initComments();
-  }
   document.addEventListener('astro:page-load', initComments);
 </script>
 
