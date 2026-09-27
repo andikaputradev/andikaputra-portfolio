@@ -48,6 +48,18 @@ export function buildPersonSchema(siteUrl?: string) {
   };
 }
 
+export function buildProfilePageSchema(siteUrl?: string) {
+  const person = buildPersonSchema(siteUrl);
+  const cleanPerson = { ...person };
+  delete (cleanPerson as Record<string, unknown>)['@context'];
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: cleanPerson,
+  };
+}
+
 export function buildWebsiteSchema(siteUrl: string) {
   return {
     '@context': 'https://schema.org',

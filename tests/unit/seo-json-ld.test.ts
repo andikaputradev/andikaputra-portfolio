@@ -3,11 +3,12 @@ import {
   buildArticleSchema,
   buildBreadcrumbSchema,
   buildPersonSchema,
+  buildProfilePageSchema,
   buildWebsiteSchema,
   buildServiceSchema,
 } from '../../src/lib/json-ld';
 
-describe('JSON-LD Schema Builder — BlogPosting', () => {
+describe('JSON-LD Schema Builder - BlogPosting', () => {
   const mockArticle = {
     title: 'Panduan Audit Smart Contract Web3',
     summary: 'Langkah taktis melakukan audit smart contract defensif untuk protokol DeFi.',
@@ -83,7 +84,7 @@ describe('JSON-LD Schema Builder — BlogPosting', () => {
   });
 });
 
-describe('JSON-LD Schema Builder — BreadcrumbList', () => {
+describe('JSON-LD Schema Builder - BreadcrumbList', () => {
   it('menghasilkan BreadcrumbList terpisah dengan hierarki yang tepat', () => {
     const siteUrl = 'https://wahyuandikaputra.my.id/';
     const breadcrumb = buildBreadcrumbSchema(
@@ -119,7 +120,7 @@ describe('JSON-LD Schema Builder — BreadcrumbList', () => {
   });
 });
 
-describe('JSON-LD Schema Builder — Person, WebSite & Service', () => {
+describe('JSON-LD Schema Builder - Person, ProfilePage, WebSite & Service', () => {
   const siteUrl = 'https://wahyuandikaputra.my.id/';
 
   it('menghasilkan Person schema lengkap', () => {
@@ -128,6 +129,15 @@ describe('JSON-LD Schema Builder — Person, WebSite & Service', () => {
     expect(person['@type']).toBe('Person');
     expect(person.name).toBe('Wahyu Andika Putra');
     expect(person.url).toBe(siteUrl);
+  });
+
+  it('menghasilkan ProfilePage schema yang membungkus Person di mainEntity', () => {
+    const profilePage = buildProfilePageSchema(siteUrl);
+    expect(profilePage['@context']).toBe('https://schema.org');
+    expect(profilePage['@type']).toBe('ProfilePage');
+    expect(profilePage.mainEntity).toBeDefined();
+    expect((profilePage.mainEntity as Record<string, unknown>)['@type']).toBe('Person');
+    expect((profilePage.mainEntity as Record<string, unknown>)['name']).toBe('Wahyu Andika Putra');
   });
 
   it('menghasilkan WebSite schema dengan SearchAction', () => {

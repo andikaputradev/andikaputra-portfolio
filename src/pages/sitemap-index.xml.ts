@@ -52,10 +52,33 @@ export const GET: APIRoute = async ({ site }) => {
       .where(eq(articles.published, true)),
   ]);
 
+  const latestArticleUpdate = publishedArticles.reduce<Date | null>((latest, a) => {
+    if (!a.updatedAt) return latest;
+    const d = new Date(a.updatedAt);
+    return !latest || d > latest ? d : latest;
+  }, null);
+
+  const latestProjectUpdate = publishedProjects.reduce<Date | null>((latest, p) => {
+    if (!p.updatedAt) return latest;
+    const d = new Date(p.updatedAt);
+    return !latest || d > latest ? d : latest;
+  }, null);
+
+  const latestOverallUpdate = [latestArticleUpdate, latestProjectUpdate]
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => b.getTime() - a.getTime())[0] ?? new Date();
+
+  const getStaticRouteLastMod = (path: string): string | undefined => {
+    if (path === '') return formatDate(latestOverallUpdate);
+    if (path === 'artikel/') return formatDate(latestArticleUpdate ?? latestOverallUpdate);
+    if (path === 'jasa/') return formatDate(latestOverallUpdate);
+    return formatDate(latestOverallUpdate);
+  };
+
   const urls = [
     ...STATIC_ROUTES.map((route) => ({
       loc: buildUrl(rawSiteUrl, route.path),
-      lastmod: undefined as string | undefined,
+      lastmod: getStaticRouteLastMod(route.path),
       priority: route.priority.toFixed(1),
       changefreq: route.changefreq,
     })),

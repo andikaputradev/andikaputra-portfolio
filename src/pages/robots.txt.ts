@@ -12,11 +12,23 @@ Disallow: /api/
 User-agent: GPTBot
 Allow: /
 
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
 User-agent: Google-Extended
 Allow: /
 
 User-agent: CCBot
 Allow: /
+
+User-agent: Bytespider
+Disallow: /
 
 Sitemap: ${site}/sitemap-index.xml
 `;

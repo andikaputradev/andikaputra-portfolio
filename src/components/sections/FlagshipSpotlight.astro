@@ -37,7 +37,7 @@ if (flagship === undefined) {
 
 const coverSrc = flagship ? resolveCoverImage(flagship, 'f_auto,q_auto,w_900,h_675,c_fill') : null;
 const coverSrcSet = flagship ? resolveCoverImageSrcSet(flagship, [450, 700, 900, 1200], 'f_auto,q_auto,c_fill') : undefined;
-const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown) : '';
+const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1: true }) : '';
 ---
 
 {flagship && (

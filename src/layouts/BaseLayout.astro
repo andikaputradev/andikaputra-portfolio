@@ -4,7 +4,7 @@ import TelemetryStrip from '../components/layout/TelemetryStrip.astro';
 import Nav from '../components/layout/Nav.astro';
 import Footer from '../components/layout/Footer.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
-import { buildPersonSchema } from '../lib/json-ld';
+import { buildPersonSchema, buildProfilePageSchema } from '../lib/json-ld';
 
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
@@ -26,6 +26,7 @@ interface Props {
   preloadImage?: string;
   preloadImageSrcSet?: string;
   preloadImageSizes?: string;
+  isProfilePage?: boolean;
 }
 
 const {
@@ -41,13 +42,18 @@ const {
   preloadImage,
   preloadImageSrcSet,
   preloadImageSizes,
+  isProfilePage,
 } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const defaultCanonical = siteUrl ? `${siteUrl}${Astro.url.pathname}` : Astro.url.href;
 const canonical = explicitCanonical || defaultCanonical;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
-const allSchemas = [buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined), ...additionalSchemas];
+const isHome = isProfilePage ?? (Astro.url.pathname === '/' || Astro.url.pathname === '');
+const rootSchema = isHome
+  ? buildProfilePageSchema(siteUrl ? `${siteUrl}/` : undefined)
+  : buildPersonSchema(siteUrl ? `${siteUrl}/` : undefined);
+const allSchemas = [rootSchema, ...additionalSchemas];
 const siteName = 'Wahyu Andika Putra';
 const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
 ---

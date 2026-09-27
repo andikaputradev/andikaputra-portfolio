@@ -1,0 +1,19 @@
+# Wahyu Andika Putra
+
+> Software Engineer and Cybersecurity Specialist based in Indonesia. Focused on production-grade Web2 product engineering, smart contract audits, and Web3 protocol security.
+
+## Core Competencies
+- Full-Stack Web Development: TypeScript, Astro, Node.js, Next.js, Postgres
+- Cybersecurity: Penetration testing, Web security hardening, ASVS compliance
+- Web3 / Blockchain: Smart contract security auditing, Solidity, DeFi risk analysis
+
+## Key Pages
+- [Portfolio Projects](https://wahyuandikaputra.my.id/#work): Featured production applications
+- [Articles & Technical Insights](https://wahyuandikaputra.my.id/artikel): Engineering and security publications
+- [Services & Consultations](https://wahyuandikaputra.my.id/jasa): Professional engineering and audit services
+
+## Contact
+- Website: https://wahyuandikaputra.my.id
+- GitHub: https://github.com/andikaputradev
+- LinkedIn: https://linkedin.com/in/wahyu-andika-putra
+- Email: wahyuandikaputra.co.id@gmail.com

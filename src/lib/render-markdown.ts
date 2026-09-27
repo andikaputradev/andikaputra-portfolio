@@ -28,7 +28,6 @@ export function renderProjectBody(
         const count = slugCounts.get(baseSlug) || 0;
         slugCounts.set(baseSlug, count + 1);
         const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`;
-
         const targetDepth = options?.demoteH1 && depth === 1 ? 2 : depth;
         const tag = `h${targetDepth}`;
         return `<${tag} id="${slug}">${text}</${tag}>\n`;
