@@ -24,7 +24,7 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 
   <div class="hero__content container-site">
     <div class="hero__text">
-      <p class="hero__eyebrow font-mono js-reveal" data-hero-eyebrow>
+      <p class="hero__eyebrow font-mono js-reveal" data-hero-eyebrow data-scramble>
         SOFTWARE ENGINEER | SECURITY SPECIALIST | WEB3
       </p>
 
@@ -70,9 +70,11 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 
 <script>
   import { initHeroEntrance } from '../../scripts/hero';
+  import { initTextScramble } from '../../scripts/text-scramble';
 
   document.addEventListener('astro:page-load', () => {
     initHeroEntrance();
+    initTextScramble('[data-hero-eyebrow]');
 
     const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (isReduced) return;

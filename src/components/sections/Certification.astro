@@ -43,6 +43,14 @@ function formatDate(date: Date): string {
   </section>
 )}
 
+<script>
+  import { initSpotlightCards } from '../../scripts/spotlight-card';
+
+  document.addEventListener('astro:page-load', () => {
+    initSpotlightCards('#certifications [data-spotlight]');
+  });
+</script>
+
 <style>
   .cert-section__eyebrow {
     font-size: 0.8125rem;

@@ -15,7 +15,7 @@ const NAV_LINKS = [
 <header class="site-nav" data-site-nav>
   <div class="site-nav__inner container-site">
     <a href="/" class="site-nav__logo" aria-label="Wahyu Andika Putra back to top">
-      <span class="site-nav__logo-mark">WAP</span>
+      <span class="site-nav__logo-mark font-mono" data-scramble>[WAP]</span>
     </a>
 
     <nav
@@ -56,8 +56,12 @@ const NAV_LINKS = [
 
 <script>
   import { initNavToggle } from '../../scripts/nav-toggle';
+  import { initTextScramble } from '../../scripts/text-scramble';
 
-  document.addEventListener('astro:page-load', initNavToggle);
+  document.addEventListener('astro:page-load', () => {
+    initNavToggle();
+    initTextScramble('.site-nav__logo-mark');
+  });
 </script>
 
 <style>

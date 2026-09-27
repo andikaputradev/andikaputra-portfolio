@@ -22,6 +22,7 @@ const Tag = href ? 'a' : 'button';
   class={`magnetic-btn magnetic-btn--${variant}`}
   data-magnetic
 >
+  <span class="magnetic-btn__sheen" aria-hidden="true"></span>
   <span class="magnetic-btn__label"><slot /></span>
 </Tag>
 
@@ -33,47 +34,122 @@ const Tag = href ? 'a' : 'button';
 
 <style>
   .magnetic-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.85rem 1.75rem;
+    padding: 0.8rem 1.6rem;
     font-family: var(--font-sans), sans-serif;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    letter-spacing: 0.02em;
     text-decoration: none;
     border-radius: var(--radius-md);
-    border: 1px solid transparent;
     cursor: pointer;
-    background: none;
-    transition: border-color var(--transition-fast), color var(--transition-fast),
-      background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    overflow: hidden;
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      background-color var(--transition-fast),
+      box-shadow var(--transition-fast),
+      transform var(--transition-fast);
     will-change: transform;
+    -webkit-font-smoothing: antialiased;
   }
 
   .magnetic-btn:active {
     transform: scale(0.97);
   }
 
+  .magnetic-btn__sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  .magnetic-btn:hover .magnetic-btn__sheen {
+    opacity: 1;
+  }
+
+  .magnetic-btn__label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Primary Obsidian Button */
   .magnetic-btn--primary {
-    border-color: color-mix(in oklch, var(--color-accent-phosphor) 55%, transparent);
-    color: var(--color-accent-phosphor);
+    background-color: color-mix(in oklch, var(--color-surface-raised) 70%, var(--color-bg));
+    border: 1px solid color-mix(in oklch, var(--color-accent-phosphor) 50%, var(--color-border));
+    color: var(--color-text-primary);
+    box-shadow: 0 1px 3px oklch(0% 0 0 / 20%), inset 0 1px 0 oklch(100% 0 0 / 6%);
+  }
+
+  .magnetic-btn--primary .magnetic-btn__sheen {
+    background: radial-gradient(
+      circle 100px at var(--sheen-x, 50%) var(--sheen-y, 50%),
+      oklch(72% 0.14 55 / 25%),
+      transparent 70%
+    );
   }
 
   .magnetic-btn--primary:hover {
-    background-color: color-mix(in oklch, var(--color-accent-phosphor) 12%, transparent);
     border-color: var(--color-accent-phosphor);
-    box-shadow: 0 0 16px oklch(72% 0.14 55 / 15%);
+    color: var(--color-accent-phosphor);
+    box-shadow:
+      0 0 18px oklch(72% 0.14 55 / 18%),
+      inset 0 0 10px oklch(72% 0.14 55 / 8%);
   }
 
+  /* Secondary Obsidian Button */
   .magnetic-btn--secondary {
+    background-color: color-mix(in oklch, var(--color-surface) 40%, transparent);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .magnetic-btn--secondary .magnetic-btn__sheen {
+    background: radial-gradient(
+      circle 100px at var(--sheen-x, 50%) var(--sheen-y, 50%),
+      oklch(75% 0.08 220 / 18%),
+      transparent 70%
+    );
+  }
+
+  .magnetic-btn--secondary:hover {
+    border-color: color-mix(in oklch, var(--color-text-primary) 40%, var(--color-border));
+    color: var(--color-text-primary);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Light mode adjustments */
+  [data-theme="light"] .magnetic-btn--primary {
+    background-color: var(--color-surface);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 65%, var(--color-border));
+    color: var(--color-text-primary);
+  }
+
+  [data-theme="light"] .magnetic-btn--primary:hover {
+    border-color: var(--color-accent-phosphor);
+    color: var(--color-accent-phosphor);
+  }
+
+  [data-theme="light"] .magnetic-btn--secondary {
+    background-color: var(--color-surface);
     border-color: var(--color-border);
     color: var(--color-text-muted);
   }
 
-  .magnetic-btn--secondary:hover {
-    border-color: var(--color-text-primary);
+  [data-theme="light"] .magnetic-btn--secondary:hover {
     color: var(--color-text-primary);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--color-text-primary);
   }
 </style>

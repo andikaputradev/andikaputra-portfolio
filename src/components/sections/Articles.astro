@@ -30,7 +30,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 
     <div class="home-articles__grid">
       {latestArticles.map((article) => (
-        <article class="article-card">
+        <article class="article-card" data-spotlight>
+          <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
+          <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
           <a href={`/artikel/${article.slug}/`} class="article-card__link">
             <div class="article-card__header">
               <span class={`article-card__category font-mono article-card__category--${article.category.toLowerCase()}`}>
@@ -40,7 +42,7 @@ const CATEGORY_LABELS: Record<string, string> = {
                 <span class="article-card__reading-time font-mono">{article.readingTimeMinutes} min read</span>
               )}
             </div>
-            <h3 class="article-card__title">{article.title}</h3>
+            <h3 class="article-card__title" data-scramble>{article.title}</h3>
             <p class="article-card__summary">{article.summary}</p>
             <div class="article-card__meta font-mono">
               <time datetime={article.publishedAt.toISOString()}>
@@ -54,11 +56,21 @@ const CATEGORY_LABELS: Record<string, string> = {
 
     {latestArticles.length > 0 && (
       <div class="home-articles__cta">
-        <a href="/artikel/" class="home-articles__link font-mono">Lihat semua artikel →</a>
+        <a href="/artikel/" class="home-articles__link font-mono">[ Lihat semua artikel ]</a>
       </div>
     )}
   </div>
 </section>
+
+<script>
+  import { initSpotlightCards } from '../../scripts/spotlight-card';
+  import { initTextScramble } from '../../scripts/text-scramble';
+
+  document.addEventListener('astro:page-load', () => {
+    initSpotlightCards('[data-spotlight]');
+    initTextScramble('[data-scramble]');
+  });
+</script>
 
 <style>
   .home-articles {
@@ -103,32 +115,105 @@ const CATEGORY_LABELS: Record<string, string> = {
 
   .home-articles__link:hover {
     color: var(--color-text-primary);
-    text-decoration: underline;
   }
 
   .article-card {
+    position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .article-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      380px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      oklch(72% 0.14 55 / 10%),
+      transparent 75%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .article-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      240px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      oklch(72% 0.14 55 / 45%),
+      transparent 70%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
+  .article-card:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .article-card:hover::before,
+  .article-card:hover::after {
+    opacity: 1;
+  }
+
+  .cyber-corner {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-color: var(--color-accent-phosphor);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.5;
+  }
+
+  .cyber-corner--tl {
+    top: 6px;
+    left: 6px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+
+  .cyber-corner--br {
+    bottom: 6px;
+    right: 6px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+
+  .article-card:hover .cyber-corner {
+    opacity: 1;
   }
 
   .article-card__link {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     flex: 1;
     text-decoration: none;
     color: inherit;
     padding: 1.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .article-card__link:hover {
-    border-color: color-mix(in oklch, var(--color-accent-phosphor) 30%, var(--color-border));
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
   }
 
   .article-card__header {

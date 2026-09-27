@@ -45,36 +45,51 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
   <canvas id="flagship-canvas" class="flagship__canvas" aria-hidden="true"></canvas>
 
   <div class="flagship__inner container-site">
-    <div class="flagship__media cover-image-wrap">
-      {coverSrc ? (
-        <img
-          src={coverSrc}
-          srcset={coverSrcSet}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-          width="900"
-          height="675"
-          alt={`${flagship.title} product interface`}
-          class="flagship__image js-cover-image"
-          loading="lazy"
-          decoding="async"
-          transition:name={`project-image-${flagship.slug}`}
-        />
-      ) : (
-        <img alt="" width="900" height="675" class="flagship__image js-cover-image is-broken" loading="lazy" />
-      )}
+    <!-- Media Frame with Cyber Accents -->
+    <div class="flagship__media-container">
+      <div class="flagship__media cover-image-wrap">
+        <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
+        <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
+
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            srcset={coverSrcSet}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+            width="900"
+            height="675"
+            alt={`${flagship.title} product interface`}
+            class="flagship__image js-cover-image"
+            loading="lazy"
+            decoding="async"
+            transition:name={`project-image-${flagship.slug}`}
+          />
+        ) : (
+          <img alt="" width="900" height="675" class="flagship__image js-cover-image is-broken" loading="lazy" />
+        )}
+
+        <div class="flagship__media-hud font-mono" aria-hidden="true">
+          <span>SYS::SPOTLIGHT</span>
+          <span>ONLINE // 100%</span>
+        </div>
+      </div>
     </div>
 
+    <!-- Editorial Story Text -->
     <div class="flagship__text" data-flagship-text>
-      <div class="flagship__label font-mono">FLAGSHIP</div>
-      <TagBadge tag={flagship.tag} />
-      <h2 class="flagship__title font-display">{flagship.title}</h2>
+      <div class="flagship__header-meta font-mono">
+        <span class="flagship__eyebrow-tag">02 // FLAGSHIP SYSTEM</span>
+        <TagBadge tag={flagship.tag} />
+      </div>
+
+      <h2 class="flagship__title font-display" data-scramble>{flagship.title}</h2>
 
       <div class="flagship__copy" set:html={bodyHtml} />
 
       <DisclaimerNotice />
 
       <div class="flagship__cta">
-        <MagneticButton href={`/work/${flagship.slug}/`} variant="secondary">
+        <MagneticButton href={`/work/${flagship.slug}/`} variant="primary">
           View case study
         </MagneticButton>
       </div>
@@ -85,9 +100,11 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
 
 <script>
   import { initFlagshipReveal } from '../../scripts/flagship-reveal';
+  import { initTextScramble } from '../../scripts/text-scramble';
 
   document.addEventListener('astro:page-load', () => {
     initFlagshipReveal();
+    initTextScramble('[data-flagship] [data-scramble]');
 
     const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
@@ -116,6 +133,8 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
     overflow: hidden;
     padding-block: var(--spacing-section);
     background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .flagship__canvas {
@@ -132,37 +151,97 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
     z-index: 1;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: 3rem;
     align-items: center;
+  }
+
+  .flagship__media-container {
+    position: relative;
+  }
+
+  .flagship__media {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-raised);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  }
+
+  .flagship:hover .flagship__media {
+    box-shadow: var(--shadow-xl);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 35%, var(--color-border));
+  }
+
+  .cyber-corner {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-color: var(--color-accent-phosphor);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0.7;
+  }
+
+  .cyber-corner--tl {
+    top: 8px;
+    left: 8px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .cyber-corner--br {
+    bottom: 8px;
+    right: 8px;
+    border-width: 0 2px 2px 0;
   }
 
   .flagship__image {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface-raised);
-    box-shadow: var(--shadow-md);
-    transition: box-shadow var(--transition-base);
+    transition: transform var(--transition-slow);
   }
 
   .flagship:hover .flagship__image {
-    box-shadow: var(--shadow-xl);
+    transform: scale(1.02);
   }
 
-  .flagship__label {
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
+  .flagship__media-hud {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(to top, color-mix(in oklch, var(--color-bg) 85%, transparent), transparent);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
     color: var(--color-accent-phosphor);
-    margin-bottom: 0.75rem;
+    pointer-events: none;
+  }
+
+  .flagship__header-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .flagship__eyebrow-tag {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-phosphor);
   }
 
   .flagship__title {
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.1;
-    margin-block: 1rem 1.5rem;
-    letter-spacing: -0.01em;
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    line-height: 1.08;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
   }
 
   .flagship__copy {
@@ -179,8 +258,12 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
 
   @media (min-width: 1024px) {
     .flagship__inner {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 4rem;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 4.5rem;
     }
+  }
+
+  [data-theme="light"] .flagship {
+    background-color: var(--color-surface);
   }
 </style>

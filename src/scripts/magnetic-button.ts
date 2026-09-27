@@ -29,11 +29,18 @@ export function initMagneticButtons(selector = '[data-magnetic]'): void {
         const relY = event.clientY - rect.top - rect.height / 2;
         xTo(relX * strength);
         yTo(relY * strength);
+
+        const localX = event.clientX - rect.left;
+        const localY = event.clientY - rect.top;
+        btn.style.setProperty('--sheen-x', `${localX}px`);
+        btn.style.setProperty('--sheen-y', `${localY}px`);
       };
 
       const handleLeave = (): void => {
         xTo(0);
         yTo(0);
+        btn.style.removeProperty('--sheen-x');
+        btn.style.removeProperty('--sheen-y');
       };
 
       btn.addEventListener('mousemove', handleMove);
@@ -42,6 +49,8 @@ export function initMagneticButtons(selector = '[data-magnetic]'): void {
       cleanups.push(() => {
         btn.removeEventListener('mousemove', handleMove);
         btn.removeEventListener('mouseleave', handleLeave);
+        btn.style.removeProperty('--sheen-x');
+        btn.style.removeProperty('--sheen-y');
         gsap.set(btn, { x: 0, y: 0 });
       });
     });

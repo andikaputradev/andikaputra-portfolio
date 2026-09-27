@@ -20,193 +20,334 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
 
 <article class="project-detail">
   <header class="project-detail__header container-site">
-    {showBackLink && <a href="/#work" class="project-detail__back">← Back to work</a>}
-    <TagBadge tag={project.tag} />
+    {showBackLink && (
+      <a href="/#work" class="project-detail__back font-mono">
+        <span class="project-detail__back-arrow" aria-hidden="true">←</span>
+        <span>Back to work</span>
+      </a>
+    )}
+
+    <div class="project-detail__telemetry-row">
+      <TagBadge tag={project.tag} />
+      {project.flagship && (
+        <span class="project-detail__flagship font-mono">
+          <span class="project-detail__flagship-dot" aria-hidden="true"></span>
+          FLAGSHIP SYSTEM
+        </span>
+      )}
+    </div>
+
     <h1 class="project-detail__title font-display">{project.title}</h1>
     <p class="project-detail__summary">{project.summary}</p>
   </header>
 
   <div class="project-detail__cover-wrap cover-image-wrap container-site">
-    {coverSrc ? (
-      <img
-        src={coverSrc}
-        srcset={coverSrcSet}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-        width="1200"
-        height="675"
-        alt={`${project.title} cover screenshot`}
-        class="project-detail__cover js-cover-image"
-        loading="eager"
-        decoding="async"
-        fetchpriority="high"
-        transition:name={`project-image-${project.slug}`}
-      />
-    ) : (
-      <img alt="" width="1200" height="675" class="project-detail__cover js-cover-image is-broken" />
-    )}
+    <div class="project-detail__cover-frame">
+      <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
+      <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
+
+      {coverSrc ? (
+        <img
+          src={coverSrc}
+          srcset={coverSrcSet}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          width="1200"
+          height="675"
+          alt={`${project.title} cover screenshot`}
+          class="project-detail__cover js-cover-image"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          transition:name={`project-image-${project.slug}`}
+        />
+      ) : (
+        <img alt="" width="1200" height="675" class="project-detail__cover js-cover-image is-broken" />
+      )}
+    </div>
   </div>
 
   <div class="project-detail__body container-site">
     <div class="project-detail__content" set:html={bodyHtml} />
 
-    <div class="project-detail__meta">
-      <div class="project-detail__meta-block">
-        <h2 class="project-detail__meta-heading font-mono">Published</h2>
-        <p class="project-detail__published">{publishedLabel}</p>
+    <aside class="project-detail__meta" aria-label="Project Metadata">
+      <div class="project-detail__meta-panel">
+        <div class="project-detail__meta-block">
+          <h2 class="project-detail__meta-heading font-mono">Published</h2>
+          <p class="project-detail__published">{publishedLabel}</p>
+        </div>
+
+        {
+          stack.length > 0 && (
+            <div class="project-detail__meta-block">
+              <h2 class="project-detail__meta-heading font-mono">Stack</h2>
+              <ul class="project-detail__stack-list font-mono">
+                {stack.map((tech: string) => (
+                  <li class="project-detail__stack-item">{tech}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {
+          (project.liveUrl || project.repoUrl) && (
+            <div class="project-detail__meta-block">
+              <h2 class="project-detail__meta-heading font-mono">Links</h2>
+              <ul class="project-detail__link-list font-mono">
+                {project.liveUrl && (
+                  <li>
+                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item">
+                      <span>Live site</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                    </a>
+                  </li>
+                )}
+                {project.repoUrl && (
+                  <li>
+                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item">
+                      <span>Repository</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M7 17L17 7"></path>
+                        <path d="M7 7h10v10"></path>
+                      </svg>
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )
+        }
       </div>
-
-      {
-        stack.length > 0 && (
-          <div class="project-detail__meta-block">
-            <h2 class="project-detail__meta-heading font-mono">Stack</h2>
-            <ul class="project-detail__stack-list">
-              {stack.map((tech: string) => (
-                <li>{tech}</li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
-
-      {
-        (project.liveUrl || project.repoUrl) && (
-          <div class="project-detail__meta-block">
-            <h2 class="project-detail__meta-heading font-mono">Links</h2>
-            <ul class="project-detail__link-list">
-              {project.liveUrl && (
-                <li>
-                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                    Live site ↗
-                  </a>
-                </li>
-              )}
-              {project.repoUrl && (
-                <li>
-                  <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
-                    Repository ↗
-                  </a>
-                </li>
-              )}
-            </ul>
-          </div>
-        )
-      }
-    </div>
+    </aside>
   </div>
 </article>
 
 <style>
+  .project-detail {
+    padding-bottom: var(--spacing-section);
+  }
+
   .project-detail__header {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
-    padding-top: clamp(2.5rem, 6vw, 4rem);
+    gap: 1.25rem;
+    padding-top: clamp(2rem, 5vw, 3.5rem);
     padding-bottom: 2rem;
   }
 
   .project-detail__back {
-    font-family: var(--font-mono), monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.8125rem;
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast), transform var(--transition-fast);
   }
 
   .project-detail__back:hover {
     color: var(--color-accent-phosphor);
+    transform: translateX(-2px);
+  }
+
+  .project-detail__telemetry-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .project-detail__flagship {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-phosphor);
+    background-color: color-mix(in oklch, var(--color-accent-phosphor) 10%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-accent-phosphor) 30%, transparent);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .project-detail__flagship-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--color-accent-phosphor);
   }
 
   .project-detail__title {
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    line-height: 1.1;
-    max-width: 24ch;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    line-height: 1.08;
+    max-width: 22ch;
     letter-spacing: -0.02em;
   }
 
   .project-detail__summary {
-    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    font-size: clamp(1.0625rem, 1.8vw, 1.3rem);
+    line-height: 1.6;
     color: var(--color-text-muted);
-    max-width: 60ch;
+    max-width: 62ch;
   }
 
   .project-detail__cover-wrap {
     margin-bottom: clamp(2.5rem, 6vw, 4rem);
   }
 
+  .project-detail__cover-frame {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-raised);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cyber-corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--color-accent-phosphor);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.8;
+  }
+
+  .cyber-corner--tl {
+    top: 8px;
+    left: 8px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .cyber-corner--br {
+    bottom: 8px;
+    right: 8px;
+    border-width: 0 2px 2px 0;
+  }
+
   .project-detail__cover {
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border-radius: var(--radius-lg);
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
   }
 
   .project-detail__body {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2.5rem;
-    padding-bottom: var(--spacing-section);
+    gap: 3.5rem;
   }
 
   .project-detail__content {
     font-size: 1.0625rem;
-    line-height: 1.75;
+    line-height: 1.8;
     max-width: 68ch;
+    color: var(--color-text-primary);
+  }
+
+  .project-detail__content :global(h2) {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .project-detail__content :global(h3) {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
   }
 
   .project-detail__content :global(p + p) {
-    margin-top: 1.25rem;
+    margin-top: 1.35rem;
   }
 
-  .project-detail__meta {
+  .project-detail__content :global(ul),
+  .project-detail__content :global(ol) {
+    margin-block: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .project-detail__content :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .project-detail__meta-panel {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: 2rem;
+    box-shadow: var(--shadow-sm);
   }
 
   .project-detail__meta-heading {
     font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+    color: var(--color-accent-phosphor);
     margin-bottom: 0.75rem;
-  }
-
-  .project-detail__stack-list,
-  .project-detail__link-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .project-detail__stack-list li {
-    font-size: 0.9375rem;
-    color: var(--color-text-primary);
+    text-transform: uppercase;
   }
 
   .project-detail__published {
     font-size: 0.9375rem;
     color: var(--color-text-primary);
+    font-family: var(--font-mono);
   }
 
-  .project-detail__link-list a {
-    font-size: 0.9375rem;
+  .project-detail__stack-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .project-detail__stack-item {
+    font-size: 0.75rem;
+    color: var(--color-text-primary);
+    background-color: color-mix(in oklch, var(--color-surface-raised) 70%, transparent);
+    border: 1px solid var(--color-border);
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .project-detail__link-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .project-detail__link-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
     color: var(--color-accent-phosphor);
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast), transform var(--transition-fast);
   }
 
-  .project-detail__link-list a:hover {
+  .project-detail__link-item:hover {
     color: var(--color-text-primary);
-    text-decoration: underline;
+    transform: translateX(2px);
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 900px) {
     .project-detail__body {
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     }
+  }
+
+  [data-theme="light"] .project-detail__meta-panel {
+    background-color: var(--color-surface);
   }
 </style>

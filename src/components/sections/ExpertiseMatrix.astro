@@ -25,7 +25,9 @@ const GROUPS = [
     <div class="expertise__groups" id="expertise-groups">
       {
         GROUPS.map((group) => (
-          <div class="expertise-panel js-reveal" data-category={group.id}>
+          <div class="expertise-panel js-reveal" data-category={group.id} data-spotlight>
+            <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
+            <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
             <div class="expertise-panel__glow" aria-hidden="true" />
             <div class="expertise-panel__header">
               <span class="expertise-panel__dot" aria-hidden="true" />
@@ -46,8 +48,12 @@ const GROUPS = [
 
 <script>
   import { initExpertiseReveal } from '../../scripts/anime-svg';
+  import { initSpotlightCards } from '../../scripts/spotlight-card';
 
-  document.addEventListener('astro:page-load', () => initExpertiseReveal());
+  document.addEventListener('astro:page-load', () => {
+    initExpertiseReveal();
+    initSpotlightCards('#expertise [data-spotlight]');
+  });
 </script>
 
 <style>
@@ -83,6 +89,34 @@ const GROUPS = [
     box-shadow: var(--shadow-sm);
   }
 
+  .cyber-corner {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-color: var(--color-accent-phosphor);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast);
+  }
+
+  .cyber-corner--tl {
+    top: 6px;
+    left: 6px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+
+  .cyber-corner--br {
+    bottom: 6px;
+    right: 6px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+
+  .expertise-panel:hover .cyber-corner {
+    opacity: 1;
+  }
+
   :root[data-js-ready] .expertise-panel.js-reveal {
     transform: translateY(20px);
   }
@@ -94,6 +128,10 @@ const GROUPS = [
 
   .expertise-panel[data-category='web3-blockchain']:hover {
     border-color: color-mix(in oklch, var(--color-accent-steel) 35%, var(--color-border));
+  }
+
+  .expertise-panel[data-category='web3-blockchain'] .cyber-corner {
+    border-color: var(--color-accent-steel);
   }
 
   .expertise-panel__glow {

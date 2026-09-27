@@ -21,7 +21,10 @@ const fullUrl = hasAsset
   : null;
 ---
 
-<article class="cert-card border-subtle">
+<article class="cert-card border-subtle" data-spotlight>
+  <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
+  <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
+
   <div class="cert-card__thumb-wrap">
     {thumbUrl ? (
       <img src={thumbUrl} alt={`Sertifikat ${name} oleh ${issuer}`} loading="lazy" class="cert-card__thumb" />
@@ -32,17 +35,26 @@ const fullUrl = hasAsset
   </div>
 
   <div class="cert-card__body">
-    <p class="cert-card__name">{name}</p>
-    <p class="cert-card__meta mono">{issuer} · {issueDateLabel}</p>
-    <div class="cert-card__links">
+    <p class="cert-card__name font-sans">{name}</p>
+    <p class="cert-card__meta font-mono">{issuer} · {issueDateLabel}</p>
+    <div class="cert-card__links font-mono">
       {fullUrl && (
-        <a href={fullUrl} target="_blank" rel="noopener noreferrer">
-          Lihat sertifikat ↗
+        <a href={fullUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link">
+          <span>Lihat sertifikat</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
         </a>
       )}
       {verificationUrl && (
-        <a href={verificationUrl} target="_blank" rel="noopener noreferrer">
-          Verifikasi ↗
+        <a href={verificationUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link">
+          <span>Verifikasi</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17L17 7"></path>
+            <path d="M7 7h10v10"></path>
+          </svg>
         </a>
       )}
     </div>
@@ -51,8 +63,10 @@ const fullUrl = hasAsset
 
 <style>
   .cert-card {
+    position: relative;
     display: flex;
     flex-direction: column;
+    background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -60,22 +74,98 @@ const fullUrl = hasAsset
     box-shadow: var(--shadow-sm);
   }
 
+  .cert-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      280px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      oklch(72% 0.14 55 / 10%),
+      transparent 75%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .cert-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      180px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      oklch(72% 0.14 55 / 45%),
+      transparent 70%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
   .cert-card:hover {
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 35%, var(--color-border));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cert-card:hover::before,
+  .cert-card:hover::after {
+    opacity: 1;
+  }
+
+  .cyber-corner {
+    position: absolute;
+    width: 6px;
+    height: 6px;
     border-color: var(--color-accent-phosphor);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.5;
+  }
+
+  .cyber-corner--tl {
+    top: 6px;
+    left: 6px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+
+  .cyber-corner--br {
+    bottom: 6px;
+    right: 6px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+
+  .cert-card:hover .cyber-corner {
+    opacity: 1;
   }
 
   .cert-card__thumb-wrap {
     position: relative;
+    z-index: 1;
     aspect-ratio: 4 / 3;
     background-color: var(--color-surface-raised);
+    overflow: hidden;
   }
 
   .cert-card__thumb {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+
+  .cert-card:hover .cert-card__thumb {
+    transform: scale(1.03);
   }
 
   .cert-card__thumb-fallback {
@@ -91,9 +181,9 @@ const fullUrl = hasAsset
     position: absolute;
     top: 0.6rem;
     right: 0.6rem;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
     background-color: var(--color-bg);
     color: var(--color-accent-phosphor);
     border: 1px solid var(--color-accent-phosphor);
@@ -101,34 +191,48 @@ const fullUrl = hasAsset
   }
 
   .cert-card__body {
+    position: relative;
+    z-index: 1;
     padding: 1rem 1.1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
   .cert-card__name {
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.9375rem;
     margin-bottom: 0.3rem;
     line-height: 1.35;
+    color: var(--color-text-primary);
   }
 
   .cert-card__meta {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--color-text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.85rem;
   }
 
   .cert-card__links {
+    margin-top: auto;
     display: flex;
     gap: 1rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid color-mix(in oklch, var(--color-border) 60%, transparent);
   }
 
-  .cert-card__links a {
-    font-size: 0.78rem;
+  .cert-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
     color: var(--color-accent-steel);
     text-decoration: none;
+    transition: color var(--transition-fast);
   }
 
-  .cert-card__links a:hover {
+  .cert-card__link:hover {
+    color: var(--color-accent-phosphor);
     text-decoration: underline;
   }
 </style>

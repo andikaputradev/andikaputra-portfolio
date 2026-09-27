@@ -2,19 +2,22 @@
 const FILTERS = ['ALL', 'SECURITY', 'WEB2', 'WEB3'] as const;
 ---
 
-<div class="project-filter" role="group" aria-label="Filter projects by category">
-  {
-    FILTERS.map((filter, i) => (
-      <button
-        type="button"
-        class="project-filter__btn font-mono"
-        data-filter-btn={filter}
-        aria-pressed={i === 0 ? 'true' : 'false'}
-      >
-        [{filter}]
-      </button>
-    ))
-  }
+<div class="project-filter-wrap">
+  <div class="project-filter" role="group" aria-label="Filter projects by category">
+    {
+      FILTERS.map((filter, i) => (
+        <button
+          type="button"
+          class="project-filter__btn font-mono"
+          data-filter-btn={filter}
+          aria-pressed={i === 0 ? 'true' : 'false'}
+        >
+          <span class="project-filter__indicator" aria-hidden="true"></span>
+          <span class="project-filter__label">[{filter}]</span>
+        </button>
+      ))
+    }
+  </div>
 </div>
 
 <script>
@@ -24,32 +27,75 @@ const FILTERS = ['ALL', 'SECURITY', 'WEB2', 'WEB3'] as const;
 </script>
 
 <style>
-  .project-filter {
+  .project-filter-wrap {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    align-items: center;
     margin-bottom: 2.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .project-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem;
+    background-color: color-mix(in oklch, var(--color-surface-raised) 45%, var(--color-bg));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
   }
 
   .project-filter__btn {
-    padding: 0.5rem 0.9rem;
-    font-size: 0.8125rem;
-    letter-spacing: 0.03em;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
     color: var(--color-text-muted);
-    background: none;
-    border: 1px solid var(--color-border);
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .project-filter__indicator {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: transparent;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
   }
 
   .project-filter__btn:hover {
     color: var(--color-text-primary);
-    border-color: var(--color-text-primary);
   }
 
   .project-filter__btn[aria-pressed='true'] {
     color: var(--color-accent-phosphor);
-    border-color: var(--color-accent-phosphor);
+    background-color: var(--color-surface);
+    border-color: color-mix(in oklch, var(--color-accent-phosphor) 35%, var(--color-border));
+    box-shadow: 0 1px 4px oklch(0% 0 0 / 25%);
+  }
+
+  .project-filter__btn[aria-pressed='true'] .project-filter__indicator {
+    background-color: var(--color-accent-phosphor);
+  }
+
+  [data-theme="light"] .project-filter {
+    background-color: var(--color-surface-raised);
+  }
+
+  [data-theme="light"] .project-filter__btn[aria-pressed='true'] {
+    background-color: var(--color-surface);
+    color: var(--color-accent-phosphor);
   }
 </style>

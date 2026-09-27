@@ -94,6 +94,8 @@
 
   body {
     background-color: var(--color-bg);
+    background-image: radial-gradient(circle at 50% -100px, oklch(24% 0.02 260 / 35%), transparent 700px);
+    background-repeat: no-repeat;
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-size: 1rem;
@@ -101,6 +103,28 @@
     min-height: 100dvh;
     overflow-x: hidden;
     padding-top: var(--header-h);
+  }
+
+  [data-theme="light"] body {
+    background-image: radial-gradient(circle at 50% -100px, oklch(93% 0.01 80 / 50%), transparent 700px);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-accent-phosphor);
   }
 
   :focus-visible {
