@@ -20,9 +20,10 @@ interface Props {
 const { articleSlug, comments, stats } = Astro.props;
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
 
-function renderStars(rating: number): string {
-  const full = Math.min(Math.max(rating, 1), 5);
-  return '★'.repeat(full) + '☆'.repeat(5 - full);
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function formatDate(date: Date): string {
@@ -32,6 +33,14 @@ function formatDate(date: Date): string {
     year: 'numeric',
   }).format(date);
 }
+
+const distribution = [5, 4, 3, 2, 1].map((star) => {
+  const c = comments.filter((comment) => comment.rating === star).length;
+  const pct = stats.count > 0 ? Math.round((c / stats.count) * 100) : 0;
+  return { star, count: c, percentage: pct };
+});
+
+const roundedRating = Math.round(stats.averageRating || 5);
 ---
 
 {
@@ -47,36 +56,106 @@ function formatDate(date: Date): string {
   data-article-slug={articleSlug}
 >
   <div class="article-comments__header">
-    <span class="article-comments__badge font-mono">[COMMUNITY_REVIEWS]</span>
-    <h2 class="article-comments__title font-display">Ulasan & Komentar Pembaca</h2>
+    <div class="article-comments__badge-row">
+      <span class="article-comments__badge font-mono">[COMMUNITY_REVIEWS]</span>
+      <span class="article-comments__badge-sub font-mono">[VERIFIED_FEEDBACK_ENGINE]</span>
+    </div>
+    <h2 class="article-comments__title font-display">Ulasan & Telaah Kritis Pembaca</h2>
     <p class="article-comments__lead">
-      Bagikan analisis, kritik konstruktif, atau rating bintang mengenai artikel ini.
+      Ruang diskusi teknis, evaluasi metodologi keamanan, kritik konstruktif, dan rating dari sesama engineer dan praktisi.
     </p>
   </div>
 
+  <!-- Executive Rating & Community Breakdown Card -->
   <div class="article-comments__summary surface-raised border-subtle">
-    <div class="summary-score">
-      <span class="summary-score__num font-mono">{stats.count > 0 ? stats.averageRating.toFixed(1) : '—'}</span>
-      <span class="summary-score__max font-mono">/ 5.0</span>
-    </div>
-    <div class="summary-info">
-      <div class="summary-stars font-mono" aria-label={`Rating ${stats.averageRating} dari 5 bintang`}>
-        {renderStars(Math.round(stats.averageRating) || 5)}
+    <div class="summary-hero">
+      <div class="summary-score">
+        <span class="summary-score__num font-mono">{stats.count > 0 ? stats.averageRating.toFixed(1) : '0.0'}</span>
+        <span class="summary-score__max font-mono">/ 5.0</span>
+      </div>
+      <div class="summary-stars-row">
+        <div class="stars-display" role="img" aria-label={`Rating ${stats.averageRating} dari 5 bintang`}>
+          {
+            [1, 2, 3, 4, 5].map((i) => (
+              <svg
+                class={`star-svg ${i <= roundedRating ? 'star-svg--active' : 'star-svg--inactive'}`}
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  stroke-linejoin="round"
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                />
+              </svg>
+            ))
+          }
+        </div>
       </div>
       <p class="summary-count font-mono" id="reviews-count-label">
-        {stats.count > 0 ? `${stats.count} ulasan pembaca terverifikasi` : 'Belum ada ulasan. Jadilah yang pertama!'}
+        {stats.count > 0 ? `${stats.count} telaah pembaca terverifikasi` : 'Belum ada ulasan. Jadilah pengulas pertama!'}
       </p>
+    </div>
+
+    <div class="summary-divider" aria-hidden="true"></div>
+
+    <div class="summary-distribution">
+      {
+        stats.count > 0 ? (
+          <div class="dist-bars">
+            {
+              distribution.map((d) => (
+                <div class="dist-row font-mono">
+                  <span class="dist-star-label">{d.star} ★</span>
+                  <div class="dist-track">
+                    <div class="dist-fill" style={`width: ${d.percentage}%;`}></div>
+                  </div>
+                  <span class="dist-count">{d.count}</span>
+                </div>
+              ))
+            }
+          </div>
+        ) : (
+          <div class="dist-empty">
+            <span class="dist-empty__tag font-mono">[OPEN_PEER_REVIEW]</span>
+            <p class="dist-empty__text">
+              Publikasi ini menerima umpan balik terbuka mengenai arsitektur, implementasi kontrol, atau temuan teknis terkait.
+            </p>
+          </div>
+        )
+      }
     </div>
   </div>
 
   <div class="article-comments__grid">
+    <!-- Form Card -->
     <div class="article-comments__form-wrapper surface-raised border-subtle">
-      <h3 class="form-heading font-display">Tulis Komentar & Ulasan</h3>
+      <div class="form-header">
+        <h3 class="form-heading font-display">Tulis Ulasan & Telaah</h3>
+        <span class="form-sub font-mono">[INPUT_TERMINAL]</span>
+      </div>
 
       <form id="comment-form" class="comment-form" novalidate>
+        <!-- Interactive Human Star Picker -->
         <div class="comment-field">
-          <label class="comment-label font-mono">Rating Bintang</label>
-          <div class="star-rating-picker" role="radiogroup" aria-label="Pilih rating 1 hingga 5 bintang">
+          <div class="rating-picker-header">
+            <label class="comment-label font-mono">Rating Evaluasi</label>
+            <span id="star-sentiment-label" class="sentiment-badge font-mono" aria-live="polite">
+              [5/5 : LUAR BIASA / SANGAT BERMANFAAT]
+            </span>
+          </div>
+
+          <div
+            class="star-rating-picker"
+            id="star-picker-group"
+            role="radiogroup"
+            aria-label="Pilih rating 1 hingga 5 bintang"
+            tabindex="0"
+          >
             {
               [1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -88,22 +167,39 @@ function formatDate(date: Date): string {
                   aria-label={`${star} Bintang`}
                   title={`${star} Bintang`}
                 >
-                  ★
+                  <svg
+                    class="star-picker-svg"
+                    viewBox="0 0 24 24"
+                    width="26"
+                    height="26"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="currentColor"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                      stroke-linejoin="round"
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
                 </button>
               ))
             }
           </div>
           <input type="hidden" id="selected-rating" name="rating" value="5" />
+          <p class="rating-helper font-mono text-xs">
+            Gunakan klik atau tombol panah kiri / kanan untuk menyesuaikan skor evaluasi.
+          </p>
         </div>
 
         <div class="comment-field">
-          <label for="comment-author" class="comment-label font-mono">Nama Anda</label>
+          <label for="comment-author" class="comment-label font-mono">Nama / Identitas Anda</label>
           <input
             type="text"
             id="comment-author"
             name="authorName"
-            class="comment-input"
-            placeholder="Contoh: Faiz Pratama"
+            class="comment-input font-mono"
+            placeholder="Contoh: Faiz Pratama (Security Researcher)"
             required
             minlength="2"
             maxlength="50"
@@ -113,13 +209,13 @@ function formatDate(date: Date): string {
         </div>
 
         <div class="comment-field">
-          <label for="comment-content" class="comment-label font-mono">Komentar / Ulasan</label>
+          <label for="comment-content" class="comment-label font-mono">Ulasan / Kritik Teknis</label>
           <textarea
             id="comment-content"
             name="content"
             rows="4"
             class="comment-textarea"
-            placeholder="Tulis ulasan, tanggapan, atau pengalaman Anda..."
+            placeholder="Bagikan telaah, observasi teknis, pertanyaan implementasi, atau catatan pengujian Anda..."
             required
             minlength="3"
             maxlength="1000"
@@ -149,34 +245,69 @@ function formatDate(date: Date): string {
         <p id="comment-form-status" class="form-status font-mono" role="status" aria-live="polite"></p>
 
         <button type="submit" id="comment-submit-btn" class="comment-submit-btn font-mono">
-          [KIRIM_ULASAN]
+          <span class="btn-text">[PUBLIKASIKAN_ULASAN]</span>
         </button>
       </form>
     </div>
 
+    <!-- Comments List -->
     <div class="article-comments__list-wrapper">
-      <h3 class="list-heading font-display">Semua Ulasan</h3>
+      <div class="list-header">
+        <h3 class="list-heading font-display">Semua Ulasan Pembaca</h3>
+        <span class="list-badge font-mono">[{comments.length} TERCATAT]</span>
+      </div>
 
       <div id="comments-list" class="comments-list">
         {
           comments.length === 0 ? (
             <div id="no-comments-msg" class="no-comments surface-raised border-subtle">
+              <div class="no-comments__icon font-mono">[LOG_EMPTY]</div>
               <p class="font-mono text-muted">Belum ada komentar untuk artikel ini.</p>
-              <p class="font-mono text-xs text-muted mt-1">Gunakan formulir di samping untuk mengirimkan ulasan Anda.</p>
+              <p class="font-mono text-xs text-muted mt-1">
+                Gunakan formulir di samping untuk mengirimkan telaah dan rating Anda.
+              </p>
             </div>
           ) : (
             comments.map((c) => (
               <article class="comment-card surface-raised border-subtle" data-comment-id={c.id}>
                 <header class="comment-card__header">
-                  <span class="comment-card__stars font-mono" aria-label={`Rating ${c.rating} dari 5 bintang`}>
-                    {renderStars(c.rating)}
-                  </span>
-                  <time datetime={c.createdAt.toISOString()} class="comment-card__date font-mono">
-                    {formatDate(c.createdAt)}
-                  </time>
+                  <div class="comment-card__identity">
+                    <span class="comment-card__avatar font-mono">{getInitials(c.authorName)}</span>
+                    <div class="comment-card__name-col">
+                      <h4 class="comment-card__author font-mono">{c.authorName}</h4>
+                      <span class="comment-card__verified font-mono">[PEMBACA_TERVERIFIKASI]</span>
+                    </div>
+                  </div>
+                  <div class="comment-card__meta">
+                    <div class="comment-card__stars" role="img" aria-label={`Rating ${c.rating} dari 5 bintang`}>
+                      {
+                        [1, 2, 3, 4, 5].map((starIdx) => (
+                          <svg
+                            class={`star-svg-sm ${starIdx <= c.rating ? 'star-svg--active' : 'star-svg--inactive'}`}
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill="currentColor"
+                              stroke="currentColor"
+                              stroke-width="1.2"
+                              stroke-linejoin="round"
+                              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                            />
+                          </svg>
+                        ))
+                      }
+                    </div>
+                    <time datetime={c.createdAt.toISOString()} class="comment-card__date font-mono">
+                      {formatDate(c.createdAt)}
+                    </time>
+                  </div>
                 </header>
-                <h4 class="comment-card__author font-mono">{c.authorName}</h4>
-                <p class="comment-card__body">{c.content}</p>
+                <div class="comment-card__content-box">
+                  <p class="comment-card__body">{c.content}</p>
+                </div>
               </article>
             ))
           )
@@ -187,6 +318,24 @@ function formatDate(date: Date): string {
 </section>
 
 <script>
+  const SENTIMENT_MAP: Record<number, string> = {
+    1: '[1/5 : KURANG MEMUASKAN]',
+    2: '[2/5 : PERLU PENDALAMAN]',
+    3: '[3/5 : CUKUP INFORMATIF]',
+    4: '[4/5 : SANGAT BAGUS & RELEVAN]',
+    5: '[5/5 : LUAR BIASA / SANGAT BERMANFAAT]',
+  };
+
+  function createStarSvg(active: boolean, size = 14): string {
+    return `<svg class="star-svg-sm ${active ? 'star-svg--active' : 'star-svg--inactive'}" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+  }
+
+  function getInitialsJs(name: string): string {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
   function initComments() {
     const section = document.getElementById('comments-section');
     if (!section) return;
@@ -197,14 +346,15 @@ function formatDate(date: Date): string {
     const form = document.getElementById('comment-form') as HTMLFormElement | null;
     if (!form) return;
 
-    // Cegah double event listener registration pada elemen formulir yang sama
     if (form.dataset.commentsInitialized === 'true') {
       return;
     }
     form.dataset.commentsInitialized = 'true';
 
+    const starPickerGroup = document.getElementById('star-picker-group');
     const starButtons = section.querySelectorAll<HTMLButtonElement>('.star-btn');
     const ratingInput = document.getElementById('selected-rating') as HTMLInputElement | null;
+    const sentimentLabel = document.getElementById('star-sentiment-label');
     const authorInput = document.getElementById('comment-author') as HTMLInputElement | null;
     const contentInput = document.getElementById('comment-content') as HTMLTextAreaElement | null;
     const honeypotInput = document.getElementById('comment-honeypot') as HTMLInputElement | null;
@@ -217,35 +367,77 @@ function formatDate(date: Date): string {
     const reviewsCountLabel = document.getElementById('reviews-count-label');
 
     let isSubmitting = false;
+    let selectedRating = 5;
 
-    function updateStars(val: number) {
-      if (ratingInput) ratingInput.value = String(val);
+    function renderStarPickerState(activeVal: number) {
       starButtons.forEach((btn) => {
         const btnVal = Number(btn.getAttribute('data-star-value'));
-        if (btnVal <= val) {
+        if (btnVal <= activeVal) {
           btn.classList.add('star-btn--active');
-          btn.setAttribute('aria-checked', btnVal === val ? 'true' : 'false');
         } else {
           btn.classList.remove('star-btn--active');
-          btn.setAttribute('aria-checked', 'false');
         }
       });
     }
 
-    // Default 5 stars
-    updateStars(5);
+    function applySelectedRating(val: number) {
+      selectedRating = Math.min(Math.max(val, 1), 5);
+      if (ratingInput) ratingInput.value = String(selectedRating);
 
+      renderStarPickerState(selectedRating);
+      starButtons.forEach((btn) => {
+        const btnVal = Number(btn.getAttribute('data-star-value'));
+        btn.setAttribute('aria-checked', btnVal === selectedRating ? 'true' : 'false');
+      });
+
+      if (sentimentLabel) {
+        sentimentLabel.textContent = SENTIMENT_MAP[selectedRating] || `[${selectedRating}/5]`;
+      }
+    }
+
+    // Inisialisasi default 5 bintang
+    applySelectedRating(5);
+
+    // Hover preview dan click tactile feedback
     starButtons.forEach((btn) => {
+      const val = Number(btn.getAttribute('data-star-value')) || 5;
+
+      btn.addEventListener('mouseenter', () => {
+        renderStarPickerState(val);
+        if (sentimentLabel) {
+          sentimentLabel.textContent = SENTIMENT_MAP[val] || `[${val}/5]`;
+        }
+      });
+
       btn.addEventListener('click', () => {
-        const val = Number(btn.getAttribute('data-star-value')) || 5;
-        updateStars(val);
+        applySelectedRating(val);
+        btn.classList.add('star-btn--popped');
+        setTimeout(() => btn.classList.remove('star-btn--popped'), 300);
       });
     });
+
+    if (starPickerGroup) {
+      starPickerGroup.addEventListener('mouseleave', () => {
+        applySelectedRating(selectedRating);
+      });
+
+      // Dukungan keyboard aksesibel: Arrow Left/Right, 1-5
+      starPickerGroup.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          applySelectedRating(Math.min(selectedRating + 1, 5));
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          applySelectedRating(Math.max(selectedRating - 1, 1));
+        } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
+          applySelectedRating(Number(e.key));
+        }
+      });
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Guard idempotency: abaikan klik baru jika request sedang pending
       if (isSubmitting) return;
 
       if (authorError) authorError.textContent = '';
@@ -257,7 +449,7 @@ function formatDate(date: Date): string {
 
       const author = authorInput?.value.trim() ?? '';
       const content = contentInput?.value.trim() ?? '';
-      const rating = Number(ratingInput?.value) || 5;
+      const rating = Number(ratingInput?.value) || selectedRating || 5;
       const honeypot = honeypotInput?.value ?? '';
 
       let hasError = false;
@@ -278,7 +470,8 @@ function formatDate(date: Date): string {
       isSubmitting = true;
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Mengirim...';
+        const textSpan = submitBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = 'MENGIRIM...';
       }
 
       try {
@@ -321,12 +514,11 @@ function formatDate(date: Date): string {
         }
 
         form.reset();
-        updateStars(5);
+        applySelectedRating(5);
 
         if (noCommentsMsg) noCommentsMsg.remove();
 
         if (data.comment && commentsList) {
-          // Dedup by comment id sebelum render kartu komentar baru
           const commentId = String(data.comment.id);
           const alreadyExists = commentsList.querySelector(`[data-comment-id="${commentId}"]`);
           if (!alreadyExists) {
@@ -334,15 +526,33 @@ function formatDate(date: Date): string {
             card.className = 'comment-card surface-raised border-subtle';
             card.setAttribute('data-comment-id', commentId);
             const fullStars = Math.min(Math.max(data.comment.rating, 1), 5);
-            const starsStr = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+
+            let starsMarkup = '';
+            for (let s = 1; s <= 5; s++) {
+              starsMarkup += createStarSvg(s <= fullStars);
+            }
+
+            const initials = getInitialsJs(data.comment.authorName);
 
             card.innerHTML = `
               <header class="comment-card__header">
-                <span class="comment-card__stars font-mono">${starsStr}</span>
-                <time class="comment-card__date font-mono">Baru saja</time>
+                <div class="comment-card__identity">
+                  <span class="comment-card__avatar font-mono">${initials}</span>
+                  <div class="comment-card__name-col">
+                    <h4 class="comment-card__author font-mono">${data.comment.authorName}</h4>
+                    <span class="comment-card__verified font-mono">[PEMBACA_TERVERIFIKASI]</span>
+                  </div>
+                </div>
+                <div class="comment-card__meta">
+                  <div class="comment-card__stars" role="img" aria-label="Rating ${data.comment.rating} dari 5 bintang">
+                    ${starsMarkup}
+                  </div>
+                  <time class="comment-card__date font-mono">Baru saja</time>
+                </div>
               </header>
-              <h4 class="comment-card__author font-mono">${data.comment.authorName}</h4>
-              <p class="comment-card__body">${data.comment.content}</p>
+              <div class="comment-card__content-box">
+                <p class="comment-card__body">${data.comment.content}</p>
+              </div>
             `;
             commentsList.prepend(card);
 
@@ -360,7 +570,8 @@ function formatDate(date: Date): string {
         isSubmitting = false;
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = '[KIRIM_ULASAN]';
+          const textSpan = submitBtn.querySelector('.btn-text');
+          if (textSpan) textSpan.textContent = '[PUBLIKASIKAN_ULASAN]';
         }
       }
     });
@@ -376,12 +587,24 @@ function formatDate(date: Date): string {
     margin-top: clamp(2.5rem, 6vw, 4rem);
   }
 
+  .article-comments__badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+
   .article-comments__badge {
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     color: var(--color-accent-phosphor);
-    margin-bottom: 0.5rem;
-    display: inline-block;
+  }
+
+  .article-comments__badge-sub {
+    font-size: 0.6875rem;
+    color: #a1a1aa;
+    letter-spacing: 0.05em;
   }
 
   .article-comments__title {
@@ -390,50 +613,167 @@ function formatDate(date: Date): string {
   }
 
   .article-comments__lead {
-    color: var(--color-text-muted);
+    color: #d1d5db;
     font-size: 0.95rem;
     margin-bottom: 2rem;
+    max-width: 65ch;
   }
 
+  /* Executive Rating Summary */
   .article-comments__summary {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 1.5rem;
-    padding: 1.25rem 1.75rem;
+    padding: 1.75rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     margin-bottom: 2.5rem;
+    background: radial-gradient(circle at top left, rgba(0, 255, 102, 0.03), transparent 60%),
+      var(--color-surface-raised);
+  }
+
+  @media (min-width: 768px) {
+    .article-comments__summary {
+      grid-template-columns: auto auto 1fr;
+      align-items: center;
+      gap: 2rem;
+    }
+  }
+
+  .summary-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
   }
 
   .summary-score {
     display: flex;
     align-items: baseline;
-    gap: 0.25rem;
+    gap: 0.35rem;
   }
 
   .summary-score__num {
-    font-size: 2.25rem;
+    font-size: 3rem;
+    line-height: 1;
     font-weight: 700;
     color: var(--color-accent-phosphor);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 16px rgba(0, 255, 102, 0.25);
   }
 
   .summary-score__max {
-    font-size: 1rem;
+    font-size: 1.125rem;
     color: var(--color-text-secondary, #a1a1aa);
   }
 
-  .summary-stars {
-    font-size: 1.25rem;
+  .stars-display {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .star-svg {
+    transition: transform var(--transition-fast), color var(--transition-fast);
+  }
+
+  .star-svg--active {
     color: var(--color-accent-phosphor);
-    letter-spacing: 0.1em;
+    filter: drop-shadow(0 0 4px rgba(0, 255, 102, 0.35));
+  }
+
+  .star-svg--inactive {
+    color: rgba(255, 255, 255, 0.12);
+  }
+
+  .star-svg-sm {
+    transition: color var(--transition-fast);
+  }
+
+  .star-svg-sm.star-svg--active {
+    color: var(--color-accent-phosphor);
+  }
+
+  .star-svg-sm.star-svg--inactive {
+    color: rgba(255, 255, 255, 0.15);
   }
 
   .summary-count {
     font-size: 0.8125rem;
     color: var(--color-text-secondary, #a1a1aa);
-    margin-top: 0.2rem;
+    margin-top: 0.25rem;
   }
 
+  .summary-divider {
+    display: none;
+    width: 1px;
+    height: 70px;
+    background-color: var(--color-border);
+  }
+
+  @media (min-width: 768px) {
+    .summary-divider {
+      display: block;
+    }
+  }
+
+  .dist-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-width: 380px;
+  }
+
+  .dist-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .dist-star-label {
+    min-width: 30px;
+    color: var(--color-text-secondary, #a1a1aa);
+  }
+
+  .dist-track {
+    flex: 1;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .dist-fill {
+    height: 100%;
+    background-color: var(--color-accent-phosphor);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+    transition: width 0.4s ease;
+  }
+
+  .dist-count {
+    min-width: 20px;
+    text-align: right;
+    color: #a1a1aa;
+  }
+
+  .dist-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .dist-empty__tag {
+    font-size: 0.75rem;
+    color: var(--color-accent-phosphor);
+  }
+
+  .dist-empty__text {
+    font-size: 0.875rem;
+    color: #d1d5db;
+    line-height: 1.5;
+  }
+
+  /* Grid Form & List */
   .article-comments__grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -442,75 +782,154 @@ function formatDate(date: Date): string {
 
   @media (min-width: 900px) {
     .article-comments__grid {
-      grid-template-columns: 1fr 1.2fr;
+      grid-template-columns: 1fr 1.25fr;
       align-items: start;
     }
   }
 
   .article-comments__form-wrapper {
-    padding: 1.75rem;
+    padding: 2rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    position: relative;
+    background: var(--color-surface-raised);
+  }
+
+  .form-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
   }
 
   .form-heading {
     font-size: 1.25rem;
-    margin-bottom: 1.25rem;
+  }
+
+  .form-sub {
+    font-size: 0.6875rem;
+    color: #a1a1aa;
   }
 
   .comment-field {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .rating-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .comment-label {
     display: block;
-    font-size: 0.8rem;
-    color: var(--color-text-secondary, #a1a1aa);
-    margin-bottom: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary, #d1d5db);
+    font-weight: 500;
   }
 
+  .sentiment-badge {
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--color-accent-phosphor);
+    background-color: rgba(0, 255, 102, 0.06);
+    border: 1px solid rgba(0, 255, 102, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+  }
 
+  /* Interactive Star Picker */
   .star-rating-picker {
-    display: flex;
+    display: inline-flex;
+    align-items: center;
     gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast);
+  }
+
+  .star-rating-picker:focus-within {
+    border-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 0 1px rgba(0, 255, 102, 0.3);
   }
 
   .star-btn {
     background: none;
     border: none;
-    font-size: 1.75rem;
-    color: var(--color-border);
+    color: rgba(255, 255, 255, 0.18);
     cursor: pointer;
     line-height: 1;
-    padding: 0.1rem;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    padding: 0.25rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
   }
 
-  .star-btn:hover,
+  .star-btn:hover {
+    transform: scale(1.18);
+  }
+
   .star-btn:focus-visible {
-    transform: scale(1.15);
-    outline: none;
+    outline: 2px solid var(--color-accent-phosphor);
+    outline-offset: 2px;
   }
 
   .star-btn--active {
     color: var(--color-accent-phosphor);
   }
 
+  .star-btn--active .star-picker-svg {
+    filter: drop-shadow(0 0 6px rgba(0, 255, 102, 0.4));
+  }
+
+  .star-btn--popped {
+    animation: starPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes starPop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.35);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .rating-helper {
+    margin-top: 0.4rem;
+    color: #a1a1aa;
+    font-size: 0.6875rem;
+  }
+
   .comment-input,
   .comment-textarea {
     width: 100%;
-    padding: 0.65rem 0.85rem;
+    padding: 0.75rem 0.95rem;
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     color: var(--color-text-primary);
     font-size: 0.9375rem;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
   .comment-input:focus-visible,
   .comment-textarea:focus-visible {
     border-color: var(--color-accent-phosphor);
+    box-shadow: 0 0 0 1px var(--color-accent-phosphor);
     outline: none;
   }
 
@@ -525,8 +944,9 @@ function formatDate(date: Date): string {
   }
 
   .form-status {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     margin-bottom: 1rem;
+    min-height: 1.2rem;
   }
 
   .form-status[data-state='success'] {
@@ -539,20 +959,23 @@ function formatDate(date: Date): string {
 
   .comment-submit-btn {
     width: 100%;
-    padding: 0.75rem;
-    background-color: var(--color-surface-raised);
+    padding: 0.85rem 1rem;
+    background-color: transparent;
     color: var(--color-accent-phosphor);
     border: 1px solid var(--color-accent-phosphor);
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
     font-weight: 600;
+    letter-spacing: 0.05em;
     cursor: pointer;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+    transition: background-color var(--transition-fast), color var(--transition-fast),
+      box-shadow var(--transition-fast);
   }
 
   .comment-submit-btn:hover:not(:disabled) {
     background-color: var(--color-accent-phosphor);
-    color: var(--color-bg);
+    color: #0e0f13;
+    box-shadow: 0 0 16px rgba(0, 255, 102, 0.3);
   }
 
   .comment-submit-btn:disabled {
@@ -560,9 +983,23 @@ function formatDate(date: Date): string {
     cursor: not-allowed;
   }
 
+  /* List of comments */
+  .list-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+
   .list-heading {
     font-size: 1.25rem;
-    margin-bottom: 1.25rem;
+  }
+
+  .list-badge {
+    font-size: 0.6875rem;
+    color: #a1a1aa;
   }
 
   .comments-list {
@@ -572,46 +1009,103 @@ function formatDate(date: Date): string {
   }
 
   .no-comments {
-    padding: 2rem;
+    padding: 2.5rem 1.5rem;
     text-align: center;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
   }
 
+  .no-comments__icon {
+    font-size: 0.8125rem;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.5rem;
+  }
+
+  /* Comment Card */
   .comment-card {
-    padding: 1.25rem 1.5rem;
+    padding: 1.4rem 1.6rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    background-color: var(--color-surface-raised);
+    transition: border-color var(--transition-fast);
+  }
+
+  .comment-card:hover {
+    border-color: rgba(0, 255, 102, 0.3);
   }
 
   .comment-card__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.85rem;
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
-  .comment-card__stars {
+  .comment-card__identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .comment-card__avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 255, 102, 0.08);
+    border: 1px solid rgba(0, 255, 102, 0.25);
+    border-radius: 6px;
     color: var(--color-accent-phosphor);
-    font-size: 1rem;
-    letter-spacing: 0.05em;
+    font-size: 0.8125rem;
+    font-weight: 600;
   }
 
-  .comment-card__date {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
+  .comment-card__name-col {
+    display: flex;
+    flex-direction: column;
   }
 
   .comment-card__author {
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-text-primary);
-    margin-bottom: 0.4rem;
+  }
+
+  .comment-card__verified {
+    font-size: 0.625rem;
+    color: var(--color-accent-phosphor);
+    letter-spacing: 0.04em;
+  }
+
+  .comment-card__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+
+  .comment-card__stars {
+    display: flex;
+    gap: 0.2rem;
+  }
+
+  .comment-card__date {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+  }
+
+  .comment-card__content-box {
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .comment-card__body {
     font-size: 0.9375rem;
-    line-height: 1.6;
+    line-height: 1.65;
     color: var(--color-text-secondary, #d1d5db);
     word-break: break-word;
   }
