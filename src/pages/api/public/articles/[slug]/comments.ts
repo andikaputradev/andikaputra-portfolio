@@ -44,6 +44,11 @@ export const GET: APIRoute = async ({ params }) => {
   const count = rows.length;
   const sumRating = rows.reduce((sum, r) => sum + r.rating, 0);
   const averageRating = count > 0 ? Number((sumRating / count).toFixed(1)) : 0;
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const c = rows.filter((r) => r.rating === star).length;
+    const percentage = count > 0 ? Math.round((c / count) * 100) : 0;
+    return { star, count: c, percentage };
+  });
 
   return new Response(
     JSON.stringify({
@@ -51,13 +56,14 @@ export const GET: APIRoute = async ({ params }) => {
       stats: {
         count,
         averageRating,
+        distribution,
       },
     }),
     {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 's-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': 'public, max-age=15, s-maxage=30, stale-while-revalidate=120',
       },
     },
   );
@@ -156,8 +162,36 @@ export const POST: APIRoute = async ({ params, request }) => {
       createdAt: articleComments.createdAt,
     });
 
-  return new Response(JSON.stringify({ success: true, comment: created }), {
-    status: 201,
-    headers: { 'Content-Type': 'application/json' },
+  const allRows = await db
+    .select({ rating: articleComments.rating })
+    .from(articleComments)
+    .where(and(eq(articleComments.articleId, article.id), eq(articleComments.approved, true)));
+
+  const count = allRows.length;
+  const sumRating = allRows.reduce((sum, r) => sum + r.rating, 0);
+  const averageRating = count > 0 ? Number((sumRating / count).toFixed(1)) : 0;
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const c = allRows.filter((r) => r.rating === star).length;
+    const percentage = count > 0 ? Math.round((c / count) * 100) : 0;
+    return { star, count: c, percentage };
   });
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      comment: created,
+      stats: {
+        count,
+        averageRating,
+        distribution,
+      },
+    }),
+    {
+      status: 201,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    },
+  );
 };

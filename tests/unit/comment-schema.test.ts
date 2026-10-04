@@ -46,6 +46,12 @@ describe('CommentInputSchema', () => {
     expect(CommentInputSchema.safeParse({ ...validComment, authorName: 'Faiz & Putra' }).success).toBe(false);
   });
 
+  it('mengizinkan tanda petik tunggal/apostrof dan tanda hubung pada authorName yang sah', () => {
+    expect(CommentInputSchema.safeParse({ ...validComment, authorName: "Faiz D'Angelo" }).success).toBe(true);
+    expect(CommentInputSchema.safeParse({ ...validComment, authorName: "Siti Nur'aini" }).success).toBe(true);
+    expect(CommentInputSchema.safeParse({ ...validComment, authorName: 'Ahmad-Faiz' }).success).toBe(true);
+  });
+
   it('menolak isi komentar kurang dari 3 karakter atau lebih dari 1000 karakter', () => {
     expect(CommentInputSchema.safeParse({ ...validComment, content: 'ok' }).success).toBe(false);
     expect(CommentInputSchema.safeParse({ ...validComment, content: 'x'.repeat(1001) }).success).toBe(false);

@@ -7,7 +7,7 @@ export const CommentInputSchema = z
       .trim()
       .min(2, 'Nama minimal 2 karakter')
       .max(50, 'Nama maksimal 50 karakter')
-      .regex(/^[^<>&"']+$/, 'Nama tidak boleh mengandung karakter HTML khusus'),
+      .regex(/^[^<>&"]+$/, 'Nama tidak boleh mengandung karakter HTML khusus'),
     rating: z.coerce
       .number()
       .int('Rating harus berupa bilangan bulat')
