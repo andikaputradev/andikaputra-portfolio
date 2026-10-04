@@ -24,10 +24,13 @@ function formatDate(date: Date): string {
 {items.length > 0 && (
   <section id="certifications" class="cert-section section-spacing" data-telemetry-section="certifications">
     <div class="container-site">
-      <p class="cert-section__eyebrow font-mono js-reveal">CERTIFICATIONS</p>
+      <div class="cert-section__header">
+        <p class="cert-section__eyebrow font-mono">02 // VERIFIED CREDENTIALS</p>
+        <h2 class="cert-section__heading font-display">Certifications</h2>
+      </div>
       <div class="cert-grid">
         {items.map((cert) => (
-          <div class="js-reveal">
+          <div class="cert-grid__item">
             <CertificationCard
               name={cert.name}
               issuer={cert.issuer}
@@ -52,16 +55,34 @@ function formatDate(date: Date): string {
 </script>
 
 <style>
+  .cert-section {
+    padding-block: var(--spacing-section);
+  }
+
+  .cert-section__header {
+    margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
   .cert-section__eyebrow {
-    font-size: 0.8125rem;
-    letter-spacing: 0.12em;
-    color: var(--color-text-muted);
-    margin-bottom: 2rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-phosphor);
+    margin-bottom: 0.5rem;
+  }
+
+  .cert-section__heading {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
   }
 
   .cert-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: 1.5rem;
+  }
+
+  .cert-grid__item {
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
   }
 </style>

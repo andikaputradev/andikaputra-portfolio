@@ -27,7 +27,14 @@ const fullUrl = hasAsset
 
   <div class="cert-card__thumb-wrap">
     {thumbUrl ? (
-      <img src={thumbUrl} alt={`Sertifikat ${name} oleh ${issuer}`} loading="lazy" class="cert-card__thumb" />
+      <img
+        src={thumbUrl}
+        alt={`Sertifikat ${name} oleh ${issuer}`}
+        loading="lazy"
+        width="320"
+        height="240"
+        class="cert-card__thumb js-cover-image"
+      />
     ) : (
       <div class="cert-card__thumb-fallback mono" aria-hidden="true">{issuer.slice(0, 2).toUpperCase()}</div>
     )}
@@ -35,11 +42,11 @@ const fullUrl = hasAsset
   </div>
 
   <div class="cert-card__body">
-    <p class="cert-card__name font-sans">{name}</p>
+    <h3 class="cert-card__name font-sans">{name}</h3>
     <p class="cert-card__meta font-mono">{issuer} · {issueDateLabel}</p>
     <div class="cert-card__links font-mono">
       {fullUrl && (
-        <a href={fullUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link">
+        <a href={fullUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link" aria-label={`Buka dokumen sertifikat ${name}`}>
           <span>Lihat sertifikat</span>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -49,7 +56,7 @@ const fullUrl = hasAsset
         </a>
       )}
       {verificationUrl && (
-        <a href={verificationUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link">
+        <a href={verificationUrl} target="_blank" rel="noopener noreferrer" class="cert-card__link" aria-label={`Verifikasi kredensial sertifikat ${name}`}>
           <span>Verifikasi</span>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M7 17L17 7"></path>
