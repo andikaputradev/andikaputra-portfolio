@@ -51,7 +51,11 @@ export const PATCH: APIRoute = async (context) => {
 
   const [updated] = await db
     .update(projects)
-    .set({ ...parsed.data, updatedAt: new Date() })
+    .set({
+      ...parsed.data,
+      coverImagePublicId: parsed.data.coverImagePublicId || null,
+      updatedAt: new Date(),
+    })
     .where(eq(projects.id, id))
     .returning();
 

@@ -66,6 +66,7 @@ export const ProjectSettingsSchema = ProjectInputSchema.pick({
   flagship: true,
   stack: true,
   coverImagePublicId: true,
+  displayOrder: true,
   published: true,
 }).strict();
 

@@ -184,6 +184,18 @@ describe('Strict schema validation across mutation models (OWASP ASVS V5.1)', ()
     expect(result.success).toBe(false);
   });
 
+  it('ProjectSettingsSchema menerima displayOrder valid', () => {
+    const result = ProjectSettingsSchema.safeParse({
+      tag: 'SECURITY',
+      displayOrder: 5,
+      published: true,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.displayOrder).toBe(5);
+    }
+  });
+
   it('ArticleInputSchema menolak field tidak dikenal', () => {
     const result = ArticleInputSchema.safeParse({
       slug: 'security-audit-2026',

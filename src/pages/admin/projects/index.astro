@@ -23,9 +23,10 @@ const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
     </p>
   ) : (
     <div class="admin-table" id="project-sortable" data-csrf={csrfToken}>
-      {allProjects.map((p) => (
+      {allProjects.map((p, idx) => (
         <div class="admin-row border-subtle" id={`project-row-${p.id}`} data-id={p.id}>
           <span class="drag-handle" aria-label="Seret untuk mengubah urutan" role="button" tabindex="0">⠿</span>
+          <span class="mono admin-row__order" title={`Urutan: ${p.displayOrder}`}>#{idx + 1}</span>
           <span class="mono admin-row__tag">{p.tag}</span>
           <span class="admin-row__title">
             {p.title}
@@ -111,7 +112,7 @@ const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
 
   .admin-row {
     display: grid;
-    grid-template-columns: 1.5rem 5.5rem 1fr auto auto auto auto;
+    grid-template-columns: 1.5rem 2.2rem 5.5rem 1fr auto auto auto auto;
     align-items: center;
     gap: 1rem;
     padding: 0.85rem 0.25rem;
@@ -120,6 +121,12 @@ const csrfToken = Astro.cookies.get(CSRF_COOKIE_NAME)?.value ?? '';
     background-color: var(--color-bg);
     opacity: 0;
     animation: row-in 320ms ease forwards;
+  }
+
+  .admin-row__order {
+    color: var(--color-accent-phosphor);
+    font-size: 0.78rem;
+    font-weight: 600;
   }
 
   .admin-row:nth-child(1) { animation-delay: 0ms; }

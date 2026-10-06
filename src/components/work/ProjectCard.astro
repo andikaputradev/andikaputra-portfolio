@@ -5,14 +5,15 @@ import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary
 
 interface Props {
   project: Project;
+  index?: number;
   enableTransition?: boolean;
 }
 
-const { project, enableTransition = true } = Astro.props;
+const { project, index, enableTransition = true } = Astro.props;
 const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
 const coverSrcSet = resolveCoverImageSrcSet(project, [300, 450, 600, 900], 'f_auto,q_auto,c_fill');
 const stack = project.stack ?? [];
-const displayIndex = String(project.displayOrder || 1).padStart(2, '0');
+const displayIndex = String(index ?? project.displayOrder ?? 1).padStart(2, '0');
 ---
 
 <article

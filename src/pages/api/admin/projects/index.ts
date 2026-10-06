@@ -1,6 +1,6 @@
 import { z } from 'astro/zod';
 import type { APIRoute } from 'astro';
-import { desc } from 'drizzle-orm';
+import { desc, max } from 'drizzle-orm';
 import { db } from '../../../../db';
 import { projects } from '../../../../db/schema';
 import { ProjectInputSchema } from '../../../../lib/admin-schemas';
@@ -56,10 +56,18 @@ export const POST: APIRoute = async (context) => {
   const { liveUrl, repoUrl, ...rest } = parsed.data;
 
   try {
+    let displayOrder = parsed.data.displayOrder;
+    if (displayOrder === 0) {
+      const [maxRow] = await db.select({ maxOrder: max(projects.displayOrder) }).from(projects);
+      displayOrder = (maxRow?.maxOrder ?? 0) + 1;
+    }
+
     const [created] = await db
       .insert(projects)
       .values({
         ...rest,
+        displayOrder,
+        coverImagePublicId: rest.coverImagePublicId || null,
         liveUrl: liveUrl || null,
         repoUrl: repoUrl || null,
       })

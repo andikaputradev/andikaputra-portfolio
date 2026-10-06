@@ -53,13 +53,19 @@ const stackValue = project.stack?.join(', ') ?? '';
     <p id="cover-upload-status" class="field__hint"></p>
   </div>
 
-  <div class="field field--checkbox">
-    <input type="checkbox" id="published" name="published" checked={project.published} />
-    <label for="published">Published</label>
+  <div class="field-row">
+    <div class="field">
+      <label for="displayOrder">Urutan tampil</label>
+      <input type="number" id="displayOrder" name="displayOrder" value={project.displayOrder} />
+    </div>
+    <div class="field field--checkbox">
+      <input type="checkbox" id="published" name="published" checked={project.published} />
+      <label for="published">Published</label>
+    </div>
   </div>
   <p class="field__hint">
-    Slug (<code>{project.slug}</code>) dan urutan tampil tidak diedit di sini; slug bersifat
-    permanen setelah dibuat, urutan tampil diatur lewat drag-and-drop di halaman daftar proyek.
+    Slug (<code>{project.slug}</code>) bersifat permanen setelah dibuat. Urutan tampil dapat
+    diedit di sini atau lewat drag-and-drop di halaman daftar proyek.
   </p>
 
   <button type="submit">Simpan Pengaturan</button>
@@ -94,6 +100,7 @@ const stackValue = project.stack?.join(', ') ?? '';
       }
       params.flagship = params.flagship === 'on';
       params.published = params.published === 'on';
+      params.displayOrder = Number(params.displayOrder) || 0;
     }) as EventListener);
 </script>
 

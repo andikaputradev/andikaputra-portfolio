@@ -48,9 +48,9 @@ const featuredProjects = sortedProjects.slice(0, 3);
         keyboard="true"
       >
         {
-          featuredProjects.map((project) => (
+          featuredProjects.map((project, idx) => (
             <swiper-slide>
-              <ProjectCard project={project} enableTransition={!project.flagship} />
+              <ProjectCard project={project} index={idx + 1} enableTransition={!project.flagship} />
             </swiper-slide>
           ))
         }
@@ -66,9 +66,9 @@ const featuredProjects = sortedProjects.slice(0, 3);
         keyboard="true"
       >
         {
-          featuredProjects.map((project) => (
+          featuredProjects.map((project, idx) => (
             <swiper-slide>
-              <ProjectCard project={project} enableTransition={false} />
+              <ProjectCard project={project} index={idx + 1} enableTransition={false} />
             </swiper-slide>
           ))
         }
@@ -81,8 +81,8 @@ const featuredProjects = sortedProjects.slice(0, 3);
     <!-- Project Cards Grid with Spotlight -->
     <div class="selected-work__grid" data-project-grid>
       {
-        sortedProjects.map((project) => (
-          <ProjectCard project={project} enableTransition={!project.flagship} />
+        sortedProjects.map((project, idx) => (
+          <ProjectCard project={project} index={idx + 1} enableTransition={!project.flagship} />
         ))
       }
     </div>

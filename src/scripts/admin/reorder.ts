@@ -37,6 +37,14 @@ export function initReorder({ containerId, endpoint }: ReorderConfig): void {
           if (!response.ok) {
             showToast('Gagal menyimpan urutan baru. Memuat ulang halaman.');
             window.setTimeout(() => window.location.reload(), 1500);
+          } else {
+            rows.forEach((row, i) => {
+              const badge = row.querySelector<HTMLElement>('.admin-row__order');
+              if (badge) {
+                badge.textContent = `#${i + 1}`;
+              }
+            });
+            showToast('Urutan berhasil diperbarui', 'success');
           }
         })
         .catch(() => {

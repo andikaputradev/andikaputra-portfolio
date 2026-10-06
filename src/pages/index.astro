@@ -20,7 +20,7 @@ import { trackVisit } from '../lib/track-visit';
 export const prerender = false;
 
 trackVisit(Astro.request, '/');
-Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 
 // Batch seluruh query database halaman utama dalam 1 round-trip paralel tunggal (SKILL.md)
 const [profile, allProjects, allCertifications, latestArticles] = await Promise.all([

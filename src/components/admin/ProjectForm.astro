@@ -4,11 +4,12 @@ import type { Project } from '../../db/schema';
 
 interface Props {
   project?: Project;
+  defaultOrder?: number;
   action: string;
   method: 'POST' | 'PUT';
 }
 
-const { project, action, method } = Astro.props;
+const { project, defaultOrder, action, method } = Astro.props;
 const stackValue = project?.stack?.join(', ') ?? '';
 ---
 
@@ -101,7 +102,7 @@ const stackValue = project?.stack?.join(', ') ?? '';
   <div class="field-row">
     <div class="field">
       <label for="displayOrder">Urutan tampil</label>
-      <input type="number" id="displayOrder" name="displayOrder" value={project?.displayOrder ?? 0} />
+      <input type="number" id="displayOrder" name="displayOrder" value={project?.displayOrder ?? defaultOrder ?? 0} />
     </div>
     <div class="field field--checkbox">
       <input type="checkbox" id="published" name="published" checked={project?.published ?? true} />

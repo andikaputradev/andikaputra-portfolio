@@ -1,10 +1,16 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ProjectForm from '../../../components/admin/ProjectForm.astro';
+import { db } from '../../../db';
+import { projects } from '../../../db/schema';
+import { max } from 'drizzle-orm';
 
 export const prerender = false;
+
+const [maxResult] = await db.select({ maxOrder: max(projects.displayOrder) }).from(projects);
+const nextOrder = (maxResult?.maxOrder ?? 0) + 1;
 ---
 
 <AdminLayout title="Proyek Baru">
-  <ProjectForm action="/api/admin/projects" method="POST" />
+  <ProjectForm action="/api/admin/projects" method="POST" defaultOrder={nextOrder} />
 </AdminLayout>
