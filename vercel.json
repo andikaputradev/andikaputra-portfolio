@@ -18,17 +18,43 @@
       "permanent": true
     },
     {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap-index.xml",
+      "source": "/sitemap-index.xml",
+      "destination": "/sitemap.xml",
       "permanent": true
     },
     {
       "source": "/sitemap_index.xml",
-      "destination": "/sitemap-index.xml",
+      "destination": "/sitemap.xml",
       "permanent": true
     }
   ],
   "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

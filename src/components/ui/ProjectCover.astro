@@ -1,0 +1,123 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Project } from '../../db/schema';
+import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
+
+interface Props {
+  project: Pick<Project, 'slug' | 'title' | 'coverImagePath' | 'coverImagePublicId'>;
+  class?: string;
+  widths?: number[];
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  transitionName?: string;
+}
+
+const {
+  project,
+  class: className = '',
+  widths = [400, 768, 1020],
+  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px',
+  loading = 'lazy',
+  decoding = 'async',
+  fetchpriority,
+  transitionName,
+} = Astro.props;
+
+const localImages = import.meta.glob<{ default: ImageMetadata }>('/src/assets/projects/*/cover.jpg', {
+  eager: true,
+});
+const localAsset = localImages[`/src/assets/projects/${project.slug}/cover.jpg`]?.default;
+
+const cloudinarySrc = project.coverImagePublicId
+  ? resolveCoverImage(project, 'f_auto,q_auto,w_1020,c_fill')
+  : null;
+const cloudinarySrcSet = project.coverImagePublicId
+  ? resolveCoverImageSrcSet(project, widths, 'f_auto,q_auto,c_fill')
+  : undefined;
+---
+
+{
+  transitionName ? (
+    localAsset ? (
+      <Image
+        src={localAsset}
+        widths={widths}
+        sizes={sizes}
+        format="webp"
+        alt={`${project.title} cover`}
+        class={className}
+        loading={loading}
+        decoding={decoding}
+        fetchpriority={fetchpriority}
+        transition:name={transitionName}
+      />
+    ) : cloudinarySrc ? (
+      <img
+        src={cloudinarySrc}
+        srcset={cloudinarySrcSet}
+        sizes={sizes}
+        width="1020"
+        height="765"
+        alt={`${project.title} cover`}
+        class={className}
+        loading={loading}
+        decoding={decoding}
+        fetchpriority={fetchpriority}
+        transition:name={transitionName}
+      />
+    ) : (
+      <img
+        src={project.coverImagePath || '/favicon.svg'}
+        sizes={sizes}
+        width="1020"
+        height="765"
+        alt={`${project.title} cover`}
+        class={`${className} ${!project.coverImagePath ? 'is-broken' : ''}`}
+        loading={loading}
+        decoding={decoding}
+        transition:name={transitionName}
+      />
+    )
+  ) : (
+    localAsset ? (
+      <Image
+        src={localAsset}
+        widths={widths}
+        sizes={sizes}
+        format="webp"
+        alt={`${project.title} cover`}
+        class={className}
+        loading={loading}
+        decoding={decoding}
+        fetchpriority={fetchpriority}
+      />
+    ) : cloudinarySrc ? (
+      <img
+        src={cloudinarySrc}
+        srcset={cloudinarySrcSet}
+        sizes={sizes}
+        width="1020"
+        height="765"
+        alt={`${project.title} cover`}
+        class={className}
+        loading={loading}
+        decoding={decoding}
+        fetchpriority={fetchpriority}
+      />
+    ) : (
+      <img
+        src={project.coverImagePath || '/favicon.svg'}
+        sizes={sizes}
+        width="1020"
+        height="765"
+        alt={`${project.title} cover`}
+        class={`${className} ${!project.coverImagePath ? 'is-broken' : ''}`}
+        loading={loading}
+        decoding={decoding}
+      />
+    )
+  )
+}

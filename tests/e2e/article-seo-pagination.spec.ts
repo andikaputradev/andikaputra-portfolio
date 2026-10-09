@@ -75,7 +75,8 @@ test.describe('Article Feature & SEO E2E Tests', () => {
         const parsed = JSON.parse(text);
         const schemas = Array.isArray(parsed) ? parsed : [parsed];
         for (const s of schemas) {
-          if (s['@type'] === 'BlogPosting') {
+          const types = Array.isArray(s['@type']) ? s['@type'] : [s['@type']];
+          if (types.includes('BlogPosting')) {
             hasBlogPosting = true;
             expect(s.headline).toBeTruthy();
             expect(s.datePublished).toBeTruthy();

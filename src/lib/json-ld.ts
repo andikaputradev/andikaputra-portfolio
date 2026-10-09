@@ -223,7 +223,7 @@ export function buildArticleSchema(
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
+    '@type': ['TechArticle', 'BlogPosting'],
     headline: article.title,
     description: article.summary,
     url,

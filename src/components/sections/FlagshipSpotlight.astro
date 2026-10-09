@@ -5,7 +5,7 @@ import { and, eq, desc } from 'drizzle-orm';
 import DisclaimerNotice from '../ui/DisclaimerNotice.astro';
 import TagBadge from '../ui/TagBadge.astro';
 import MagneticButton from '../ui/MagneticButton.astro';
-import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
+import ProjectCover from '../ui/ProjectCover.astro';
 import { renderProjectBody } from '../../lib/render-markdown';
 
 interface Props {
@@ -35,8 +35,6 @@ if (flagship === undefined) {
   }
 }
 
-const coverSrc = flagship ? resolveCoverImage(flagship, 'f_auto,q_auto,w_900,h_675,c_fill') : null;
-const coverSrcSet = flagship ? resolveCoverImageSrcSet(flagship, [450, 700, 900, 1200], 'f_auto,q_auto,c_fill') : undefined;
 const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1: true }) : '';
 ---
 
@@ -51,22 +49,14 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
         <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
         <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
 
-        {coverSrc ? (
-          <img
-            src={coverSrc}
-            srcset={coverSrcSet}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-            width="900"
-            height="675"
-            alt={`${flagship.title} product interface`}
-            class="flagship__image js-cover-image"
-            loading="lazy"
-            decoding="async"
-            transition:name={`project-image-${flagship.slug}`}
-          />
-        ) : (
-          <img alt="" width="900" height="675" class="flagship__image js-cover-image is-broken" loading="lazy" />
-        )}
+        <ProjectCover
+          project={flagship}
+          class="flagship__image js-cover-image"
+          widths={[400, 768, 1020]}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+          loading="lazy"
+          decoding="async"
+        />
 
         <div class="flagship__media-hud font-mono" aria-hidden="true">
           <span>SYS::SPOTLIGHT</span>
@@ -99,17 +89,18 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
 )}
 
 <script>
-  import { initFlagshipReveal } from '../../scripts/flagship-reveal';
-  import { initTextScramble } from '../../scripts/text-scramble';
-
   document.addEventListener('astro:page-load', () => {
-    initFlagshipReveal();
-    initTextScramble('[data-flagship] [data-scramble]');
+    const scheduleFlagship = () => {
+      import('../../scripts/flagship-reveal').then(({ initFlagshipReveal }) => {
+        initFlagshipReveal();
+      });
+      import('../../scripts/text-scramble').then(({ initTextScramble }) => {
+        initTextScramble('[data-flagship] [data-scramble]');
+      });
 
-    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (!isReduced && !isMobile) {
-      const loadParticles = () => {
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      if (!isReduced && !isMobile) {
         import('../../scripts/three-hero').then(({ mountParticleCanvas }) => {
           mountParticleCanvas('#flagship-canvas', {
             opacity: 0.2,
@@ -117,12 +108,13 @@ const bodyHtml = flagship ? renderProjectBody(flagship.bodyMarkdown, { demoteH1:
             particleCountDesktop: 1000,
           });
         });
-      };
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(loadParticles, { timeout: 3500 });
-      } else {
-        setTimeout(loadParticles, 1500);
       }
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(scheduleFlagship, { timeout: 2500 });
+    } else {
+      setTimeout(scheduleFlagship, 200);
     }
   });
 </script>

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = ({ redirect }) => {
-  return redirect('/sitemap-index.xml', 301);
+  return redirect('/sitemap.xml', 301);
 };

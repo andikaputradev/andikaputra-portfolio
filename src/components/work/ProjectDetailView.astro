@@ -1,8 +1,8 @@
 ---
 import type { Project } from '../../db/schema';
 import TagBadge from '../ui/TagBadge.astro';
+import ProjectCover from '../ui/ProjectCover.astro';
 import { formatPublishedDate } from '../../lib/format-date';
-import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
 import { renderProjectBody } from '../../lib/render-markdown';
 
 interface Props {
@@ -13,8 +13,6 @@ interface Props {
 const { project, showBackLink = true } = Astro.props;
 const stack = project.stack ?? [];
 const publishedLabel = formatPublishedDate(project.publishedAt);
-const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_1200');
-const coverSrcSet = resolveCoverImageSrcSet(project, [480, 768, 1024, 1400], 'f_auto,q_auto');
 const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
 ---
 
@@ -46,23 +44,16 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
       <span class="cyber-corner cyber-corner--tl" aria-hidden="true"></span>
       <span class="cyber-corner cyber-corner--br" aria-hidden="true"></span>
 
-      {coverSrc ? (
-        <img
-          src={coverSrc}
-          srcset={coverSrcSet}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          width="1200"
-          height="675"
-          alt={`${project.title} cover screenshot`}
-          class="project-detail__cover js-cover-image"
-          loading="eager"
-          decoding="async"
-          fetchpriority="high"
-          transition:name={`project-image-${project.slug}`}
-        />
-      ) : (
-        <img alt="" width="1200" height="675" class="project-detail__cover js-cover-image is-broken" />
-      )}
+      <ProjectCover
+        project={project}
+        class="project-detail__cover js-cover-image"
+        widths={[400, 768, 1020]}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        transitionName={`project-image-${project.slug}`}
+      />
     </div>
   </div>
 
@@ -96,7 +87,13 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
               <ul class="project-detail__link-list font-mono">
                 {project.liveUrl && (
                   <li>
-                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item project-detail__link-item--live">
+                    <a
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="project-detail__link-item project-detail__link-item--live"
+                      aria-label={`Demo live untuk ${project.title}`}
+                    >
                       <span class="project-detail__live-beacon" aria-hidden="true"></span>
                       <span>Live site</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -109,7 +106,13 @@ const bodyHtml = renderProjectBody(project.bodyMarkdown, { demoteH1: true });
                 )}
                 {project.repoUrl && (
                   <li>
-                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" class="project-detail__link-item project-detail__link-item--repo">
+                    <a
+                      href={project.repoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="project-detail__link-item project-detail__link-item--repo"
+                      aria-label={`Repositori GitHub untuk ${project.title}`}
+                    >
                       <svg class="project-detail__repo-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                       </svg>

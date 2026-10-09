@@ -235,10 +235,13 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
         stats={{ count: commentsCount, averageRating: avgRating }}
       />
 
-      {relatedArticles.length > 0 && (
-        <section class="article-detail__related section-spacing" data-telemetry-section="article-related">
-          <div class="container-site">
+      <section class="article-detail__related section-spacing" data-telemetry-section="article-related" aria-label="Navigasi Artikel Terkait">
+        <div class="container-site">
+          <div class="article-detail__related-top">
             <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>
+            <a href="/artikel/" class="article-detail__related-all font-mono">Semua Artikel →</a>
+          </div>
+          {relatedArticles.length > 0 ? (
             <div class="article-detail__related-grid">
               {relatedArticles.map((related) => (
                 <article class="article-card">
@@ -262,9 +265,14 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
                 </article>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div class="article-detail__related-fallback">
+              <p class="font-mono text-muted">Jelajahi analisis teknis, keamanan siber, dan riset protokol Web3 lainnya.</p>
+              <a href="/artikel/" class="article-detail__share-link font-mono">Kunjungi Arsip Artikel</a>
+            </div>
+          )}
+        </div>
+      </section>
     </article>
   </main>
 </BaseLayout>
@@ -474,9 +482,39 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
     border-color: var(--color-accent-phosphor);
   }
 
+  .article-detail__related-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
   .article-detail__related-heading {
     font-size: clamp(1.5rem, 3vw, 2rem);
-    margin-bottom: 2rem;
+  }
+
+  .article-detail__related-all {
+    font-size: 0.8125rem;
+    color: var(--color-accent-phosphor);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .article-detail__related-all:hover {
+    color: var(--color-text-primary);
+  }
+
+  .article-detail__related-fallback {
+    padding: 2.5rem;
+    text-align: center;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
 
   .article-detail__related-grid {

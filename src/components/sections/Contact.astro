@@ -8,12 +8,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
 <section id="contact" class="contact" data-telemetry-section="contact">
   <canvas id="contact-canvas" class="contact__canvas" aria-hidden="true"></canvas>
 
-  {
-    turnstileSiteKey && (
-      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline />
-    )
-  }
-
   <div class="contact__inner container-site">
     <h2 class="contact__heading font-display">Get in touch</h2>
     <p class="contact__lead">

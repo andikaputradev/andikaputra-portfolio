@@ -28,7 +28,7 @@
   --color-surface: oklch(20% 0.016 260);
   --color-surface-raised: oklch(24% 0.018 260);
   --color-text-primary: oklch(94% 0.01 80);
-  --color-text-muted: oklch(62% 0.015 80);
+  --color-text-muted: oklch(65% 0.015 80);
   --color-accent-phosphor: oklch(72% 0.14 55);
   --color-accent-steel: oklch(75% 0.08 220);
   --color-error: oklch(65% 0.19 25);

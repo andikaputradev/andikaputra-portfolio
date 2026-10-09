@@ -29,9 +29,18 @@
 </section>
 
 <script>
-  import { initPhilosophyReveal } from '../../scripts/philosophy-reveal';
-
-  document.addEventListener('astro:page-load', () => initPhilosophyReveal());
+  document.addEventListener('astro:page-load', () => {
+    const init = () => {
+      import('../../scripts/philosophy-reveal').then(({ initPhilosophyReveal }) => {
+        initPhilosophyReveal();
+      });
+    };
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(init, { timeout: 3000 });
+    } else {
+      setTimeout(init, 300);
+    }
+  });
 </script>
 
 <style>

@@ -69,26 +69,28 @@ const cvUrl = profile?.cvPublicId ? cloudinaryRawUrl(profile.cvPublicId) : null;
 </section>
 
 <script>
-  import { initHeroEntrance } from '../../scripts/hero';
-  import { initTextScramble } from '../../scripts/text-scramble';
-
   document.addEventListener('astro:page-load', () => {
-    initHeroEntrance();
-    initTextScramble('[data-hero-eyebrow]');
-
-    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (isReduced) return;
-
-    const loadParticles = () => {
-      import('../../scripts/three-hero').then(({ mountParticleCanvas }) => {
-        mountParticleCanvas('#hero-canvas');
+    // Dynamic import GSAP and hero reveal during idle to keep initial load main thread free
+    const scheduleEffects = () => {
+      import('../../scripts/hero').then(({ initHeroEntrance }) => {
+        initHeroEntrance();
       });
+      import('../../scripts/text-scramble').then(({ initTextScramble }) => {
+        initTextScramble('[data-hero-eyebrow]');
+      });
+
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!isReduced) {
+        import('../../scripts/three-hero').then(({ mountParticleCanvas }) => {
+          mountParticleCanvas('#hero-canvas');
+        });
+      }
     };
 
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(loadParticles, { timeout: 2500 });
+      window.requestIdleCallback(scheduleEffects, { timeout: 1500 });
     } else {
-      setTimeout(loadParticles, 800);
+      setTimeout(scheduleEffects, 100);
     }
   });
 </script>

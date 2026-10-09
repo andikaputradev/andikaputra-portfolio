@@ -35,10 +35,42 @@ function showFieldErrors(form: HTMLFormElement, fields: Record<string, string[]>
   firstInvalid?.focus();
 }
 
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && (window as unknown as { turnstile?: unknown }).turnstile) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => resolve(), { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => resolve();
+    document.head.appendChild(script);
+  });
+}
+
 export function initContactForm(): void {
   const form = document.querySelector<HTMLFormElement>('#contact-form');
   const statusEl = document.querySelector<HTMLElement>('#contact-form-status');
   if (!form || !statusEl) return;
+
+  let turnstileTriggered = false;
+  const triggerTurnstile = async () => {
+    if (turnstileTriggered) return;
+    turnstileTriggered = true;
+    await loadTurnstileScript();
+  };
+
+  form.addEventListener('focusin', triggerTurnstile, { once: true });
+  form.addEventListener('pointerdown', triggerTurnstile, { once: true });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();

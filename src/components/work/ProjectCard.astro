@@ -1,7 +1,7 @@
 ---
 import type { Project } from '../../db/schema';
 import TagBadge from '../ui/TagBadge.astro';
-import { resolveCoverImage, resolveCoverImageSrcSet } from '../../lib/cloudinary-url';
+import ProjectCover from '../ui/ProjectCover.astro';
 
 interface Props {
   project: Project;
@@ -10,8 +10,6 @@ interface Props {
 }
 
 const { project, index, enableTransition = true } = Astro.props;
-const coverSrc = resolveCoverImage(project, 'f_auto,q_auto,w_600,h_450,c_fill');
-const coverSrcSet = resolveCoverImageSrcSet(project, [300, 450, 600, 900], 'f_auto,q_auto,c_fill');
 const stack = project.stack ?? [];
 const displayIndex = String(index ?? project.displayOrder ?? 1).padStart(2, '0');
 ---
@@ -42,28 +40,15 @@ const displayIndex = String(index ?? project.displayOrder ?? 1).padStart(2, '0')
 
     <!-- Media Container with Aspect Ratio Frame -->
     <div class="project-card__image-wrap cover-image-wrap">
-      {coverSrc ? (
-        <img
-          src={coverSrc}
-          srcset={coverSrcSet}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-          width="600"
-          height="450"
-          alt={`${project.title} cover`}
-          class="project-card__image js-cover-image"
-          loading="lazy"
-          decoding="async"
-          transition:name={enableTransition ? `project-image-${project.slug}` : undefined}
-        />
-      ) : (
-        <img
-          alt=""
-          width="600"
-          height="450"
-          class="project-card__image js-cover-image is-broken"
-          loading="lazy"
-        />
-      )}
+      <ProjectCover
+        project={project}
+        class="project-card__image js-cover-image"
+        widths={[400, 768, 1020]}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+        loading="lazy"
+        decoding="async"
+        transitionName={enableTransition ? `project-image-${project.slug}` : undefined}
+      />
       <div class="project-card__image-overlay" aria-hidden="true"></div>
     </div>
 
@@ -94,7 +79,8 @@ const displayIndex = String(index ?? project.displayOrder ?? 1).padStart(2, '0')
           target="_blank"
           rel="noopener"
           class="project-card__action project-card__action--github font-mono"
-          title="Lihat source code di GitHub"
+          title={`Lihat repositori ${project.title} di GitHub`}
+          aria-label={`Repositori GitHub untuk ${project.title}`}
         >
           <svg class="project-card__action-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
@@ -108,7 +94,8 @@ const displayIndex = String(index ?? project.displayOrder ?? 1).padStart(2, '0')
           target="_blank"
           rel="noopener"
           class="project-card__action project-card__action--live font-mono"
-          title="Buka live demo / deployment"
+          title={`Buka live demo ${project.title}`}
+          aria-label={`Demo live untuk ${project.title}`}
         >
           <span class="project-card__live-beacon" aria-hidden="true"></span>
           <span>Live</span>

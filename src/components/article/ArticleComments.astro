@@ -43,12 +43,6 @@ const distribution = [5, 4, 3, 2, 1].map((star) => {
 const roundedRating = Math.round(stats.averageRating || 5);
 ---
 
-{
-  turnstileSiteKey && (
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline />
-  )
-}
-
 <section
   id="comments-section"
   class="article-comments section-spacing container-site"
@@ -415,17 +409,43 @@ const roundedRating = Math.round(stats.averageRating || 5);
     }
     form.dataset.commentsInitialized = 'true';
 
-    // Pastikan Turnstile ter-render pada SPA client transitions jika container kosong
-    if (typeof window !== 'undefined' && (window as any).turnstile) {
+    function loadTurnstileScript(): Promise<void> {
+      return new Promise((resolve) => {
+        if (typeof window !== 'undefined' && (window as any).turnstile) {
+          resolve();
+          return;
+        }
+        const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+        if (existing) {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+    }
+
+    let turnstileTriggered = false;
+    const triggerTurnstile = async () => {
+      if (turnstileTriggered) return;
+      turnstileTriggered = true;
+      await loadTurnstileScript();
       const turnstileContainer = form.querySelector('.cf-turnstile');
-      if (turnstileContainer && !turnstileContainer.hasChildNodes()) {
+      if (turnstileContainer && (window as any).turnstile && !turnstileContainer.hasChildNodes()) {
         try {
           (window as any).turnstile.render(turnstileContainer);
         } catch {
           // ignore
         }
       }
-    }
+    };
+
+    form.addEventListener('focusin', triggerTurnstile, { once: true });
+    form.addEventListener('pointerdown', triggerTurnstile, { once: true });
 
     const starPickerGroup = document.getElementById('star-picker-group');
     const starButtons = section.querySelectorAll<HTMLButtonElement>('.star-btn');

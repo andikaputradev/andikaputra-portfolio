@@ -24,11 +24,11 @@ describe('JSON-LD Schema Builder - BlogPosting', () => {
 
   const siteUrl = 'https://wahyuandikaputra.my.id/';
 
-  it('menghasilkan schema BlogPosting dengan atribut wajib dan tipe data valid', () => {
+  it('menghasilkan schema TechArticle dan BlogPosting dengan atribut wajib dan tipe data valid', () => {
     const schema = buildArticleSchema(mockArticle, siteUrl);
 
     expect(schema['@context']).toBe('https://schema.org');
-    expect(schema['@type']).toBe('BlogPosting');
+    expect(schema['@type']).toEqual(['TechArticle', 'BlogPosting']);
     expect(schema.headline).toBe('Panduan Audit Smart Contract Web3');
     expect(schema.description).toBe(mockArticle.summary);
     expect(schema.url).toBe('https://wahyuandikaputra.my.id/artikel/panduan-audit-smart-contract/');
