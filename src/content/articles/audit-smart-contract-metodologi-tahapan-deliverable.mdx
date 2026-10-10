@@ -135,66 +135,70 @@ Risiko sentralisasi sebaiknya dilaporkan tersendiri agar pengguna dapat menilai 
 
 Pola berikut memperbaiki kelas kerentanan reentrancy pada fungsi penarikan: periksa kondisi, ubah state, baru lakukan panggilan eksternal, dengan `nonReentrant` sebagai lapisan pertahanan tambahan. Contoh mengasumsikan OpenZeppelin Contracts v5 dan struktur Foundry dengan berkas `src/Vault.sol`.
 
-    // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.24;
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-    import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-    contract Vault is ReentrancyGuard {
-        error InsufficientBalance();
-        error TransferFailed();
+contract Vault is ReentrancyGuard {
+    error InsufficientBalance();
+    error TransferFailed();
 
-        mapping(address account => uint256 amount) private balances;
+    mapping(address account => uint256 amount) private balances;
 
-        event Deposited(address indexed account, uint256 amount);
-        event Withdrawn(address indexed account, uint256 amount);
+    event Deposited(address indexed account, uint256 amount);
+    event Withdrawn(address indexed account, uint256 amount);
 
-        function deposit() external payable {
-            balances[msg.sender] += msg.value;
-            emit Deposited(msg.sender, msg.value);
-        }
-
-        function withdraw(uint256 amount) external nonReentrant {
-            uint256 balance = balances[msg.sender];
-            if (balance < amount) revert InsufficientBalance();
-            balances[msg.sender] = balance - amount;
-            (bool ok, ) = msg.sender.call{value: amount}("");
-            if (!ok) revert TransferFailed();
-            emit Withdrawn(msg.sender, amount);
-        }
-
-        function balanceOf(address account) external view returns (uint256) {
-            return balances[account];
-        }
+    function deposit() external payable {
+        balances[msg.sender] += msg.value;
+        emit Deposited(msg.sender, msg.value);
     }
+
+    function withdraw(uint256 amount) external nonReentrant {
+        uint256 balance = balances[msg.sender];
+        if (balance < amount) revert InsufficientBalance();
+        balances[msg.sender] = balance - amount;
+        (bool ok, ) = msg.sender.call{value: amount}("");
+        if (!ok) revert TransferFailed();
+        emit Withdrawn(msg.sender, amount);
+    }
+
+    function balanceOf(address account) external view returns (uint256) {
+        return balances[account];
+    }
+}
+```
 
 Tes fuzz Foundry untuk memvalidasi properti dasar penarikan (`test/Vault.t.sol`):
 
-    // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.24;
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-    import {Test} from "forge-std/Test.sol";
-    import {Vault} from "../src/Vault.sol";
+import {Test} from "forge-std/Test.sol";
+import {Vault} from "../src/Vault.sol";
 
-    contract VaultTest is Test {
-        Vault private vault;
+contract VaultTest is Test {
+    Vault private vault;
 
-        function setUp() public {
-            vault = new Vault();
-        }
-
-        function testFuzz_WithdrawReturnsDeposit(uint96 amount) public {
-            vm.assume(amount > 0);
-            address user = makeAddr("user");
-            vm.deal(user, amount);
-            vm.startPrank(user);
-            vault.deposit{value: amount}();
-            vault.withdraw(amount);
-            vm.stopPrank();
-            assertEq(user.balance, amount);
-            assertEq(vault.balanceOf(user), 0);
-        }
+    function setUp() public {
+        vault = new Vault();
     }
+
+    function testFuzz_WithdrawReturnsDeposit(uint96 amount) public {
+        vm.assume(amount > 0);
+        address user = makeAddr("user");
+        vm.deal(user, amount);
+        vm.startPrank(user);
+        vault.deposit{value: amount}();
+        vault.withdraw(amount);
+        vm.stopPrank();
+        assertEq(user.balance, amount);
+        assertEq(vault.balanceOf(user), 0);
+    }
+}
+```
 
 Jalankan `forge install OpenZeppelin/openzeppelin-contracts` lalu `forge test`. Tes ini hanya memeriksa satu properti dasar. Auditor tetap menambahkan tes yang menyerang kontrak dengan penerima berbahaya pada lingkungan lokal, serta invariant test pada tingkat sistem. Untuk fungsi view yang dipakai protokol lain, pertimbangkan juga read-only reentrancy.
 

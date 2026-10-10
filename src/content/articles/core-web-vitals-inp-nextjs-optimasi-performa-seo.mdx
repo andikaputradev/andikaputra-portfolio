@@ -40,24 +40,26 @@ Core Web Vitals menjadi bagian dari sinyal pengalaman halaman pada Google Search
 
 Contoh komponen pelapor pada App Router. Pasang pada `app/layout.tsx` di dalam `body`:
 
-    'use client'
+```tsx
+'use client'
 
-    import { useReportWebVitals } from 'next/web-vitals'
+import { useReportWebVitals } from 'next/web-vitals'
 
-    export function WebVitalsReporter() {
-      useReportWebVitals((metric) => {
-        const payload = JSON.stringify({
-          id: metric.id,
-          name: metric.name,
-          label: metric.label,
-          value: metric.value,
-          path: window.location.pathname,
-        })
-        navigator.sendBeacon('/api/vitals', payload)
-      })
+export function WebVitalsReporter() {
+  useReportWebVitals((metric) => {
+    const payload = JSON.stringify({
+      id: metric.id,
+      name: metric.name,
+      label: metric.label,
+      value: metric.value,
+      path: window.location.pathname,
+    })
+    navigator.sendBeacon('/api/vitals', payload)
+  })
 
-      return null
-    }
+  return null
+}
+```
 
 Endpoint `/api/vitals` harus memvalidasi payload, membatasi laju permintaan, dan tidak menyimpan pengenal pribadi. Bila metrik ini dikaitkan dengan individu, perlakukan sebagai data pribadi sesuai UU PDP.
 
@@ -95,28 +97,30 @@ Penyebab umumnya adalah tugas panjang (lebih dari 50 milidetik) yang menahan mai
 
 `scheduler.yield()` tersedia pada peramban berbasis Chromium, sehingga sediakan fallback. Contoh pembantu yielding dan penerapannya pada pemrosesan bertahap:
 
-    type SchedulerLike = { yield?: () => Promise<void> }
+```typescript
+type SchedulerLike = { yield?: () => Promise<void> }
 
-    export function yieldToMain(): Promise<void> {
-      const scheduler = (globalThis as unknown as { scheduler?: SchedulerLike }).scheduler
-      if (scheduler?.yield) {
-        return scheduler.yield()
-      }
-      return new Promise((resolve) => setTimeout(resolve, 0))
-    }
+export function yieldToMain(): Promise<void> {
+  const scheduler = (globalThis as unknown as { scheduler?: SchedulerLike }).scheduler
+  if (scheduler?.yield) {
+    return scheduler.yield()
+  }
+  return new Promise((resolve) => setTimeout(resolve, 0))
+}
 
-    export async function processInChunks<T>(
-      items: readonly T[],
-      handler: (item: T) => void,
-      chunkSize = 50,
-    ): Promise<void> {
-      for (let index = 0; index < items.length; index += chunkSize) {
-        for (const item of items.slice(index, index + chunkSize)) {
-          handler(item)
-        }
-        await yieldToMain()
-      }
+export async function processInChunks<T>(
+  items: readonly T[],
+  handler: (item: T) => void,
+  chunkSize = 50,
+): Promise<void> {
+  for (let index = 0; index < items.length; index += chunkSize) {
+    for (const item of items.slice(index, index + chunkSize)) {
+      handler(item)
     }
+    await yieldToMain()
+  }
+}
+```
 
 ### Durasi pemrosesan
 - Jaga event handler tetap ringan. Lakukan hanya pembaruan yang dibutuhkan untuk frame berikutnya, dan tunda pekerjaan lain.
@@ -126,43 +130,45 @@ Penyebab umumnya adalah tugas panjang (lebih dari 50 milidetik) yang menahan mai
 
 Contoh pemisahan pembaruan mendesak dan tidak mendesak pada filter pencarian:
 
-    'use client'
+```tsx
+'use client'
 
-    import { useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 
-    type SearchFilterProps = {
-      items: readonly string[]
-    }
+type SearchFilterProps = {
+  items: readonly string[]
+}
 
-    export function SearchFilter({ items }: SearchFilterProps) {
-      const [query, setQuery] = useState('')
-      const [visibleItems, setVisibleItems] = useState<readonly string[]>(items)
-      const [isPending, startTransition] = useTransition()
+export function SearchFilter({ items }: SearchFilterProps) {
+  const [query, setQuery] = useState('')
+  const [visibleItems, setVisibleItems] = useState<readonly string[]>(items)
+  const [isPending, startTransition] = useTransition()
 
-      function handleChange(value: string) {
-        setQuery(value)
-        startTransition(() => {
-          const normalized = value.trim().toLowerCase()
-          setVisibleItems(items.filter((item) => item.toLowerCase().includes(normalized)))
-        })
-      }
+  function handleChange(value: string) {
+    setQuery(value)
+    startTransition(() => {
+      const normalized = value.trim().toLowerCase()
+      setVisibleItems(items.filter((item) => item.toLowerCase().includes(normalized)))
+    })
+  }
 
-      return (
-        <div>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => handleChange(event.target.value)}
-            aria-label="Cari item"
-          />
-          <ul aria-busy={isPending}>
-            {visibleItems.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
+  return (
+    <div>
+      <input
+        type="search"
+        value={query}
+        onChange={(event) => handleChange(event.target.value)}
+        aria-label="Cari item"
+      />
+      <ul aria-busy={isPending}>
+        {visibleItems.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
 
 ### Penundaan presentasi
 - Kecilkan ukuran DOM dan virtualisasikan daftar panjang.

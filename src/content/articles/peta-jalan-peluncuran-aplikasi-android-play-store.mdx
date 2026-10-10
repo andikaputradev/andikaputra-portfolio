@@ -74,27 +74,29 @@ Developer dengan akun pribadi yang dibuat setelah 13 November 2023 wajib menjala
 
 Fragmen `build.gradle.kts` modul aplikasi untuk target terbaru dan build rilis yang disusutkan (nilai `minSdk` adalah contoh dan perlu disesuaikan):
 
-    android {
-        compileSdk = 36
+```kotlin
+android {
+    compileSdk = 36
 
-        defaultConfig {
-            minSdk = 24
-            targetSdk = 36
-            versionCode = 1
-            versionName = "1.0.0"
-        }
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+    }
 
-        buildTypes {
-            release {
-                isMinifyEnabled = true
-                isShrinkResources = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-            }
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
+}
+```
 
 ### Fase 6: Akun Developer dan Verifikasi
 - Biaya pendaftaran akun adalah USD 25 sekali bayar.
