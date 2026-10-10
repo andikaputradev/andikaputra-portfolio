@@ -42,7 +42,7 @@
     "@vercel/functions": "3.7.6",
     "alpinejs": "3.15.12",
     "animejs": "4.5.0",
-    "astro": "7.1.5",
+    "astro": "^7.3.8",
     "better-auth": "1.6.25",
     "chart.js": "^4.5.1",
     "cloudinary": "2.10.0",
