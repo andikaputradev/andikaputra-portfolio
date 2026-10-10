@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MagneticButton from '../components/ui/MagneticButton.astro';
 import { IDENTITY } from '../data/identity';
-import { buildServiceSchema, buildFAQSchema } from '../lib/json-ld';
+import { buildEntityGraph, buildFAQSchema } from '../lib/json-ld';
 import { trackVisit } from '../lib/track-visit';
 
 export const prerender = false;
@@ -15,15 +15,15 @@ const siteUrl = Astro.site?.toString() ?? 'https://wahyuandikaputra.my.id/';
 const SERVICES = [
   {
     tag: 'WEB2',
-    title: 'Pengembangan Web & Aplikasi',
+    title: 'Jasa Pembuatan Website & Aplikasi Full-Stack',
     description:
-      'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
+      'Landing page, company profile, dashboard internal, hingga aplikasi full-stack dibangun dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek. Fokus pada performa, aksesibilitas, dan struktur kode yang mudah dikembangkan lanjut.',
   },
   {
     tag: 'MOBILE',
-    title: 'Upload & Publish Aplikasi ke Play Store / App Store',
+    title: 'Jasa Pembuatan Aplikasi Android & Upload Play Store',
     description:
-      'Jasa upload, publikasi, dan optimasi aplikasi ke Google Play Store dan Apple App Store. Termasuk setup developer account, listing optimasi (ASO), screenshot preparation, dan review preparation agar aplikasi lolos review.',
+      'Pengembangan dan publikasi aplikasi Android ke Google Play Store dan Apple App Store. Termasuk setup developer account, listing optimasi (ASO), screenshot preparation, dan review preparation agar aplikasi lolos review.',
   },
   {
     tag: 'SECURITY',
@@ -58,27 +58,42 @@ const FAQS = [
 const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
 const jasaCanonical = `${cleanSiteUrl}jasa/`;
 const faqSchema = buildFAQSchema(FAQS);
+const entityGraph = buildEntityGraph(cleanSiteUrl);
 ---
 
 <BaseLayout
-  title="Jasa Pembuatan Website, Aplikasi & Security | Wahyu Andika Putra"
-  description="Jasa pembuatan website & aplikasi, security hardening, dan audit smart contract Web3 oleh Wahyu Andika Putra, software engineer berbasis di Indonesia."
+  title="Jasa Pembuatan Website dan Aplikasi | Wahyu Andika Putra"
+  description="Jasa pembuatan website dan aplikasi profesional di Wonosobo oleh Wahyu Andika Putra. Full-stack web, Android, security hardening, Web3. Konsultasi gratis."
   canonical={jasaCanonical}
   ogImage="/og/index.png"
-  additionalSchemas={[buildServiceSchema(cleanSiteUrl), faqSchema]}
+  additionalSchemas={[entityGraph, faqSchema]}
   lang="id"
-  keywords={['jasa pembuatan website', 'jasa pembuatan aplikasi', 'jasa upload play store', 'jasa upload app store', 'security hardening', 'audit defensif', 'web3 specialist', 'smart contract audit', 'cybersecurity consultant', 'jasa bikin website', 'jasa web application', 'developer Indonesia']}
+  keywords={[
+    'jasa pembuatan website dan aplikasi',
+    'jasa pembuatan website profesional',
+    'jasa pembuatan aplikasi android',
+    'software engineer wonosobo',
+    'pengembangan sistem web nextjs',
+    'jasa upload play store',
+    'jasa upload app store',
+    'security hardening',
+    'audit defensif',
+    'web3 specialist',
+    'smart contract audit',
+    'developer indonesia',
+  ]}
 >
   <main id="main-content">
     <section class="jasa-hero section-spacing" data-telemetry-section="jasa">
       <div class="container-site">
         <p class="jasa-hero__eyebrow font-mono">JASA</p>
         <h1 class="jasa-hero__heading font-display">
-          Pembuatan Website & Aplikasi, dengan Keamanan Sebagai Bagian dari Desain.
+          Jasa Pembuatan Website dan Aplikasi, Keamanan Sejak Hari Pertama.
         </h1>
         <p class="jasa-hero__lead">
-          Bukan sekadar dibuat agar tampil, dirancang agar tahan diserang, mudah dirawat, dan
-          jelas arsitekturnya. Cocok untuk kebutuhan bisnis, riset, maupun proyek Web3.
+          Website dan aplikasi yang dirancang untuk bertahan, bukan sekadar tampil. Dibangun
+          dengan Astro, Next.js, dan Android Native. Berbasis di Wonosobo, tersedia untuk
+          proyek di seluruh Indonesia.
         </p>
         <div class="jasa-hero__ctas">
           <MagneticButton href={IDENTITY.whatsappLink} variant="primary" target="_blank">
@@ -91,7 +106,7 @@ const faqSchema = buildFAQSchema(FAQS);
 
     <section class="jasa-services section-spacing" data-telemetry-section="jasa-services">
       <div class="container-site">
-        <h2 class="jasa-section-heading font-display">Lingkup Layanan</h2>
+        <h2 class="jasa-section-heading font-display">Layanan yang Tersedia</h2>
         <div class="jasa-services__grid">
           {SERVICES.map((service) => (
             <article class="jasa-service-card border-subtle" data-spotlight>

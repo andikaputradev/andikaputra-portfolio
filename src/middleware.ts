@@ -104,5 +104,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
   }
+  // X-Robots-Tag mencegah crawler mengindeks admin HTML pages bahkan jika link bocor.
+  // Tidak diterapkan ke isAdminApi karena respons JSON tidak diproses parser HTML crawler.
+  if (isAdminPage) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
   return response;
 });

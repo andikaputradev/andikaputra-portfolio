@@ -11,3 +11,6 @@ playwright-report/
 test-results/
 coverage/
 *.tsbuildinfo
+
+# SeoFlow generated data
+.seoflow/data/

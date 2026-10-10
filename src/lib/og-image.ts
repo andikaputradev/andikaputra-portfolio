@@ -20,6 +20,16 @@ export interface OgTemplateProps {
   subtitle: string;
 }
 
+/**
+ * Membangun template OG image 1200x630 dengan:
+ * - Eyebrow label (jenis konten / kategori)
+ * - Judul besar dengan font Fraunces
+ * - Subjudul / ringkasan konten
+ * - Footer: accent bar + nama penulis (kiri) dan domain (kanan)
+ *
+ * Desain mengikuti "Phosphor Terminal Editorial" palette:
+ * #0E0F13 background, #EDEAE3 primary text, #8C8A82 muted text, #C97D3F phosphor accent.
+ */
 function buildTemplate({ eyebrow, title, subtitle }: OgTemplateProps) {
   return {
     type: 'div',
@@ -30,30 +40,33 @@ function buildTemplate({ eyebrow, title, subtitle }: OgTemplateProps) {
         justifyContent: 'space-between',
         width: '1200px',
         height: '630px',
-        padding: '80px',
+        padding: '72px 80px',
         backgroundColor: '#0E0F13',
       },
       children: [
+        // Eyebrow — jenis konten atau kategori artikel
         {
           type: 'div',
           props: {
             style: {
               display: 'flex',
-              fontSize: '22px',
-              letterSpacing: '2px',
+              fontSize: '20px',
+              letterSpacing: '2.5px',
               color: '#8C8A82',
               fontFamily: 'Geist Mono',
             },
             children: eyebrow,
           },
         },
+
+        // Blok tengah: judul + subjudul
         {
           type: 'div',
           props: {
             style: {
               display: 'flex',
               flexDirection: 'column',
-              gap: '24px',
+              gap: '20px',
             },
             children: [
               {
@@ -61,11 +74,11 @@ function buildTemplate({ eyebrow, title, subtitle }: OgTemplateProps) {
                 props: {
                   style: {
                     display: 'flex',
-                    fontSize: '64px',
+                    fontSize: '62px',
                     fontFamily: 'Fraunces',
                     color: '#EDEAE3',
-                    lineHeight: 1.15,
-                    maxWidth: '980px',
+                    lineHeight: 1.12,
+                    maxWidth: '960px',
                   },
                   children: title,
                 },
@@ -75,11 +88,11 @@ function buildTemplate({ eyebrow, title, subtitle }: OgTemplateProps) {
                 props: {
                   style: {
                     display: 'flex',
-                    fontSize: '26px',
+                    fontSize: '24px',
                     fontFamily: 'Geist Sans',
                     color: '#8C8A82',
-                    maxWidth: '860px',
-                    lineHeight: 1.4,
+                    maxWidth: '840px',
+                    lineHeight: 1.45,
                   },
                   children: subtitle,
                 },
@@ -87,15 +100,71 @@ function buildTemplate({ eyebrow, title, subtitle }: OgTemplateProps) {
             ],
           },
         },
+
+        // Footer: accent bar + penulis (kiri) | domain (kanan)
         {
           type: 'div',
           props: {
             style: {
               display: 'flex',
-              width: '64px',
-              height: '4px',
-              backgroundColor: '#C97D3F',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
             },
+            children: [
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: '16px',
+                  },
+                  children: [
+                    // Garis aksen phosphor — tanda visual identitas merek
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          display: 'flex',
+                          width: '48px',
+                          height: '3px',
+                          backgroundColor: '#C97D3F',
+                        },
+                      },
+                    },
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          display: 'flex',
+                          fontSize: '18px',
+                          fontFamily: 'Geist Mono',
+                          color: '#5C5B56',
+                          letterSpacing: '0.5px',
+                        },
+                        children: 'Wahyu Andika Putra',
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex',
+                    fontSize: '16px',
+                    fontFamily: 'Geist Mono',
+                    color: '#5C5B56',
+                    letterSpacing: '0.75px',
+                  },
+                  children: 'wahyuandikaputra.my.id',
+                },
+              },
+            ],
           },
         },
       ],
@@ -120,5 +189,5 @@ export async function renderOgPng(props: OgTemplateProps, requestUrl: URL): Prom
     ],
   });
 
-  return sharp(Buffer.from(svg)).png().toBuffer();
+  return sharp(Buffer.from(svg)).png({ compressionLevel: 9, effort: 10 }).toBuffer();
 }

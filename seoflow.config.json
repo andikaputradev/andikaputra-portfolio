@@ -1,0 +1,53 @@
+{
+  "siteName": "portfolio",
+  "siteUrl": "wahyuandikaputra.my.id",
+  "author": "Wahyu Andika Putra",
+  "authorLocation": "Wonosobo",
+  "writingSample": "",
+  "postsDir": "/artikel",
+  "gscPagesCsv": "gsc_data/Seiten.csv",
+  "gscQueriesCsv": "gsc_data/Suchanfragen.csv",
+  "auditLogPath": ".seoflow/data/audit-log.json",
+  "keywordCachePath": ".seoflow/data/keyword-cache.json",
+  "destinationPattern": "/destinations/{country}",
+  "contentFormat": "markdown",
+  "contentDomain": "tech",
+  "tools": [
+    {
+      "keywords": [
+        "budget",
+        "cost",
+        "how much",
+        "cheap",
+        "per day",
+        "price"
+      ],
+      "path": "/tools/budget-calculator",
+      "anchor": "budget calculator"
+    },
+    {
+      "keywords": [
+        "packing",
+        "what to bring",
+        "luggage",
+        "essentials"
+      ],
+      "path": "/tools/packing-checklist",
+      "anchor": "packing checklist"
+    }
+  ],
+  "bookings": [],
+  "generation": {
+    "defaultSchema": "Article",
+    "defaultCategory": "tech",
+    "wordCountMin": 1500,
+    "wordCountMax": 2500
+  },
+  "publishing": {
+    "gitEmail": "noreply@seoflow.dev",
+    "gitName": "portfolio Publisher",
+    "branch": "main",
+    "baseUrl": "https://wahyuandikaputra.my.id",
+    "majorCities": []
+  }
+}

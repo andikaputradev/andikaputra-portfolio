@@ -1,18 +1,39 @@
 import type { Project, Article } from '../db/schema';
 import { IDENTITY } from '../data/identity';
 
-// Helper untuk menggabungkan siteUrl dan path secara aman (mencegah double slash // atau missing slash)
+// Menggabungkan siteUrl dan path secara aman (mencegah double slash atau missing slash)
 function combineUrl(baseUrl: string, path: string): string {
   const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${cleanPath}`;
 }
 
-// Helper untuk memastikan format @id Person konsisten
+// Memastikan format @id Person konsisten di seluruh schema
 function getPersonId(siteUrl?: string): string | undefined {
   if (!siteUrl) return undefined;
   const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
   return `${base}#person`;
+}
+
+
+
+function buildAddressNode() {
+  return {
+    '@type': 'PostalAddress',
+    streetAddress: IDENTITY.location.streetAddress,
+    addressLocality: IDENTITY.location.addressLocality,
+    addressRegion: IDENTITY.location.addressRegion,
+    postalCode: IDENTITY.location.postalCode,
+    addressCountry: IDENTITY.location.addressCountry,
+  };
+}
+
+function buildGeoNode() {
+  return {
+    '@type': 'GeoCoordinates',
+    latitude: IDENTITY.location.geo.latitude,
+    longitude: IDENTITY.location.geo.longitude,
+  };
 }
 
 export function buildPersonSchema(siteUrl?: string) {
@@ -21,14 +42,23 @@ export function buildPersonSchema(siteUrl?: string) {
     '@type': 'Person',
     '@id': getPersonId(siteUrl),
     name: IDENTITY.fullName,
-    alternateName: ['WAP', 'Wahyu Andika Putra'],
+    alternateName: [IDENTITY.brandName, 'WAP'],
     jobTitle: IDENTITY.role,
     description:
-      'Software engineer dan cybersecurity specialist berbasis di Indonesia, fokus pada pengembangan web/aplikasi production-grade serta audit keamanan dan protokol Web3.',
+      'Software engineer dan cybersecurity specialist berbasis di Wonosobo, Jawa Tengah. Fokus pada jasa pembuatan website dan aplikasi production-grade, audit keamanan siber, dan protokol Web3.',
     url: siteUrl,
     image: siteUrl ? combineUrl(siteUrl, 'og/index.png') : undefined,
     email: IDENTITY.email,
+    telephone: IDENTITY.telephone,
+    homeLocation: {
+      '@type': 'Place',
+      name: 'Wonosobo, Jawa Tengah, Indonesia',
+      geo: buildGeoNode(),
+    },
+    address: buildAddressNode(),
     knowsAbout: [
+      'Jasa Pembuatan Website',
+      'Jasa Pembuatan Aplikasi Android',
       'Software Engineering',
       'Web Application Development',
       'Cybersecurity',
@@ -44,7 +74,13 @@ export function buildPersonSchema(siteUrl?: string) {
       name: IDENTITY.role,
       occupationCategory: 'Software Engineer',
     },
-    sameAs: [IDENTITY.social.github, IDENTITY.social.linkedin, IDENTITY.social.instagram],
+    sameAs: [
+      IDENTITY.social.github,
+      IDENTITY.social.linkedin,
+      IDENTITY.social.instagram,
+      IDENTITY.social.facebook,
+      IDENTITY.social.tiktok,
+    ],
   };
 }
 
@@ -67,7 +103,7 @@ export function buildWebsiteSchema(siteUrl: string) {
     name: `${IDENTITY.fullName} | Portfolio`,
     url: siteUrl,
     description:
-      'Software engineer and cybersecurity specialist working across Web2 product engineering and Web3 protocol security.',
+      'Software engineer dan cybersecurity specialist untuk pengembangan web/aplikasi production-grade dan keamanan protokol Web3.',
     inLanguage: ['en', 'id'],
     author: {
       '@type': 'Person',
@@ -89,14 +125,29 @@ export function buildServiceSchema(siteUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
-    name: `${IDENTITY.fullName} | Jasa Pembuatan Website, Aplikasi & Keamanan Siber`,
+    name: `${IDENTITY.fullName} | Jasa Pembuatan Website dan Aplikasi`,
+    alternateName: IDENTITY.brandName,
     description:
-      'Jasa pembuatan website dan aplikasi, jasa upload Play Store, security hardening, serta audit smart contract Web3 oleh software engineer dan profesional keamanan siber berbasis di Indonesia.',
+      'Jasa pembuatan website dan aplikasi profesional, jasa upload Play Store, security hardening, serta audit smart contract Web3 oleh software engineer berbasis di Wonosobo, Jawa Tengah.',
+    url: combineUrl(siteUrl, 'jasa/'),
+    telephone: IDENTITY.telephone,
+    email: IDENTITY.email,
+    address: buildAddressNode(),
+    geo: buildGeoNode(),
+    hasMap: `https://www.google.com/maps?q=${IDENTITY.location.geo.latitude},${IDENTITY.location.geo.longitude}`,
+    priceRange: 'Hubungi untuk penawaran',
+    currenciesAccepted: 'IDR',
+    paymentAccepted: 'Transfer Bank, QRIS',
+    openingHours: 'Mo-Fr 09:00-17:00',
     serviceType: [
-      'Web Development',
-      'Application Development',
-      'Mobile App Upload Play Store',
+      'Jasa Pembuatan Website',
+      'Jasa Pembuatan Aplikasi Android',
+      'Web Application Development',
+      'Mobile App Development',
+      'Play Store Upload',
+      'App Store Upload',
       'Cybersecurity Consulting',
+      'Security Hardening',
       'Web3 Development',
       'Smart Contract Audit',
     ],
@@ -107,21 +158,22 @@ export function buildServiceSchema(siteUrl: string) {
     },
     areaServed: [
       { '@type': 'Country', name: 'Indonesia' },
+      {
+        '@type': 'AdministrativeArea',
+        name: 'Wonosobo',
+        containedInPlace: { '@type': 'AdministrativeArea', name: 'Jawa Tengah' },
+      },
       { '@type': 'Country', name: 'Singapore' },
       { '@type': 'Country', name: 'Malaysia' },
     ],
-    url: combineUrl(siteUrl, 'jasa/'),
     knowsAbout: [
-      'Jasa Pembuatan Website',
-      'Jasa Pembuatan Aplikasi',
+      'Jasa Pembuatan Website Profesional',
+      'Jasa Pembuatan Aplikasi Android',
+      'Software Engineer Wonosobo',
+      'Pengembangan Sistem Web Next.js',
       'Jasa Upload Play Store',
-      'Jasa Upload App Store',
-      'Web3 Specialist',
-      'Profesional Keamanan Siber',
-      'Security Hardening',
       'Smart Contract Audit',
-      'DeFi Risk Assessment',
-      'Jasa Pembuatan Web Application',
+      'Security Hardening',
     ],
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
@@ -131,18 +183,18 @@ export function buildServiceSchema(siteUrl: string) {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: 'Pengembangan Web & Aplikasi',
+            name: 'Jasa Pembuatan Website & Aplikasi Full-Stack',
             description:
-              'Landing page, portfolio, dashboard internal, hingga aplikasi full-stack dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek.',
+              'Landing page, company profile, dashboard internal, hingga aplikasi full-stack dengan Astro, React/Next.js, atau stack sesuai kebutuhan proyek.',
           },
         },
         {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: 'Upload & Publish Aplikasi ke Play Store / App Store',
+            name: 'Jasa Pembuatan Aplikasi Android & Upload Play Store',
             description:
-              'Jasa upload, publikasi, dan optimasi aplikasi ke Google Play Store dan Apple App Store, termasuk setup developer account, listing optimasi, dan review preparation.',
+              'Pengembangan dan publikasi aplikasi Android ke Google Play Store dan Apple App Store, termasuk setup developer account, listing optimasi (ASO), dan review preparation.',
           },
         },
         {
@@ -151,7 +203,7 @@ export function buildServiceSchema(siteUrl: string) {
             '@type': 'Service',
             name: 'Security Hardening & Audit Defensif',
             description:
-              'Threat modeling, secure coding review, dan hardening infrastruktur oleh profesional keamanan siber untuk sistem milik sendiri, dalam batas legal.',
+              'Threat modeling, secure coding review, dan hardening infrastruktur untuk sistem milik sendiri, dalam batas legal dan izin tertulis.',
           },
         },
         {
@@ -160,11 +212,154 @@ export function buildServiceSchema(siteUrl: string) {
             '@type': 'Service',
             name: 'Smart Contract & Protokol Web3',
             description:
-              'Audit keamanan smart contract, desain tokenomics, dan review risiko protokol DeFi oleh Web3 specialist dari sudut pandang defensif.',
+              'Audit keamanan smart contract, desain tokenomics, dan review risiko protokol DeFi dari sudut pandang defensif.',
           },
         },
       ],
     },
+  };
+}
+
+/**
+ * Menghasilkan JSON-LD @graph tunggal yang menggabungkan Person dan ProfessionalService.
+ * Digunakan di halaman /jasa untuk membangun sinyal entitas Knowledge Panel
+ * tanpa menduplikasi @context di setiap schema terpisah.
+ */
+export function buildEntityGraph(siteUrl: string) {
+  const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+  const personId = `${base}#person`;
+  const serviceId = `${base}#service`;
+
+  const person = {
+    '@type': 'Person',
+    '@id': personId,
+    name: IDENTITY.fullName,
+    alternateName: [IDENTITY.brandName, 'WAP'],
+    jobTitle: IDENTITY.role,
+    description:
+      'Software engineer dan cybersecurity specialist berbasis di Wonosobo, Jawa Tengah. Fokus pada jasa pembuatan website dan aplikasi profesional, security hardening, dan protokol Web3.',
+    url: siteUrl,
+    image: combineUrl(siteUrl, 'og/index.png'),
+    email: IDENTITY.email,
+    telephone: IDENTITY.telephone,
+    homeLocation: {
+      '@type': 'Place',
+      name: 'Wonosobo, Jawa Tengah, Indonesia',
+      geo: buildGeoNode(),
+    },
+    address: buildAddressNode(),
+    knowsAbout: [
+      'Jasa Pembuatan Website',
+      'Jasa Pembuatan Aplikasi Android',
+      'Software Engineering',
+      'Web Application Development',
+      'Cybersecurity',
+      'Security Hardening',
+      'Web3',
+      'Smart Contract Security',
+    ],
+    hasOccupation: {
+      '@type': 'Occupation',
+      name: IDENTITY.role,
+      occupationCategory: 'Software Engineer',
+    },
+    sameAs: [
+      IDENTITY.social.github,
+      IDENTITY.social.linkedin,
+      IDENTITY.social.instagram,
+      IDENTITY.social.facebook,
+      IDENTITY.social.tiktok,
+    ],
+  };
+
+  const service = {
+    '@type': 'ProfessionalService',
+    '@id': serviceId,
+    name: `${IDENTITY.fullName} | Jasa Pembuatan Website dan Aplikasi`,
+    alternateName: IDENTITY.brandName,
+    description:
+      'Jasa pembuatan website dan aplikasi profesional, jasa upload Play Store, security hardening, serta audit smart contract Web3 oleh software engineer Wonosobo, Jawa Tengah.',
+    url: combineUrl(siteUrl, 'jasa/'),
+    telephone: IDENTITY.telephone,
+    email: IDENTITY.email,
+    address: buildAddressNode(),
+    geo: buildGeoNode(),
+    hasMap: `https://www.google.com/maps?q=${IDENTITY.location.geo.latitude},${IDENTITY.location.geo.longitude}`,
+    priceRange: 'Hubungi untuk penawaran',
+    currenciesAccepted: 'IDR',
+    paymentAccepted: 'Transfer Bank, QRIS',
+    openingHours: 'Mo-Fr 09:00-17:00',
+    serviceType: [
+      'Jasa Pembuatan Website',
+      'Jasa Pembuatan Aplikasi Android',
+      'Web Application Development',
+      'Mobile App Development',
+      'Play Store Upload',
+      'Cybersecurity Consulting',
+      'Security Hardening',
+      'Web3 Development',
+      'Smart Contract Audit',
+    ],
+    provider: { '@id': personId },
+    founder: { '@id': personId },
+    areaServed: [
+      { '@type': 'Country', name: 'Indonesia' },
+      {
+        '@type': 'AdministrativeArea',
+        name: 'Wonosobo',
+        containedInPlace: { '@type': 'AdministrativeArea', name: 'Jawa Tengah' },
+      },
+      { '@type': 'Country', name: 'Singapore' },
+      { '@type': 'Country', name: 'Malaysia' },
+    ],
+    sameAs: [IDENTITY.social.github, IDENTITY.social.linkedin],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Layanan Pengembangan Digital',
+      itemListElement: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Jasa Pembuatan Website & Aplikasi Full-Stack',
+            description:
+              'Landing page, company profile, dashboard, hingga aplikasi full-stack dengan Astro, Next.js, atau stack sesuai kebutuhan proyek.',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Jasa Pembuatan Aplikasi Android & Upload Play Store',
+            description:
+              'Pengembangan dan publikasi aplikasi Android ke Google Play Store dan Apple App Store, termasuk ASO dan review preparation.',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Security Hardening & Audit Defensif',
+            description:
+              'Threat modeling, secure coding review, dan hardening infrastruktur untuk sistem milik sendiri, dalam batas legal.',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Smart Contract & Protokol Web3',
+            description:
+              'Audit keamanan smart contract, desain tokenomics, dan review risiko protokol DeFi dari sudut pandang defensif.',
+          },
+        },
+      ],
+    },
+  };
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [person, service],
   };
 }
 
@@ -264,7 +459,6 @@ export function buildArticleSchema(
       : {}),
   };
 }
-
 
 export function buildBreadcrumbSchema(
   items: Array<{ name: string; url: string }>,
