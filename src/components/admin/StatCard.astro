@@ -1,77 +1,54 @@
 ---
-interface Props {
+export interface Props {
   label: string;
-  value: number;
+  value: string | number;
   suffix?: string;
+  trend?: number;
+  icon?: string;
+  color?: 'cyan' | 'purple' | 'green' | 'orange';
 }
 
-const { label, value, suffix = '' } = Astro.props;
-const id = `stat-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+const { label, value, suffix, trend, icon, color = 'cyan' } = Astro.props;
+
+const colorMap = {
+  cyan: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20 shadow-cyan-500/10',
+  purple: 'text-purple-400 bg-purple-400/10 border-purple-400/20 shadow-purple-500/10',
+  green: 'text-green-400 bg-green-400/10 border-green-400/20 shadow-green-500/10',
+  orange: 'text-orange-400 bg-orange-400/10 border-orange-400/20 shadow-orange-500/10',
+};
+
+const bgClass = colorMap[color];
 ---
 
-<div class="stat-card border-subtle">
-  <p class="stat-card__label">{label}</p>
-  <p class="stat-card__value font-mono" id={id} data-count-target={value} data-suffix={suffix}>0{suffix}</p>
+<div class="relative group p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-slate-700">
+  <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+  
+  <div class="flex items-start justify-between relative z-10">
+    <div>
+      <p class="text-sm font-medium text-slate-400 mb-2">{label}</p>
+      <h3 class="text-3xl font-display font-bold text-white tracking-tight">{value}{suffix && <span class="text-sm font-normal text-slate-400 ml-1">{suffix}</span>}</h3>
+    </div>
+    
+    <div class={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-lg ${bgClass}`}>
+      {icon ? (
+        <Fragment set:html={icon} />
+      ) : (
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+      )}
+    </div>
+  </div>
+
+  {trend !== undefined && (
+    <div class="mt-4 flex items-center gap-2 relative z-10 text-sm">
+      <span class={`flex items-center gap-1 font-medium ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        {trend >= 0 ? (
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+        ) : (
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
+        )}
+        {Math.abs(trend)}%
+      </span>
+      <span class="text-slate-500">vs last week</span>
+    </div>
+  )}
 </div>
-
-<script>
-  function countUp(el: HTMLElement): void {
-    const target = Number(el.dataset.countTarget ?? '0');
-    const suffix = el.dataset.suffix ?? '';
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (reduceMotion || target === 0) {
-      el.textContent = `${target}${suffix}`;
-      return;
-    }
-
-    const duration = 900;
-    const start = performance.now();
-
-    function tick(now: number): void {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(target * eased);
-      el.textContent = `${current}${suffix}`;
-      if (progress < 1) requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-  }
-
-  function countUpAll(root: ParentNode): void {
-    root.querySelectorAll<HTMLElement>('[data-count-target]').forEach(countUp);
-  }
-
-  countUpAll(document);
-
-  // Modul ES ini hanya dievaluasi sekali per full page load; StatCard yang
-  // di-refresh lewat polling htmx (mis. /admin/visitors) di-swap via
-  // innerHTML sehingga tidak memicu evaluasi ulang modul. Listener ini
-  // membuat count-up berjalan lagi untuk konten baru tanpa bergantung pada
-  // eksekusi ulang script.
-  document.addEventListener('htmx:afterSwap', ((event: CustomEvent) => {
-    if (event.target instanceof Element) countUpAll(event.target);
-  }) as EventListener);
-</script>
-
-<style>
-  .stat-card {
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-  }
-
-  .stat-card__label {
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .stat-card__value {
-    font-size: 2.25rem;
-    color: var(--color-accent-phosphor);
-    line-height: 1;
-  }
-</style>
