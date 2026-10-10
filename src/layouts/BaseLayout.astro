@@ -74,7 +74,7 @@ const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
     <link rel="alternate" hreflang="x-default" href={canonical} />
     <link rel="alternate" type="application/rss+xml" title={`${siteName} - Artikel & Insights`} href={rssUrl} />
 
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={title.length > 59 ? title.substring(0, 56) + '...' : title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageAbsolute} />
     <meta property="og:image:width" content="1200" />
@@ -85,7 +85,8 @@ const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content={lang === 'id' ? 'id_ID' : 'en_US'} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
+    <meta name="twitter:site" content="@andikaputradev" />
+    <meta name="twitter:title" content={title.length > 59 ? title.substring(0, 56) + '...' : title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageAbsolute} />
     <meta name="twitter:image:alt" content={title} />

@@ -25,6 +25,13 @@ const currentYear = new Date().getFullYear();
       <span class="sr-only">{IDENTITY.fullName}</span>
     </div>
 
+    <div class="site-footer__links" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      <strong style="color: var(--color-text);">Artikel Pilihan:</strong>
+      <a href="/artikel/core-web-vitals-inp-nextjs-optimasi-performa-seo" class="footer-link">Optimasi Performa SEO & Core Web Vitals (INP) di Next.js</a>
+      <a href="/artikel/peta-jalan-peluncuran-aplikasi-android-play-store" class="footer-link">Peta Jalan Peluncuran Aplikasi Android ke Google Play Store</a>
+      <a href="/artikel/digital-money-double-spending-fondasi-crypto" class="footer-link">Memahami Double Spending: Fondasi Uang Digital & Kriptografi</a>
+    </div>
+
     <div class="site-footer__bottom">
       <p class="site-footer__copyright">
         © {currentYear} {IDENTITY.fullName}. All rights reserved.
@@ -111,5 +118,15 @@ const currentYear = new Date().getFullYear();
   .site-footer__back-to-top:hover {
     color: var(--color-accent-phosphor);
     transform: translateY(-1px);
+  }
+
+  .footer-link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .footer-link:hover {
+    color: var(--color-accent-phosphor);
+    text-decoration: underline;
   }
 </style>

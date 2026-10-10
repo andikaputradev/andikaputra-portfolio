@@ -26,7 +26,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 <section id="articles" class="home-articles" data-telemetry-section="articles">
   <div class="container-site">
-    <h2 class="home-articles__heading font-display">Artikel Terbaru</h2>
+    <div class="home-articles__header" style="margin-bottom: 2.5rem;">
+      <h2 class="home-articles__heading font-display">Artikel Terbaru</h2>
+      <p style="color: var(--color-text-muted); font-size: 1.125rem;">
+        Baca panduan teknis dan wawasan seputar security, Web3, dan web development. <a href="/artikel" style="color:var(--color-accent-phosphor); text-decoration:none;">Lihat semua artikel</a>
+      </p>
+    </div>
 
     <div class="home-articles__grid">
       {latestArticles.map((article) => (

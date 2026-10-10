@@ -24,5 +24,6 @@ export const IDENTITY = {
     linkedin: 'https://linkedin.com/in/wahyu-andika-putra',
     facebook: 'https://facebook.com/andikaputradev',
     tiktok: 'https://tiktok.com/@andikaputradev',
+    twitter: 'https://x.com/andikaputradev',
   },
 } as const;

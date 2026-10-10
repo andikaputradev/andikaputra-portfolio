@@ -7,29 +7,83 @@ Disallow: /api/
 
 User-agent: Googlebot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
-User-agent: GPTBot
+User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+User-agent: Bytespider
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+User-agent: FacebookBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 User-agent: CCBot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
-User-agent: Bytespider
-Disallow: /
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://wahyuandikaputra.my.id/sitemap.xml

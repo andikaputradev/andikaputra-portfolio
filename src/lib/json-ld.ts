@@ -80,6 +80,7 @@ export function buildPersonSchema(siteUrl?: string) {
       IDENTITY.social.instagram,
       IDENTITY.social.facebook,
       IDENTITY.social.tiktok,
+      IDENTITY.social.twitter,
     ],
   };
 }
@@ -269,6 +270,7 @@ export function buildEntityGraph(siteUrl: string) {
       IDENTITY.social.instagram,
       IDENTITY.social.facebook,
       IDENTITY.social.tiktok,
+      IDENTITY.social.twitter,
     ],
   };
 
