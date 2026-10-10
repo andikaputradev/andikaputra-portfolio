@@ -18,4 +18,22 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { projects };
+const articles = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/articles' }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    category: z.enum(['SECURITY', 'WEB3', 'WEBDEV', 'GENERAL']).default('GENERAL'),
+    tags: z.array(z.string()).default([]),
+    coverImagePublicId: z.string().optional().nullable(),
+    readingTimeMinutes: z.number().optional().nullable(),
+    published: z.boolean().default(true),
+    metaTitle: z.string().optional().nullable(),
+    metaDescription: z.string().optional().nullable(),
+    canonicalUrlOverride: z.string().optional().nullable(),
+    ogImageOverride: z.string().optional().nullable(),
+    publishedAt: z.coerce.date().default(() => new Date()),
+  }),
+});
+
+export const collections = { projects, articles };

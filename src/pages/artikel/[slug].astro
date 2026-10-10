@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { db } from '../../db';
 import { articles, articleComments } from '../../db/schema';
 import { and, eq, desc } from 'drizzle-orm';
+import { getEntry, render } from 'astro:content';
 import { renderProjectBody } from '../../lib/render-markdown';
 import { cloudinaryImageUrl, cloudinarySrcSet } from '../../lib/cloudinary-url';
 import { trackVisit } from '../../lib/track-visit';
@@ -12,6 +13,9 @@ import { countWords, calculateReadingTime } from '../../lib/reading-time';
 import { getRelatedArticles } from '../../lib/related-articles';
 import TableOfContents from '../../components/article/TableOfContents.astro';
 import ArticleComments from '../../components/article/ArticleComments.astro';
+import Image from '../../components/mdx/Image.astro';
+import Blockquote from '../../components/mdx/Blockquote.astro';
+import Table from '../../components/mdx/Table.astro';
 
 export const prerender = false;
 
@@ -41,6 +45,11 @@ const headings = extractHeadings(article.bodyMarkdown);
 const wordCount = countWords(article.bodyMarkdown);
 const readingTime = article.readingTimeMinutes || calculateReadingTime(article.bodyMarkdown);
 const bodyHtml = renderProjectBody(article.bodyMarkdown, { withHeadingIds: true });
+
+// MDX Content Collection resolution
+const mdxEntry = await getEntry('articles', slug);
+const mdxRendered = mdxEntry ? await render(mdxEntry) : null;
+const MDXContent = mdxRendered ? mdxRendered.Content : null;
 
 const coverSrc = article.coverImagePublicId
   ? cloudinaryImageUrl(article.coverImagePublicId, 'f_auto,q_auto,w_1200')
@@ -137,7 +146,6 @@ const breadcrumbSchema = buildBreadcrumbSchema(
   siteUrl,
 );
 
-// Ambil artikel terkait berdasarkan overlap tag (SKILL.md)
 const relatedArticles = getRelatedArticles(article, allPublishedArticles as any, 3);
 
 const whatsappText = encodeURIComponent(`Baca artikel ini: ${article.title} ${articleUrl}`);
@@ -195,7 +203,13 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
 
       <div class="article-detail__body container-site">
         <TableOfContents headings={headings} />
-        <div class="article-detail__content" set:html={bodyHtml} />
+        <div class="prose prose-invert max-w-none article-detail__content">
+          {MDXContent ? (
+            <MDXContent components={{ img: Image, blockquote: Blockquote, table: Table }} />
+          ) : (
+            <div set:html={bodyHtml} />
+          )}
+        </div>
       </div>
 
       <div class="article-detail__sharing container-site">
@@ -218,7 +232,7 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
             Twitter
           </a>
           <a
-            href={`https://www.linkedin.com/shareArticle?mini=true&url=${linkedInUrl}`}
+            href={`https://www.linkedin.com/sharing/share-offsite/?url=${linkedInUrl}`}
             target="_blank"
             rel="noopener noreferrer"
             class="article-detail__share-link"
@@ -235,30 +249,33 @@ const ogImage = article.ogImageOverride || coverSrc || `/og/${article.slug}.png`
         stats={{ count: commentsCount, averageRating: avgRating }}
       />
 
-      <section class="article-detail__related section-spacing" data-telemetry-section="article-related" aria-label="Navigasi Artikel Terkait">
-        <div class="container-site">
-          <div class="article-detail__related-top">
-            <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>
-            <a href="/artikel/" class="article-detail__related-all font-mono">Semua Artikel →</a>
-          </div>
+      <section class="section-spacing container-site">
+        <div class="article-detail__related-top">
+          <h2 class="article-detail__related-heading font-display">Artikel Terkait</h2>
+          <a href="/artikel/" class="article-detail__related-all font-mono">Lihat Semua →</a>
+        </div>
+        <div class="article-detail__related">
           {relatedArticles.length > 0 ? (
             <div class="article-detail__related-grid">
-              {relatedArticles.map((related) => (
+              {relatedArticles.map((rel) => (
                 <article class="article-card">
-                  <a href={`/artikel/${related.slug}/`} class="article-card__link">
-                    <div class="article-card__header">
-                      <span class={`article-card__category font-mono article-card__category--${related.category.toLowerCase()}`}>
-                        [{CATEGORY_LABELS[related.category] ?? related.category}]
+                  <a href={`/artikel/${rel.slug}/`} class="article-card__link">
+                    <div class="article-card__header font-mono">
+                      <span class={`article-card__category article-card__category--${rel.category.toLowerCase()}`}>
+                        [{CATEGORY_LABELS[rel.category] ?? rel.category}]
                       </span>
-                      {related.readingTimeMinutes && (
-                        <span class="article-card__reading-time font-mono">{related.readingTimeMinutes} min read</span>
-                      )}
+                      <span class="article-card__reading-time">{rel.readingTimeMinutes ?? 5} min read</span>
                     </div>
-                    <h3 class="article-card__title">{related.title}</h3>
-                    <p class="article-card__summary">{related.summary}</p>
+                    <h3 class="article-card__title font-display">{rel.title}</h3>
+                    <p class="article-card__summary">{rel.summary}</p>
                     <div class="article-card__meta font-mono">
-                      <time datetime={related.publishedAt.toISOString()}>
-                        {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(related.publishedAt)}
+                      <time datetime={rel.publishedAt.toISOString()}>
+                        {new Intl.DateTimeFormat('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        }).format(rel.publishedAt)}
                       </time>
                     </div>
                   </a>

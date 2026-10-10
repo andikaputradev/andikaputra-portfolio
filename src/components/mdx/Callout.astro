@@ -1,0 +1,35 @@
+---
+export interface Props {
+  type?: 'info' | 'warning' | 'danger' | 'success';
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const colorMap = {
+  info: 'bg-blue-900/30 border-blue-500 text-blue-200',
+  warning: 'bg-yellow-900/30 border-yellow-500 text-yellow-200',
+  danger: 'bg-red-900/30 border-red-500 text-red-200',
+  success: 'bg-green-900/30 border-green-500 text-green-200',
+};
+
+const iconMap = {
+  info: 'ℹ️',
+  warning: '⚠️',
+  danger: '🚨',
+  success: '✅',
+};
+
+const classes = colorMap[type];
+const icon = iconMap[type];
+---
+
+<div class={`my-6 border-l-4 rounded-r-lg p-4 flex gap-3 ${classes}`}>
+  <div class="text-xl flex-shrink-0">{icon}</div>
+  <div class="flex-1">
+    {title && <h4 class="font-bold mb-1 !mt-0">{title}</h4>}
+    <div class="prose prose-sm prose-invert max-w-none !mb-0 [&>p:last-child]:mb-0 [&>p:first-child]:mt-0">
+      <slot />
+    </div>
+  </div>
+</div>

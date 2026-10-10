@@ -1,0 +1,266 @@
+---
+title: "Core Web Vitals dan INP di Next.js: Panduan Optimasi Performa untuk SEO"
+summary: "Panduan optimasi Core Web Vitals untuk Next.js: ambang LCP, INP, dan CLS, pengukuran lab dan lapangan, teknik optimasi INP, arsitektur, anggaran performa, dan pemantauan berkelanjutan."
+category: "WEBDEV"
+tags: ["core web vitals","inp","lcp","cls","next.js","optimasi performa website","seo teknis","interaction to next paint","pagespeed","react performance"]
+coverImagePublicId: "portfolio/articles/jpyhhvrkd8qhn9iqsns3"
+readingTimeMinutes: 10
+published: true
+publishedAt: "2026-09-21T04:53:02.213Z"
+---
+
+> **Abstrak.** Core Web Vitals adalah tiga metrik pengalaman pengguna yang diukur pada data lapangan: Largest Contentful Paint (LCP) untuk pemuatan, Interaction to Next Paint (INP) untuk responsivitas, dan Cumulative Layout Shift (CLS) untuk stabilitas visual. Sejak 12 Maret 2024 INP menggantikan First Input Delay, dan INP cenderung lebih sulit dipenuhi dibandingkan pendahulunya, terutama pada halaman yang berat JavaScript. Artikel ini menyajikan kerangka diagnosis dan optimasi sistematis untuk aplikasi Next.js, mencakup pengukuran, LCP, INP, CLS, arsitektur, anggaran performa, dan pemantauan berkelanjutan.
+
+Catatan: ambang batas dan fitur framework dapat berubah. Verifikasi pada web.dev dan dokumentasi Next.js sebelum menetapkan target. Tinjauan dilakukan per 21 September 2026.
+
+## Poin Utama
+
+- **Tiga metrik, satu aturan.** LCP harus 2,5 detik atau kurang, INP 200 milidetik atau kurang, dan CLS 0,1 atau kurang, diukur pada persentil ke-75 kunjungan nyata. Satu metrik yang buruk menjadikan status halaman buruk.
+- **Data lapangan menentukan.** Lab seperti Lighthouse berguna untuk debugging, tetapi penilaian berasal dari data pengguna nyata (CrUX) selama jendela 28 hari.
+- **INP cenderung menjadi metrik tersulit** pada aplikasi React yang berat JavaScript, karena mengukur seluruh interaksi, bukan hanya yang pertama.
+- **Next.js membantu bila dipakai dengan benar:** Server Components, streaming dengan Suspense, `next/image`, `next/font`, dan `next/script` mengurangi biaya pemuatan dan hidrasi.
+- **Optimasi adalah proses, bukan proyek sekali jalan.** Tetapkan anggaran performa, pantau dengan RUM, dan cegah regresi pada CI.
+
+## Core Web Vitals: Definisi dan Ambang Batas
+
+- **LCP (Largest Contentful Paint)** mengukur waktu hingga elemen konten terbesar di viewport selesai dirender, biasanya gambar hero, blok teks, atau poster video. Baik: 2,5 detik atau kurang. Perlu perbaikan: sampai 4,0 detik. Buruk: lebih dari 4,0 detik.
+- **INP (Interaction to Next Paint)** mengukur latensi klik, ketukan, dan penekanan tombol sepanjang kunjungan, dari input hingga frame berikutnya ditampilkan, dan melaporkan nilai yang mendekati interaksi terburuk. Baik: 200 milidetik atau kurang. Perlu perbaikan: sampai 500 milidetik. Buruk: lebih dari 500 milidetik.
+- **CLS (Cumulative Layout Shift)** mengukur pergeseran tata letak yang tidak diharapkan sebagai skor tanpa satuan. Baik: 0,1 atau kurang. Perlu perbaikan: sampai 0,25. Buruk: lebih dari 0,25.
+
+Penilaian dilakukan pada persentil ke-75 kunjungan, untuk seluler dan desktop secara terpisah, dan sebuah kelompok URL menerima status metrik terburuknya. Karena memakai persentil ke-75, pengalaman pada perangkat kelas menengah dan jaringan seluler yang bervariasi lebih menentukan daripada hasil pada laptop pengembang.
+
+### Hubungan dengan SEO
+Core Web Vitals menjadi bagian dari sinyal pengalaman halaman pada Google Search. Google menegaskan bahwa relevansi konten tetap menjadi faktor utama, sehingga performa yang baik tidak menggantikan konten yang tepat sasaran. Namun pada hasil pencarian dengan konten sepadan, pengalaman halaman yang baik dapat berkontribusi, dan manfaat langsungnya terlihat pada berkurangnya pengguna yang pergi sebelum halaman siap dan pada konversi yang lebih baik.
+
+## Mengukur dengan Benar: Lab dan Lapangan
+
+- **Data lapangan:** laporan Core Web Vitals pada Google Search Console, bagian data lapangan PageSpeed Insights, dan dataset CrUX. Data ini bergulir pada jendela 28 hari, sehingga perbaikan baru terlihat penuh setelah beberapa minggu.
+- **Data lab:** Lighthouse dan panel Performance di Chrome DevTools. Gunakan throttling CPU dan jaringan agar mendekati perangkat pengguna. Total Blocking Time berguna sebagai indikator lab yang berkorelasi dengan INP.
+- **Real User Monitoring (RUM):** kirim metrik dari peramban pengguna ke sistem pemantauan Anda. Pada Next.js, gunakan `useReportWebVitals`, dan pertimbangkan pustaka `web-vitals` dengan build atribusi untuk mengetahui elemen dan fase yang menyebabkan nilai buruk.
+
+Contoh komponen pelapor pada App Router. Pasang pada `app/layout.tsx` di dalam `body`:
+
+    'use client'
+
+    import { useReportWebVitals } from 'next/web-vitals'
+
+    export function WebVitalsReporter() {
+      useReportWebVitals((metric) => {
+        const payload = JSON.stringify({
+          id: metric.id,
+          name: metric.name,
+          label: metric.label,
+          value: metric.value,
+          path: window.location.pathname,
+        })
+        navigator.sendBeacon('/api/vitals', payload)
+      })
+
+      return null
+    }
+
+Endpoint `/api/vitals` harus memvalidasi payload, membatasi laju permintaan, dan tidak menyimpan pengenal pribadi. Bila metrik ini dikaitkan dengan individu, perlakukan sebagai data pribadi sesuai UU PDP.
+
+## Diagnosis Sistematis
+
+1. **Identifikasi metrik dan kelompok URL yang gagal** pada laporan Search Console, terpisah untuk seluler dan desktop.
+2. **Reproduksi pada kondisi realistis:** emulasi perangkat kelas menengah dengan pelambatan CPU dan jaringan seluler.
+3. **Atribusikan penyebab:** elemen LCP dan sub-bagiannya, fase INP dan skrip yang menahan main thread, serta elemen penyebab pergeseran CLS.
+4. **Perbaiki satu penyebab dominan pada satu waktu** agar dampaknya dapat diukur.
+5. **Verifikasi pada data lapangan** setelah rilis, bukan hanya pada Lighthouse.
+
+## Mengoptimalkan LCP pada Next.js
+
+LCP terdiri atas empat sub-bagian: waktu hingga byte pertama (TTFB), penundaan pemuatan sumber daya, durasi pemuatan sumber daya, dan penundaan render elemen. Sasaran TTFB yang baik adalah 0,8 detik atau kurang. Optimasi harus menyasar sub-bagian yang paling panjang, bukan semuanya sekaligus.
+
+- **Kenali elemen LCP** dengan DevTools. Pada banyak situs, elemen itu adalah gambar hero atau judul besar.
+- **Percepat TTFB:** sajikan halaman statis atau ter-cache dari CDN, hindari rantai pengambilan data berurutan (waterfall), dan jalankan permintaan independen secara paralel. Pada Next.js 16, Cache Components memungkinkan bagian yang dapat di-cache dirender statis dan bagian dinamis di-stream.
+- **Streaming dengan Suspense dan `loading.tsx`** agar kerangka halaman tampil cepat sementara data dinamis menyusul.
+- **Optimalkan gambar LCP dengan `next/image`:** tetapkan `width` dan `height`, isi `sizes` sesuai tata letak sebenarnya, pakai format modern yang dihasilkan pengoptimal gambar, dan tandai hanya gambar LCP untuk dimuat lebih awal (properti `preload` pada versi terbaru dokumentasi Next.js, atau `priority` pada versi lama). Jangan menerapkan lazy loading pada gambar LCP dan hindari gambar latar CSS untuk elemen tersebut.
+- **Pastikan elemen LCP ada pada HTML awal.** Hero yang baru muncul setelah hidrasi atau pengambilan data sisi klien akan menunda LCP.
+- **Font:** gunakan `next/font` agar font dihosting sendiri tanpa permintaan eksternal, batasi jumlah bobot dan subset, dan manfaatkan font fallback yang disesuaikan ukurannya.
+- **Kurangi sumber daya yang memblokir render:** batasi CSS yang tidak dipakai dan pindahkan skrip non-kritis dengan `next/script` ke strategi `afterInteractive` atau `lazyOnload`.
+- **Kurangi JavaScript klien** dengan menaruh logika sebisa mungkin pada Server Components dan membatasi batas `use client` pada komponen yang benar-benar interaktif.
+- **Preconnect** ke origin kritis, misalnya CDN gambar, bila gambar LCP dilayani dari domain terpisah.
+
+## Mengoptimalkan INP pada Next.js dan React
+
+Setiap interaksi terdiri atas tiga fase: penundaan input (hingga event handler mulai berjalan), durasi pemrosesan (waktu event handler berjalan), dan penundaan presentasi (hingga frame berikutnya tampil). Perbaiki fase yang dominan.
+
+### Penundaan input
+Penyebab umumnya adalah tugas panjang (lebih dari 50 milidetik) yang menahan main thread saat pengguna berinteraksi.
+- Kurangi JavaScript yang dieksekusi saat dan setelah pemuatan dengan code splitting melalui `next/dynamic` dan penghapusan dependensi besar. Gunakan `@next/bundle-analyzer` untuk menemukan paket yang membengkak.
+- Tunda skrip pihak ketiga (analitik, tag manager, widget obrolan) dengan `next/script` strategi `lazyOnload` atau paket `@next/third-parties`, dan kondisikan pada persetujuan pengguna bila diwajibkan.
+- Pecah tugas panjang dan berikan kesempatan kepada peramban untuk merespons interaksi dengan yielding.
+
+`scheduler.yield()` tersedia pada peramban berbasis Chromium, sehingga sediakan fallback. Contoh pembantu yielding dan penerapannya pada pemrosesan bertahap:
+
+    type SchedulerLike = { yield?: () => Promise<void> }
+
+    export function yieldToMain(): Promise<void> {
+      const scheduler = (globalThis as unknown as { scheduler?: SchedulerLike }).scheduler
+      if (scheduler?.yield) {
+        return scheduler.yield()
+      }
+      return new Promise((resolve) => setTimeout(resolve, 0))
+    }
+
+    export async function processInChunks<T>(
+      items: readonly T[],
+      handler: (item: T) => void,
+      chunkSize = 50,
+    ): Promise<void> {
+      for (let index = 0; index < items.length; index += chunkSize) {
+        for (const item of items.slice(index, index + chunkSize)) {
+          handler(item)
+        }
+        await yieldToMain()
+      }
+    }
+
+### Durasi pemrosesan
+- Jaga event handler tetap ringan. Lakukan hanya pembaruan yang dibutuhkan untuk frame berikutnya, dan tunda pekerjaan lain.
+- Pisahkan pembaruan mendesak dari yang tidak mendesak dengan `useTransition`, `startTransition`, atau `useDeferredValue` pada React.
+- Debounce input yang memicu pekerjaan berat, dan pindahkan komputasi mahal ke Web Worker.
+- Aktifkan dukungan React Compiler, yang stabil sejak Next.js 16, untuk mengurangi render ulang yang tidak perlu, dan ukur dampaknya sebelum dan sesudah.
+
+Contoh pemisahan pembaruan mendesak dan tidak mendesak pada filter pencarian:
+
+    'use client'
+
+    import { useState, useTransition } from 'react'
+
+    type SearchFilterProps = {
+      items: readonly string[]
+    }
+
+    export function SearchFilter({ items }: SearchFilterProps) {
+      const [query, setQuery] = useState('')
+      const [visibleItems, setVisibleItems] = useState<readonly string[]>(items)
+      const [isPending, startTransition] = useTransition()
+
+      function handleChange(value: string) {
+        setQuery(value)
+        startTransition(() => {
+          const normalized = value.trim().toLowerCase()
+          setVisibleItems(items.filter((item) => item.toLowerCase().includes(normalized)))
+        })
+      }
+
+      return (
+        <div>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => handleChange(event.target.value)}
+            aria-label="Cari item"
+          />
+          <ul aria-busy={isPending}>
+            {visibleItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+### Penundaan presentasi
+- Kecilkan ukuran DOM dan virtualisasikan daftar panjang.
+- Gunakan `content-visibility: auto` untuk bagian di luar layar agar biaya render ditunda.
+- Hindari animasi yang memicu layout. Animasikan `transform` dan `opacity`.
+- Hindari layout thrashing: kelompokkan pembacaan dan penulisan DOM.
+
+## Mengendalikan CLS
+
+- Sediakan ruang sebelum konten muncul: atribut `width` dan `height` atau `aspect-ratio` untuk gambar, video, dan iframe. `next/image` membantu selama dimensi ditetapkan.
+- Gunakan `next/font` agar pergantian font tidak menggeser teks secara signifikan.
+- Cadangkan tinggi untuk banner persetujuan, iklan, dan konten yang disisipkan secara dinamis, dan jangan menyisipkan elemen di atas konten yang sudah tampil.
+- Buat skeleton dengan dimensi yang sama dengan konten akhir.
+- Gunakan `transform` untuk animasi, bukan properti yang mengubah tata letak.
+
+## Arsitektur Next.js yang Mendukung Core Web Vitals
+
+- **App Router dan Server Components sebagai default.** Komponen server tidak mengirim JavaScript komponennya ke klien, sehingga mengurangi biaya unduh, parsing, dan hidrasi.
+- **Batas `use client` yang kecil.** Isolasi bagian interaktif ke komponen daun.
+- **Rendering statis dan caching eksplisit.** Manfaatkan Cache Components pada Next.js 16 dan kebijakan cache CDN yang tepat.
+- **Streaming.** Pakai Suspense untuk memisahkan bagian yang lambat dari kerangka halaman.
+- **Prefetch navigasi** melalui `next/link` untuk transisi yang terasa instan.
+- **Disiplin dependensi.** Audit ukuran bundle secara berkala dan hindari pustaka besar untuk fungsi kecil.
+
+## Anggaran Performa dan Pemantauan Berkelanjutan
+
+- Tetapkan **anggaran performa tertulis**, misalnya batas ukuran JavaScript per rute dan ukuran gambar hero, dan gagalkan build CI bila terlampaui, misalnya dengan Lighthouse CI.
+- Bangun **dasbor RUM** yang menampilkan persentil ke-75 untuk LCP, INP, dan CLS per rute, per jenis perangkat, dan per kondisi jaringan.
+- Pasang **peringatan regresi** dan beri anotasi setiap rilis pada grafik agar penyebab regresi mudah dilacak.
+- Tinjau laporan Search Console secara berkala dan ingat bahwa perbaikan baru tercermin penuh setelah jendela 28 hari.
+
+## Checklist Prioritas
+
+1. Ukur data lapangan di Search Console dan PageSpeed Insights sebelum mengubah apa pun.
+2. Identifikasi elemen LCP dan pastikan ada pada HTML awal.
+3. Turunkan TTFB melalui halaman statis atau ter-cache dan CDN.
+4. Muat gambar LCP lebih awal dan jangan lazy load.
+5. Tetapkan dimensi pada seluruh gambar, video, dan iframe.
+6. Pakai `next/font` dan batasi bobot font.
+7. Kurangi JavaScript klien dengan Server Components dan code splitting.
+8. Tunda skrip pihak ketiga dan kondisikan pada persetujuan.
+9. Pecah tugas panjang dengan yielding.
+10. Pisahkan pembaruan mendesak dan tidak mendesak dengan transition.
+11. Virtualisasikan daftar panjang dan kecilkan DOM.
+12. Pasang RUM, anggaran performa, dan peringatan regresi.
+
+## Kesalahan Umum
+
+- Mengejar skor Lighthouse 100 sambil mengabaikan data lapangan.
+- Menandai terlalu banyak gambar sebagai prioritas sehingga preload saling bersaing.
+- Memuat seluruh pustaka pada komponen klien untuk kebutuhan kecil.
+- Menaruh `use client` pada layout tingkat atas tanpa alasan.
+- Memuat tag manager dan widget pihak ketiga sebelum pengguna berinteraksi.
+- Menyisipkan banner dan iklan tanpa mencadangkan ruang.
+- Mengoptimalkan hanya untuk desktop, padahal penilaian seluler dipisah.
+- Berhenti mengukur setelah satu perbaikan berhasil.
+
+## Keterbatasan
+
+- Ambang batas, fitur Next.js, dan dukungan API peramban dapat berubah. Verifikasi pada sumber resmi.
+- Hasil optimasi bergantung pada arsitektur, audiens, dan perangkat pengguna. Angka target harus ditetapkan dari data lapangan Anda sendiri.
+- Core Web Vitals hanyalah salah satu sinyal peringkat, dan tidak menjamin posisi pada hasil pencarian.
+- Contoh kode bersifat ilustratif untuk pola yang dibahas dan perlu disesuaikan dengan proyek, termasuk validasi dan kebijakan privasi pada endpoint pemantauan.
+
+## Pertanyaan yang Sering Diajukan
+
+### Apakah Core Web Vitals memengaruhi peringkat SEO?
+Ya, sebagai bagian dari sinyal pengalaman halaman. Namun relevansi konten tetap menjadi faktor utama, sehingga performa yang baik adalah faktor pendukung, bukan jaminan peringkat.
+
+### Berapa target INP yang baik?
+200 milidetik atau kurang pada persentil ke-75 kunjungan. Nilai di atas 500 milidetik dikategorikan buruk.
+
+### Mengapa skor Lighthouse baik tetapi Search Console menunjukkan status buruk?
+Lighthouse adalah pengujian lab pada satu kondisi. Search Console memakai data lapangan pengguna nyata pada persentil ke-75 selama 28 hari, yang mencerminkan ragam perangkat dan jaringan.
+
+### Apa perbedaan INP dan FID?
+FID hanya mengukur penundaan input pada interaksi pertama. INP mengukur latensi seluruh interaksi sepanjang kunjungan, sehingga lebih ketat dan lebih representatif. INP menggantikan FID sebagai Core Web Vital pada 12 Maret 2024.
+
+### Berapa lama perbaikan terlihat di Search Console?
+Data lapangan memakai jendela bergulir 28 hari, sehingga dampak penuh baru terlihat setelah beberapa minggu. Gunakan RUM sendiri untuk umpan balik yang lebih cepat.
+
+### Apakah React Compiler membantu INP?
+Kompiler mengurangi render ulang yang tidak perlu sehingga dapat menurunkan durasi pemrosesan, tetapi dampaknya bergantung pada kode Anda. Ukur sebelum dan sesudah pengaktifan.
+
+## Rujukan
+
+- web.dev, Core Web Vitals: https://web.dev/articles/vitals
+- web.dev, Largest Contentful Paint: https://web.dev/articles/lcp
+- web.dev, Interaction to Next Paint: https://web.dev/articles/inp
+- web.dev, Optimize Interaction to Next Paint: https://web.dev/articles/optimize-inp
+- web.dev, Cumulative Layout Shift: https://web.dev/articles/cls
+- web.dev, Optimize Largest Contentful Paint: https://web.dev/articles/optimize-lcp
+- Google Search Central, Core Web Vitals dan pengalaman halaman: https://developers.google.com/search/docs/appearance/core-web-vitals
+- Next.js 16: https://nextjs.org/blog/next-16
+- Next.js, komponen Image: https://nextjs.org/docs/app/api-reference/components/image
+- Next.js, useReportWebVitals: https://nextjs.org/docs/app/api-reference/functions/use-report-web-vitals
+
+## Konsultasi Performa dan Pengembangan Web
+
+Butuh audit Core Web Vitals, optimasi Next.js, atau pengembangan situs yang cepat dan ramah SEO? Andika Putra, pengembang perangkat lunak, menyediakan layanan pengembangan web dan konsultasi performa. Hubungi melalui WhatsApp: [0877-3013-9582](https://wa.me/6287730139582).
+

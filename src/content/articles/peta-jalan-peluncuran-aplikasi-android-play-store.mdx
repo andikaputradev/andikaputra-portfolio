@@ -1,0 +1,237 @@
+---
+title: "Peta Jalan Peluncuran Aplikasi Android: Dari Ide hingga Terbit di Play Store"
+summary: "Peta jalan sepuluh fase meluncurkan aplikasi Android ke Google Play Store pada 2026: target API 36, verifikasi developer 30 September, closed testing, deklarasi kebijakan, rilis bertahap, dan pemantauan."
+category: "GENERAL"
+tags: ["peluncuran aplikasi android","cara publish aplikasi ke play store","google play console","target api level 36","verifikasi developer android","closed testing","data safety","aab android","rilis aplikasi android"]
+coverImagePublicId: "portfolio/articles/xslyoz4ku39jt2pli3m2"
+readingTimeMinutes: 11
+published: true
+publishedAt: "2026-09-21T04:54:32.558Z"
+---
+
+> **Abstrak.** Meluncurkan aplikasi Android bukan sekadar mengunggah berkas ke Google Play Console. Prosesnya mencakup validasi produk, keputusan teknis, kepatuhan kebijakan, pengujian, dan operasi pasca-rilis. Pada 2026 terdapat dua tenggat baru yang langsung memengaruhi jadwal peluncuran, yaitu kewajiban target API level 36 sejak 31 Agustus 2026 dan penerapan verifikasi developer Android di Indonesia mulai 30 September 2026, ditambah satu aturan yang tetap berlaku, yaitu closed testing bagi akun pribadi baru. Artikel ini menyajikan peta jalan sepuluh fase dari ide hingga terbit, lengkap dengan daftar periksa, kesalahan umum, dan kerangka waktu indikatif.
+
+Catatan: kebijakan Google Play sering berubah. Verifikasi pada Play Console Help sebelum bertindak. Tinjauan dilakukan per 21 September 2026.
+
+## Poin Utama
+
+- **Dua tenggat baru dan satu aturan penting.** Sejak 31 Agustus 2026, aplikasi baru dan pembaruan wajib menargetkan Android 16 (API level 36) atau lebih tinggi. Mulai 30 September 2026, aplikasi harus terdaftar pada developer terverifikasi agar dapat dipasang dan diperbarui pada perangkat Android bersertifikasi di Indonesia. Akun pribadi yang dibuat setelah 13 November 2023 wajib menjalankan closed test dengan minimal 12 penguji selama 14 hari berturut-turut sebelum mengajukan akses produksi.
+- **Nama paket bersifat permanen** setelah artefak pertama diunggah, sehingga tentukan sejak awal.
+- **Deklarasi kebijakan harus akurat.** Kebijakan privasi, Data safety, akses aplikasi, dan hapus akun adalah sumber penolakan yang paling sering dapat dihindari.
+- **Peluncuran bertahap** dan pemantauan Android vitals menurunkan risiko pasca-rilis.
+- **Rencanakan margin waktu.** Verifikasi akun, closed testing, dan tinjauan Google berjalan pada jadwal yang tidak sepenuhnya Anda kendalikan.
+
+## Tenggat dan Kebijakan yang Perlu Diperhatikan pada 2026
+
+### Target API level 36
+Sejak 31 Agustus 2026, aplikasi baru dan pembaruan yang dikirim ke Google Play harus menargetkan Android 16 (API level 36) atau lebih tinggi. Pengecualian berlaku untuk Wear OS dan Android Automotive OS (API level 35) serta Android TV dan Android XR (API level 34). Aplikasi yang sudah ada harus menargetkan API level 35 atau lebih tinggi agar tetap tersedia bagi pengguna baru pada perangkat dengan versi Android yang lebih tinggi. Pengembang dapat meminta perpanjangan hingga 1 November 2026.
+
+### Verifikasi developer Android
+Google mewajibkan setiap developer memverifikasi identitas dan mendaftarkan nama paket aplikasinya. Penegakan dimulai 30 September 2026 di Brasil, Indonesia, Singapura, dan Thailand, dan berlanjut secara global pada 2027. Pada tanggal tersebut, aplikasi yang tidak terdaftar oleh developer terverifikasi tidak dapat dipasang dan diperbarui melalui jalur normal pada perangkat Android bersertifikasi di negara-negara tersebut, baik dari Google Play maupun sumber lain.
+
+Menurut ringkasan sekunder atas pernyataan Google, developer Play yang telah menyelesaikan verifikasi identitas Play umumnya tidak mengulanginya dan sebagian besar aplikasi Play sudah terdaftar otomatis. Tetap periksa halaman utama Play Console untuk tugas pendaftaran yang belum selesai.
+
+### Closed testing untuk akun pribadi baru
+Developer dengan akun pribadi yang dibuat setelah 13 November 2023 wajib menjalankan closed test dengan minimal 12 penguji yang tetap terdaftar selama sedikitnya 14 hari berturut-turut sebelum mengajukan akses produksi. Saat mengajukan, Anda menjawab pertanyaan tentang desain aplikasi, proses pengujian, dan kesiapan produksi. Menurut sumber sekunder, akun organisasi dan akun pribadi yang dibuat sebelum tanggal tersebut tidak terkena aturan ini.
+
+### Hapus akun, kebijakan privasi, dan Data safety
+- Aplikasi yang memungkinkan pembuatan akun wajib menyediakan opsi penghapusan akun di dalam aplikasi dan melalui tautan web yang dimasukkan pada Play Console. Membekukan akun tidak dianggap penghapusan.
+- Kebijakan privasi harus berada pada URL yang aktif, publik, tidak dibatasi wilayah, dan bukan PDF. Entitas atau nama aplikasi pada halaman Play Store harus tercantum di dalamnya.
+- Formulir Data safety harus akurat terhadap perilaku aplikasi dan seluruh SDK di dalamnya.
+
+## Peta Jalan Sepuluh Fase
+
+### Fase 1: Validasi Ide dan Definisi Produk
+- Rumuskan masalah, persona pengguna, dan proposisi nilai dalam satu kalimat.
+- Analisis pesaing di Play Store: fitur, ulasan, dan celah.
+- Tetapkan MVP: fitur minimum yang membuktikan nilai, dan tunda yang lain.
+- Putuskan model bisnis sejak awal (gratis, berbayar, langganan, iklan) karena memengaruhi deklarasi kebijakan dan SDK.
+
+### Fase 2: Perencanaan Teknis dan Kepatuhan Awal
+- Pilih teknologi: Kotlin dengan Jetpack Compose untuk aplikasi native, atau Flutter dan React Native bila kecepatan lintas platform lebih penting.
+- Tetapkan target API level 36 dan minSdk sesuai basis pengguna.
+- Tentukan nama paket yang final. Nama ini tidak dapat diubah setelah artefak pertama diunggah.
+- Petakan data yang dikumpulkan dan SDK yang dipakai sejak awal, karena menjadi dasar formulir Data safety dan kebijakan privasi.
+- Terapkan prinsip minimisasi izin: minta hanya izin yang benar-benar dibutuhkan fitur.
+
+### Fase 3: Desain UX dan Aksesibilitas
+- Ikuti pedoman Material Design, dan uji dengan TalkBack.
+- Pastikan area sentuh yang memadai, kontras warna yang cukup, dan teks yang dapat diskalakan.
+- Lokalkan antarmuka ke bahasa Indonesia dan siapkan konvensi format tanggal serta mata uang.
+
+### Fase 4: Pengembangan dan Kualitas
+- Rancang arsitektur yang teruji dan modular, dengan tes unit dan tes instrumentasi.
+- Siapkan CI untuk build, lint, dan tes otomatis pada setiap perubahan.
+- Pasang pelaporan crash dan analitik yang sesuai kebijakan privasi.
+- Amankan aplikasi: hindari rahasia pada kode klien, gunakan konfigurasi keamanan jaringan, simpan data sensitif secara terenkripsi, dan aktifkan penyusutan kode dengan R8.
+
+### Fase 5: Persiapan Rilis Teknis
+- Bangun Android App Bundle (AAB), format yang diwajibkan Google Play untuk aplikasi baru.
+- Aktifkan Play App Signing dan jaga kunci unggah (upload key) dengan aman. Kehilangan kunci ini mempersulit pembaruan.
+- Kelola versionCode yang selalu naik dan versionName yang informatif.
+- Uji build rilis (bukan debug) pada perangkat nyata dengan berbagai versi Android dan ukuran layar.
+- Uji perilaku aplikasi pada API level 36, terutama perubahan perilaku platform yang berdampak pada aplikasi Anda.
+
+Fragmen `build.gradle.kts` modul aplikasi untuk target terbaru dan build rilis yang disusutkan (nilai `minSdk` adalah contoh dan perlu disesuaikan):
+
+    android {
+        compileSdk = 36
+
+        defaultConfig {
+            minSdk = 24
+            targetSdk = 36
+            versionCode = 1
+            versionName = "1.0.0"
+        }
+
+        buildTypes {
+            release {
+                isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
+        }
+    }
+
+### Fase 6: Akun Developer dan Verifikasi
+- Biaya pendaftaran akun adalah USD 25 sekali bayar.
+- **Akun pribadi:** memerlukan dokumen identitas resmi dan tunduk pada aturan closed testing bila dibuat setelah 13 November 2023.
+- **Akun organisasi:** memerlukan nomor D-U-N-S, dokumen identitas resmi, dan dokumen organisasi. Pengurusan D-U-N-S dapat memakan waktu, jadi mulai lebih awal.
+- Aktifkan verifikasi dua langkah, gunakan email yang stabil, dan atur peran pengguna dengan prinsip least privilege.
+- Selesaikan verifikasi developer Android dan pastikan nama paket Anda terdaftar.
+
+Pilih jenis akun sejak awal, karena akun adalah pemilik aplikasi dan kunci penandatanganannya.
+
+### Fase 7: Store Listing dan Aset
+- **Judul** maksimal 30 karakter, **deskripsi singkat** maksimal 80 karakter, dan **deskripsi lengkap** maksimal 4.000 karakter.
+- Ikon aplikasi 512 x 512 piksel dan feature graphic 1024 x 500 piksel.
+- Minimal dua tangkapan layar yang mewakili fitur inti dengan jujur.
+- Tulis deskripsi yang natural dan informatif. Jangan menjejalkan kata kunci atau menyesatkan pengguna.
+- Siapkan pembaruan catatan rilis dalam bahasa Indonesia.
+
+### Fase 8: Deklarasi Kebijakan pada Halaman App Content
+- **Kebijakan privasi:** URL publik yang valid.
+- **Data safety:** deklarasi pengumpulan, pembagian, dan praktik keamanan data yang akurat, termasuk perilaku SDK.
+- **Iklan:** deklarasikan apakah aplikasi memuat iklan.
+- **Akses aplikasi:** berikan kredensial atau jalur uji bagi peninjau bila ada bagian yang dikunci login.
+- **Target audiens dan konten:** sesuaikan dengan pengguna sebenarnya. Pilihan tertentu memicu kebijakan tambahan.
+- **Peringkat konten:** selesaikan kuesioner IARC.
+- **Hapus akun:** tautan web dan opsi di dalam aplikasi bila ada pendaftaran akun.
+- **Formulir izin sensitif dan deklarasi khusus** (misalnya fitur finansial atau kesehatan) bila relevan.
+
+### Fase 9: Pengujian di Play dan Rilis Produksi
+- Mulai dari internal testing untuk QA cepat, lalu closed testing.
+- Bila akun Anda terkena aturan closed testing, pilih penguji yang benar-benar mencoba aplikasi dan memberi umpan balik. Permohonan akses produksi memuat pertanyaan tentang proses pengujian, dan memenuhi ambang jumlah tidak menjamin persetujuan.
+- Tinjau pre-launch report untuk menemukan crash dan masalah aksesibilitas pada perangkat uji.
+- Rilis ke produksi secara bertahap (staged rollout), misalnya mulai dari persentase kecil pengguna, lalu naikkan bila metrik stabil.
+- Waktu tinjauan Google bervariasi dan dapat lebih lama dari perkiraan pada kasus tertentu, jadi sediakan margin jadwal.
+
+### Fase 10: Pasca-rilis dan Operasi
+- Pantau **Android vitals**. Batas perilaku buruk keseluruhan adalah tingkat crash yang dirasakan pengguna 1,09% dan tingkat ANR 0,47%, dengan ambang 8% per model ponsel. Melampauinya dapat menurunkan visibilitas aplikasi di Google Play.
+- Tanggapi ulasan dan peringkat secara profesional, dan jadikan umpan balik masukan roadmap.
+- Rencanakan siklus pembaruan tahunan untuk mengikuti target API level baru dan perubahan kebijakan.
+- Iterasi store listing berdasarkan data konversi dan kata kunci.
+- Perbarui kebijakan privasi dan formulir Data safety setiap kali perilaku aplikasi berubah.
+- Siapkan rencana respons insiden, termasuk penghentian rilis bertahap bila terjadi regresi.
+
+## Pilihan Akun: Pribadi atau Organisasi
+
+- **Pribadi:** pendaftaran lebih sederhana, cocok untuk pengembang individu, tetapi akun baru tunduk pada aturan closed testing dan identitas pribadi berkaitan langsung dengan akun.
+- **Organisasi:** memerlukan D-U-N-S dan dokumen organisasi, sehingga persiapan lebih panjang. Akun organisasi tidak terkena aturan closed testing bagi akun pribadi baru dan lebih sesuai untuk bisnis yang membutuhkan pengelolaan tim.
+
+Pertimbangkan pula siapa yang seharusnya memegang kepemilikan. Akun developer menentukan pemilik aplikasi, kunci penandatanganan, dan identitas yang tercantum sebagai developer pada halaman Play Store.
+
+## Model Penerbitan dan Kepemilikan
+
+- **Menerbitkan sendiri** melalui akun milik Anda memberi kontrol penuh atas aplikasi dan kunci.
+- **Melibatkan pihak lain** dapat dilakukan dengan mengundangnya sebagai pengguna Play Console dengan peran terbatas.
+- **Menerbitkan melalui akun pihak ketiga**, misalnya penyedia jasa, berarti nama developer pada halaman Play Store adalah nama akun tersebut. Karena verifikasi developer mengaitkan nama paket dengan identitas developer terverifikasi, pastikan perjanjian tertulis mengatur kepemilikan aplikasi, kemungkinan pemindahan aplikasi, tanggung jawab kepatuhan kebijakan, dan akses ke kunci.
+
+Bila Anda ingin didampingi, lihat [jasa upload aplikasi ke Play Store](/articles/jasa-upload-aplikasi-ke-play-store) yang menjelaskan skema penerbitan, persyaratan data, dan paket layanannya.
+
+## Daftar Periksa Peluncuran
+
+**Sebelum unggah**
+1. Nama paket final dan target API level 36 terpasang.
+2. AAB rilis dibangun, ditandatangani, dan diuji pada perangkat nyata.
+3. Kebijakan privasi dan halaman hapus akun sudah aktif dan dapat diakses publik.
+4. Peta data dan SDK sesuai dengan rancangan formulir Data safety.
+5. Kredensial demo tersedia bila aplikasi memerlukan login.
+
+**Di Play Console**
+6. Store listing lengkap: judul, deskripsi, ikon, feature graphic, dan tangkapan layar.
+7. Seluruh deklarasi App content selesai dan akurat.
+8. Verifikasi developer Android dan pendaftaran nama paket selesai.
+9. Closed testing selesai bila berlaku, lalu ajukan akses produksi.
+10. Rilis bertahap dengan catatan rilis yang jelas.
+
+**Setelah rilis**
+11. Pantau Android vitals, ulasan, dan laporan crash setiap hari pada minggu pertama.
+12. Jadwalkan pembaruan berkala dan tinjau kebijakan Google secara rutin.
+
+## Kesalahan Umum yang Menyebabkan Penundaan atau Penolakan
+
+- Formulir Data safety tidak sesuai dengan perilaku SDK yang benar-benar berjalan.
+- Kebijakan privasi berupa PDF, tidak dapat diakses, atau tidak menyebut nama aplikasi.
+- Tidak menyediakan kredensial atau jalur uji bagi peninjau pada aplikasi yang dikunci login.
+- Tidak menyediakan opsi hapus akun pada aplikasi yang memiliki pendaftaran.
+- Mengirim aplikasi dengan target API level yang sudah usang.
+- Deskripsi, ikon, atau tangkapan layar yang menyesatkan, atau kata kunci yang dijejalkan.
+- Meminta izin yang tidak proporsional dengan fitur.
+- Crash saat peluncuran yang sebenarnya terdeteksi pada pre-launch report.
+- Mengunggah build debug atau melupakan penyimpanan kunci unggah.
+- Menggunakan konten berhak cipta atau merek pihak lain tanpa hak.
+
+## Kerangka Waktu Indikatif
+
+Kerangka berikut bersifat ilustratif untuk aplikasi kecil dan bukan janji. Durasi sebenarnya bergantung pada jenis akun, kelengkapan berkas, dan proses tinjauan Google.
+
+- **Persiapan akun dan verifikasi:** beberapa hari untuk akun pribadi. Akun organisasi dapat lebih lama karena D-U-N-S.
+- **Closed testing (bila berlaku):** minimal 14 hari berturut-turut.
+- **Tinjauan Google:** beberapa hari, dan dapat lebih lama.
+- **Rilis bertahap:** beberapa hari sampai satu minggu untuk menaikkan cakupan dengan aman.
+
+Dengan persiapan berkas yang matang, kisaran ilustratif dari build siap hingga terbit adalah satu sampai enam minggu.
+
+## Pertanyaan yang Sering Diajukan
+
+### Berapa biaya akun developer Google Play?
+Biaya pendaftaran adalah USD 25 sekali bayar, tanpa perpanjangan tahunan.
+
+### Apakah aplikasi baru harus berformat AAB?
+Ya, Google Play mewajibkan format Android App Bundle untuk aplikasi baru.
+
+### Apakah nama paket bisa diganti setelah diunggah?
+Tidak. Nama paket menjadi permanen setelah artefak pertama diunggah, sehingga tentukan dengan cermat sejak awal.
+
+### Apakah verifikasi developer berlaku di Indonesia?
+Ya. Penegakan dimulai 30 September 2026 di Indonesia, bersama Brasil, Singapura, dan Thailand. Aplikasi harus terdaftar oleh developer terverifikasi agar dapat dipasang dan diperbarui pada perangkat Android bersertifikasi.
+
+### Siapa yang terkena aturan closed testing 12 penguji selama 14 hari?
+Developer dengan akun pribadi yang dibuat setelah 13 November 2023. Menurut sumber sekunder, akun organisasi dan akun pribadi yang dibuat sebelum tanggal tersebut tidak terkena aturan ini.
+
+### Berapa lama tinjauan Google?
+Bervariasi. Rencanakan margin jadwal dan hindari menetapkan tanggal peluncuran publik sebelum aplikasi disetujui.
+
+### Bagaimana bila aplikasi saya tidak memiliki fitur login?
+Opsi hapus akun tidak diwajibkan bila aplikasi tidak memungkinkan pembuatan akun, tetapi kebijakan privasi, Data safety, dan deklarasi lain tetap wajib.
+
+## Rujukan
+
+- Google Play Console Help, Target API level requirements: https://support.google.com/googleplay/android-developer/answer/11926878
+- Android Developers, Target API level: https://developer.android.com/distribute/best-practices/develop/target-sdk
+- Android Developers Blog, Android developer verification: https://developer.android.com/blog/posts/android-developer-verification-rolling-out-to-all-developers-on-play-console-and-android-developer-console
+- Play Console Help, Android developer verification: https://support.google.com/googleplay/android-developer/answer/16471116
+- Play Console Help, App testing requirements for new personal developer accounts: https://support.google.com/googleplay/android-developer/answer/14151465
+- Play Console Help, Prepare your app for review: https://support.google.com/googleplay/android-developer/answer/9859455
+- Play Console Help, Account deletion requirements: https://support.google.com/googleplay/android-developer/answer/13327111
+- Play Console Help, User Data policy: https://support.google.com/googleplay/android-developer/answer/10144311
+- Play Console Help, Developer account information and verification: https://support.google.com/googleplay/android-developer/answer/10841920
+- Android vitals: https://developer.android.com/vitals
+
+## Butuh Pendampingan Peluncuran?
+
+Andika Putra menyediakan layanan pengembangan aplikasi dan pendampingan penerbitan ke Google Play Store. Lihat [jasa upload aplikasi ke Play Store](/articles/jasa-upload-aplikasi-ke-play-store) atau hubungi melalui WhatsApp: [0877-3013-9582](https://wa.me/6287730139582).
