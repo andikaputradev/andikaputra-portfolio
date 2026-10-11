@@ -1,5 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 import TelemetryStrip from '../components/layout/TelemetryStrip.astro';
 import Nav from '../components/layout/Nav.astro';
 import Footer from '../components/layout/Footer.astro';
@@ -142,6 +144,8 @@ const rssUrl = siteUrl ? `${siteUrl}/artikel/rss.xml` : '/artikel/rss.xml';
     <Nav />
     <slot />
     <Footer />
+    <SpeedInsights />
+    <Analytics />
   </body>
 </html>
 
