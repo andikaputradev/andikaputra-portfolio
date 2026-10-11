@@ -1,6 +1,7 @@
 ---
 import '../../styles/admin-forms.css';
 import type { Article } from '../../db/schema';
+import MarkdownEditor from './MarkdownEditor.astro';
 
 interface Props {
   article?: Article;
@@ -59,8 +60,14 @@ const tagsValue = article?.tags?.join(', ') ?? '';
   </div>
 
   <div class="field">
-    <label for="bodyMarkdown">Isi (Markdown)</label>
-    <textarea id="bodyMarkdown" name="bodyMarkdown" required rows="10">{article?.bodyMarkdown ?? ''}</textarea>
+    <MarkdownEditor
+      id="bodyMarkdown"
+      name="bodyMarkdown"
+      label="Isi Artikel (Markdown / MDX)"
+      initialValue={article?.bodyMarkdown ?? ''}
+      required
+      uploadFolder="portfolio/articles"
+    />
   </div>
 
   <div class="field">

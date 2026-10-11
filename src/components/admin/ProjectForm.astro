@@ -1,6 +1,7 @@
 ---
 import '../../styles/admin-forms.css';
 import type { Project } from '../../db/schema';
+import MarkdownEditor from './MarkdownEditor.astro';
 
 interface Props {
   project?: Project;
@@ -72,8 +73,14 @@ const stackValue = project?.stack?.join(', ') ?? '';
   </div>
 
   <div class="field">
-    <label for="bodyMarkdown">Isi (Markdown)</label>
-    <textarea id="bodyMarkdown" name="bodyMarkdown" required rows="10">{project?.bodyMarkdown ?? ''}</textarea>
+    <MarkdownEditor
+      id="bodyMarkdown"
+      name="bodyMarkdown"
+      label="Isi Case Study (Markdown)"
+      initialValue={project?.bodyMarkdown ?? ''}
+      required
+      uploadFolder="portfolio/projects/body"
+    />
   </div>
 
   <div class="field">

@@ -4,7 +4,7 @@ import { insertImage } from './project-editor-image';
 import { CSRF_HEADER_NAME } from '../../lib/csrf';
 import { showToast } from './htmx-toast';
 
-function wireToolbar(toolbar: HTMLElement, editor: Editor): void {
+function wireLegacyToolbar(toolbar: HTMLElement, editor: Editor): void {
   toolbar.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-command]');
     if (!button) return;
@@ -36,11 +36,6 @@ function wireToolbar(toolbar: HTMLElement, editor: Editor): void {
       case 'code':
         chain.toggleCodeBlock().run();
         break;
-      case 'link': {
-        const url = window.prompt('URL tautan:');
-        if (url) chain.setLink({ href: url }).run();
-        break;
-      }
       case 'image': {
         toolbar.querySelector<HTMLInputElement>('[data-image-input]')?.click();
         break;
@@ -74,13 +69,17 @@ function initEditorSyncOnUpdate(editor: Editor, syncTargetId: string): void {
 
 export function initProjectContentForm(): void {
   const form = document.getElementById('project-content-form') as HTMLFormElement | null;
+  if (!form) return;
+
   const editorEl = document.getElementById('body-editor');
   const toolbar = document.getElementById('editor-toolbar');
-  if (!form || !editorEl || !toolbar) return;
+  let legacyEditor: Editor | null = null;
 
-  const editor = createBodyEditor(editorEl, editorEl.dataset.initial ?? '');
-  wireToolbar(toolbar, editor);
-  initEditorSyncOnUpdate(editor, 'bodyMarkdown-sync');
+  if (editorEl && toolbar) {
+    legacyEditor = createBodyEditor(editorEl, editorEl.dataset.initial ?? '');
+    wireLegacyToolbar(toolbar, legacyEditor);
+    initEditorSyncOnUpdate(legacyEditor, 'bodyMarkdown-sync');
+  }
 
   const csrfToken = form.dataset.csrf ?? '';
   const projectId = form.dataset.projectId ?? '';
@@ -90,6 +89,10 @@ export function initProjectContentForm(): void {
     const submitter = (event as SubmitEvent).submitter as HTMLButtonElement | null;
     const saveMode = submitter?.dataset.saveMode === 'publish' ? 'publish' : 'draft';
     const fd = new FormData(form);
+
+    const bodyContent = legacyEditor
+      ? getMarkdown(legacyEditor)
+      : String(fd.get('bodyMarkdown') ?? '');
 
     const buttons = form.querySelectorAll<HTMLButtonElement>('button[type="submit"]');
     buttons.forEach((btn) => (btn.disabled = true));
@@ -105,7 +108,7 @@ export function initProjectContentForm(): void {
         data: {
           title: fd.get('title'),
           summary: fd.get('summary'),
-          bodyMarkdown: getMarkdown(editor),
+          bodyMarkdown: bodyContent,
           liveUrl: fd.get('liveUrl') || undefined,
           repoUrl: fd.get('repoUrl') || undefined,
         },
