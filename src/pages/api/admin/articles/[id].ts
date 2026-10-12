@@ -114,6 +114,13 @@ export const PUT: APIRoute = async (context) => {
     ipAddress: getClientIp(request),
   });
 
+  if (request.headers.get('HX-Request')) {
+    return new Response(null, {
+      status: 200,
+      headers: { 'HX-Redirect': `/admin/articles/${id}/edit?flash=updated` },
+    });
+  }
+
   return new Response(JSON.stringify(updated), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },

@@ -7,9 +7,10 @@ interface Props {
   article?: Article;
   action: string;
   method: 'POST' | 'PUT';
+  defaultOrder?: number;
 }
 
-const { article, action, method } = Astro.props;
+const { article, action, method, defaultOrder } = Astro.props;
 const tagsValue = article?.tags?.join(', ') ?? '';
 ---
 
@@ -20,13 +21,22 @@ const tagsValue = article?.tags?.join(', ') ?? '';
   hx-put={method === 'PUT' ? action : undefined}
   hx-ext="json-enc"
 >
+  <!-- Section 1: Informasi Utama -->
   <div class="field">
-    <label for="title">Judul</label>
-    <input type="text" id="title" name="title" required maxlength="200" value={article?.title ?? ''} />
+    <label for="title">Judul Artikel <span class="text-rose-400">*</span></label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      required
+      maxlength="200"
+      placeholder="Contoh: Analisis Kerentanan Reentrancy pada Smart Contract"
+      value={article?.title ?? ''}
+    />
   </div>
 
   <div class="field">
-    <label for="slug">Slug</label>
+    <label for="slug">Slug URL <span class="text-rose-400">*</span></label>
     <input
       type="text"
       id="slug"
@@ -34,14 +44,15 @@ const tagsValue = article?.tags?.join(', ') ?? '';
       required
       maxlength="100"
       pattern="[a-z0-9-]+"
+      placeholder="analisis-kerentanan-reentrancy"
       value={article?.slug ?? ''}
     />
-    <p class="field__hint">Huruf kecil, angka, tanda hubung. Dipakai di URL /articles/[slug].</p>
+    <p class="field__hint">Huruf kecil, angka, dan tanda hubung. Digunakan pada URL <code>/artikel/[slug]</code>.</p>
   </div>
 
   <div class="field-row">
     <div class="field">
-      <label for="category">Kategori</label>
+      <label for="category">Kategori <span class="text-rose-400">*</span></label>
       <select id="category" name="category" required>
         {['SECURITY', 'WEB3', 'WEBDEV', 'GENERAL'].map((c) => (
           <option value={c} selected={article?.category === c}>{c}</option>
@@ -49,84 +60,167 @@ const tagsValue = article?.tags?.join(', ') ?? '';
       </select>
     </div>
     <div class="field">
-      <label for="readingTimeMinutes">Waktu baca (menit)</label>
-      <input type="number" id="readingTimeMinutes" name="readingTimeMinutes" value={article?.readingTimeMinutes ?? 5} min="1" />
+      <label for="readingTimeMinutes">Estimasi Waktu Baca (menit)</label>
+      <input
+        type="number"
+        id="readingTimeMinutes"
+        name="readingTimeMinutes"
+        value={article?.readingTimeMinutes ?? 5}
+        min="1"
+        max="120"
+      />
     </div>
   </div>
 
   <div class="field">
-    <label for="summary">Ringkasan (maks 300 karakter)</label>
-    <textarea id="summary" name="summary" required maxlength="300" rows="2">{article?.summary ?? ''}</textarea>
-  </div>
-
-  <div class="field">
-    <MarkdownEditor
-      id="bodyMarkdown"
-      name="bodyMarkdown"
-      label="Isi Artikel (Markdown / MDX)"
-      initialValue={article?.bodyMarkdown ?? ''}
+    <label for="summary">Ringkasan Artikel (maks 300 karakter) <span class="text-rose-400">*</span></label>
+    <textarea
+      id="summary"
+      name="summary"
       required
-      uploadFolder="portfolio/articles"
-    />
+      maxlength="300"
+      rows="2"
+      placeholder="Deskripsi singkat yang tampil pada kartu artikel dan cuplikan sosial..."
+    >{article?.summary ?? ''}</textarea>
   </div>
 
-  <div class="field">
-    <label for="tags">Tag (pisahkan dengan koma)</label>
-    <input type="text" id="tags" name="tags" data-array-field value={tagsValue} />
-  </div>
-
-  <div class="field">
-    <label for="cover-file">Cover image</label>
-    <input type="file" id="cover-file" accept="image/*" />
-    <input type="hidden" id="coverImagePublicId" name="coverImagePublicId" value={article?.coverImagePublicId ?? ''} />
-    <p id="cover-upload-status" class="field__hint"></p>
-  </div>
-
-  <div class="field-row">
+  <!-- Section 2: Konten Dokumen -->
+  <div class="form-section">
+    <div class="form-section-title">// KONTEN DOKUMEN</div>
     <div class="field">
-      <label for="displayOrder">Urutan tampil</label>
-      <input type="number" id="displayOrder" name="displayOrder" value={article?.displayOrder ?? 0} />
+      <MarkdownEditor
+        id="bodyMarkdown"
+        name="bodyMarkdown"
+        label="Isi Artikel (Markdown / MDX)"
+        initialValue={article?.bodyMarkdown ?? ''}
+        required
+        uploadFolder="portfolio/articles"
+      />
     </div>
-    <div class="field field--checkbox">
-      <input type="checkbox" id="published" name="published" checked={article?.published ?? true} />
-      <label for="published">Published</label>
+  </div>
+
+  <!-- Section 3: Taksonomi & Media -->
+  <div class="form-section">
+    <div class="form-section-title">// TAKSONOMI & MEDIA</div>
+    
+    <div class="field">
+      <label for="tags">Tag (pisahkan dengan koma)</label>
+      <input
+        type="text"
+        id="tags"
+        name="tags"
+        data-array-field
+        value={tagsValue}
+        placeholder="security, web3, audit, smart-contract"
+      />
+      <p class="field__hint">Contoh: <code>web3, security, vulnerability</code>. Pisahkan tag dengan koma.</p>
+    </div>
+
+    <div class="field">
+      <label for="cover-file">Cover Image</label>
+      <input type="file" id="cover-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" />
+      <input type="hidden" id="coverImagePublicId" name="coverImagePublicId" value={article?.coverImagePublicId ?? ''} />
+      <p id="cover-upload-status" class="field__hint">
+        {article?.coverImagePublicId
+          ? `Gambar aktif: ${article.coverImagePublicId} (pilih berkas baru untuk mengganti)`
+          : 'Pilih berkas cover (PNG, JPG, WebP, SVG, maks. 5MB) untuk diunggah ke Cloudinary.'}
+      </p>
     </div>
   </div>
 
-  <div class="field">
-    <label for="metaTitle">Meta Title (SEO, maks 60 karakter)</label>
-    <input type="text" id="metaTitle" name="metaTitle" maxlength="60" value={article?.metaTitle ?? ''} />
+  <!-- Section 4: Visibilitas & Urutan -->
+  <div class="form-section">
+    <div class="form-section-title">// VISIBILITAS & URUTAN</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="displayOrder">Urutan Tampil</label>
+        <input
+          type="number"
+          id="displayOrder"
+          name="displayOrder"
+          value={article?.displayOrder ?? defaultOrder ?? 0}
+        />
+        <p class="field__hint">Angka lebih tinggi tampil lebih awal di halaman daftar.</p>
+      </div>
+      <div class="field field--checkbox">
+        <input type="checkbox" id="published" name="published" checked={article?.published ?? true} />
+        <label for="published">Published (terbitkan langsung ke publik)</label>
+      </div>
+    </div>
   </div>
 
-  <div class="field">
-    <label for="metaDescription">Meta Description (SEO, maks 160 karakter)</label>
-    <textarea id="metaDescription" name="metaDescription" maxlength="160" rows="2">{article?.metaDescription ?? ''}</textarea>
+  <!-- Section 5: SEO & Metadata -->
+  <div class="form-section">
+    <div class="form-section-title">// PENGATURAN SEO & METADATA</div>
+
+    <div class="field">
+      <label for="metaTitle">Meta Title (SEO, maks 60 karakter)</label>
+      <input
+        type="text"
+        id="metaTitle"
+        name="metaTitle"
+        maxlength="60"
+        value={article?.metaTitle ?? ''}
+        placeholder="Judul khusus untuk snippet Google SERP (opsional)"
+      />
+      <p class="field__hint">Dikosongkan jika ingin otomatis menggunakan judul utama artikel.</p>
+    </div>
+
+    <div class="field">
+      <label for="metaDescription">Meta Description (SEO, maks 160 karakter)</label>
+      <textarea
+        id="metaDescription"
+        name="metaDescription"
+        maxlength="160"
+        rows="2"
+        placeholder="Deskripsi cuplikan hasil pencarian mesin telusur (opsional)"
+      >{article?.metaDescription ?? ''}</textarea>
+      <p class="field__hint">Dikosongkan jika ingin otomatis menggunakan ringkasan artikel.</p>
+    </div>
+
+    <div class="field">
+      <label for="canonicalUrlOverride">Canonical URL Override (opsional)</label>
+      <input
+        type="url"
+        id="canonicalUrlOverride"
+        name="canonicalUrlOverride"
+        value={article?.canonicalUrlOverride ?? ''}
+        placeholder="https://example.com/artikel-asli"
+      />
+      <p class="field__hint">Isi hanya jika artikel ini sindikasi atau dipublikasikan ulang dari sumber lain.</p>
+    </div>
+
+    <div class="field">
+      <label for="ogImageOverride">OG Image Override URL (opsional)</label>
+      <input
+        type="text"
+        id="ogImageOverride"
+        name="ogImageOverride"
+        value={article?.ogImageOverride ?? ''}
+        placeholder="https://res.cloudinary.com/.../custom-og.png"
+      />
+      <p class="field__hint">URL gambar Open Graph khusus jika tidak ingin memakai dynamic OG image generator.</p>
+    </div>
   </div>
 
-  <div class="field">
-    <label for="canonicalUrlOverride">Canonical URL Override (opsional)</label>
-    <input
-      type="url"
-      id="canonicalUrlOverride"
-      name="canonicalUrlOverride"
-      value={article?.canonicalUrlOverride ?? ''}
-      placeholder="https://example.com/artikel-asli"
-    />
-    <p class="field__hint">Isi hanya jika artikel ini sindikasi atau dipublikasikan ulang dari sumber lain.</p>
+  <!-- Section 6: Tombol Aksi -->
+  <div class="form-actions">
+    <button type="submit" form="article-form" class="btn-submit">
+      {method === 'POST' ? 'Buat Artikel' : 'Simpan Perubahan'}
+    </button>
+    <a href="/admin/articles" class="btn-cancel">Batal</a>
+    {article && (
+      <a
+        href={`/admin/preview/articles/${article.id}`}
+        target="_blank"
+        rel="noopener"
+        class="btn-secondary"
+      >
+        Lihat Pratinjau ↗
+      </a>
+    )}
   </div>
-
-  <div class="field">
-    <label for="ogImageOverride">OG Image Override URL (opsional)</label>
-    <input
-      type="text"
-      id="ogImageOverride"
-      name="ogImageOverride"
-      value={article?.ogImageOverride ?? ''}
-      placeholder="https://example.com/custom-og.png"
-    />
-  </div>
-
-  <button type="submit">{method === 'POST' ? 'Buat Artikel' : 'Simpan Perubahan'}</button>
 </form>
 
 <script>

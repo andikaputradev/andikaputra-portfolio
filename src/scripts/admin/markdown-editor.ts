@@ -75,6 +75,16 @@ export class MarkdownEditor {
     this.linkModal = container.querySelector<HTMLElement>('.js-link-modal');
     this.imageModal = container.querySelector<HTMLElement>('.js-image-modal');
 
+    // Teleport modal ke document.body jika berada di dalam form agar tidak merusak form DOM
+    if (typeof document !== 'undefined' && document.body) {
+      if (this.linkModal && this.linkModal.parentElement !== document.body) {
+        document.body.appendChild(this.linkModal);
+      }
+      if (this.imageModal && this.imageModal.parentElement !== document.body) {
+        document.body.appendChild(this.imageModal);
+      }
+    }
+
     this.initHistory();
     this.bindToolbar();
     this.bindKeyboardShortcuts();
@@ -614,9 +624,10 @@ export class MarkdownEditor {
     const cancelBtn = this.linkModal.querySelector<HTMLButtonElement>('.js-link-cancel');
     cancelBtn?.addEventListener('click', () => this.closeLinkModal());
 
-    const form = this.linkModal.querySelector<HTMLFormElement>('.js-link-form');
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
+    const formContainer = this.linkModal.querySelector<HTMLElement>('.js-link-form');
+    const submitBtn = this.linkModal.querySelector<HTMLButtonElement>('.js-link-submit-btn');
+
+    const handleLinkSubmit = () => {
       const textInput = this.linkModal!.querySelector<HTMLInputElement>('.js-link-text');
       const urlInput = this.linkModal!.querySelector<HTMLInputElement>('.js-link-url');
       const targetCheckbox = this.linkModal!.querySelector<HTMLInputElement>('.js-link-target');
@@ -647,6 +658,18 @@ export class MarkdownEditor {
         selectionStart: newPos,
         selectionEnd: newPos,
       });
+    };
+
+    submitBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleLinkSubmit();
+    });
+
+    formContainer?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleLinkSubmit();
+      }
     });
   }
 
@@ -758,10 +781,11 @@ export class MarkdownEditor {
     tabUrlBtn?.addEventListener('click', () => this.switchImageTab('url'));
     tabUploadBtn?.addEventListener('click', () => this.switchImageTab('upload'));
 
-    // Direct URL form submit
-    const urlForm = this.imageModal.querySelector<HTMLFormElement>('.js-image-url-form');
-    urlForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
+    // Direct URL submit
+    const urlContainer = this.imageModal.querySelector<HTMLElement>('.js-image-url-form');
+    const urlSubmitBtn = this.imageModal.querySelector<HTMLButtonElement>('.js-image-url-submit-btn');
+
+    const handleUrlSubmit = () => {
       const urlInput = this.imageModal!.querySelector<HTMLInputElement>('.js-image-url');
       const altInput = this.imageModal!.querySelector<HTMLInputElement>('.js-panel-url .js-image-alt');
       const captionInput = this.imageModal!.querySelector<HTMLInputElement>('.js-panel-url .js-image-caption');
@@ -786,6 +810,18 @@ export class MarkdownEditor {
       const formatted = formatImageMarkdown(alt, url, caption);
       this.insertContentAtSavedSelection(formatted);
       this.closeImageModal();
+    };
+
+    urlSubmitBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleUrlSubmit();
+    });
+
+    urlContainer?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleUrlSubmit();
+      }
     });
 
     // Cloudinary upload dropzone
@@ -798,7 +834,8 @@ export class MarkdownEditor {
     const dropzone = this.imageModal.querySelector<HTMLElement>('.js-dropzone');
     const fileInput = this.imageModal.querySelector<HTMLInputElement>('.js-file-input');
     const statusText = this.imageModal.querySelector<HTMLElement>('.js-upload-status');
-    const uploadForm = this.imageModal.querySelector<HTMLFormElement>('.js-image-upload-form');
+    const uploadContainer = this.imageModal.querySelector<HTMLElement>('.js-image-upload-form');
+    const uploadSubmitBtn = this.imageModal.querySelector<HTMLButtonElement>('.js-image-upload-submit-btn');
     const errorMsg = this.imageModal.querySelector<HTMLElement>('.js-image-upload-error');
 
     if (!dropzone || !fileInput) return;
@@ -856,11 +893,10 @@ export class MarkdownEditor {
       }
     };
 
-    uploadForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    const handleUploadSubmit = async () => {
       const altInput = this.imageModal!.querySelector<HTMLInputElement>('.js-panel-upload .js-image-alt');
       const captionInput = this.imageModal!.querySelector<HTMLInputElement>('.js-panel-upload .js-image-caption');
-      const submitBtn = uploadForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+      const submitBtn = uploadSubmitBtn;
 
       if (!selectedFile) {
         if (errorMsg) errorMsg.textContent = 'Silakan pilih gambar terlebih dahulu.';
@@ -917,6 +953,18 @@ export class MarkdownEditor {
         if (statusText) statusText.textContent = '';
       } finally {
         if (submitBtn) submitBtn.disabled = false;
+      }
+    };
+
+    uploadSubmitBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      void handleUploadSubmit();
+    });
+
+    uploadContainer?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        void handleUploadSubmit();
       }
     });
   }

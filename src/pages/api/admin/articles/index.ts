@@ -56,6 +56,9 @@ export const POST: APIRoute = async (context) => {
 
   const insertData = {
     ...parsed.data,
+    coverImagePublicId: parsed.data.coverImagePublicId || null,
+    metaTitle: parsed.data.metaTitle || null,
+    metaDescription: parsed.data.metaDescription || null,
     canonicalUrlOverride: parsed.data.canonicalUrlOverride || null,
     ogImageOverride: parsed.data.ogImageOverride || null,
     readingTimeMinutes:

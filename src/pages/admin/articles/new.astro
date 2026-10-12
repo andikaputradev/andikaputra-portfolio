@@ -1,10 +1,16 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ArticleForm from '../../../components/admin/ArticleForm.astro';
+import { db } from '../../../db';
+import { articles } from '../../../db/schema';
+import { max } from 'drizzle-orm';
 
 export const prerender = false;
+
+const [maxResult] = await db.select({ maxOrder: max(articles.displayOrder) }).from(articles);
+const nextOrder = (maxResult?.maxOrder ?? 0) + 1;
 ---
 
 <AdminLayout title="Artikel Baru">
-  <ArticleForm action="/api/admin/articles" method="POST" />
+  <ArticleForm action="/api/admin/articles" method="POST" defaultOrder={nextOrder} />
 </AdminLayout>

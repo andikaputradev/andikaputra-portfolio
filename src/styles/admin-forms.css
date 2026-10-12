@@ -14,8 +14,24 @@
   gap: 0.6rem;
 }
 
+.admin-form .field--checkbox input[type='checkbox'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--color-accent-phosphor);
+  cursor: pointer;
+}
+
 .admin-form .field--checkbox label {
   margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.92rem;
+  color: var(--color-text-primary);
+}
+
+.admin-form .field-row > .field--checkbox {
+  align-self: center;
+  padding-top: 1.25rem;
 }
 
 .admin-form label {
@@ -54,6 +70,25 @@
   font-size: 0.85rem;
 }
 
+.admin-form .form-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-form .form-section-title {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-phosphor);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .admin-form .field__hint {
   font-size: 0.78rem;
   color: var(--color-text-muted);
@@ -69,19 +104,64 @@
   color: var(--color-accent-steel);
 }
 
+.admin-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 2.25rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-form .btn-submit,
 .admin-form button[type='submit'] {
-  padding: 0.7rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
   background-color: var(--color-accent-phosphor);
   color: var(--color-bg);
   border: none;
   border-radius: var(--radius-sm);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
+.admin-form .btn-submit:hover,
 .admin-form button[type='submit']:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.admin-form .btn-submit:active,
+.admin-form button[type='submit']:active {
+  transform: translateY(0);
+}
+
+.admin-form .btn-cancel,
+.admin-form .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.25rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-form .btn-cancel:hover,
+.admin-form .btn-secondary:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
 }
 
 .admin-form.admin-form--secondary button[type='submit'] {
@@ -93,5 +173,22 @@
 @media (max-width: 640px) {
   .admin-form .field-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-form .field-row > .field--checkbox {
+    padding-top: 0;
+    margin-top: -0.5rem;
+  }
+
+  .admin-form .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-form .btn-submit,
+  .admin-form button[type='submit'],
+  .admin-form .btn-cancel {
+    width: 100%;
+    text-align: center;
   }
 }

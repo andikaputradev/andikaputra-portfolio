@@ -378,7 +378,7 @@ const codeLanguages = [
 
       <div class="js-link-error text-xs text-rose-400 mb-3 min-h-[1rem]"></div>
 
-      <form class="js-link-form space-y-4">
+      <div class="js-link-form space-y-4">
         <div>
           <label for={`${id}-link-text`} class="block text-xs font-medium text-slate-300 mb-1">
             Teks Ditampilkan
@@ -423,13 +423,13 @@ const codeLanguages = [
             Batal
           </button>
           <button
-            type="submit"
-            class="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
+            type="button"
+            class="js-link-submit-btn px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
           >
             Sisipkan Tautan
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -473,7 +473,7 @@ const codeLanguages = [
       <!-- Tab Panel 1: Direct URL -->
       <div role="tabpanel" class="js-panel-url space-y-4">
         <div class="js-image-error text-xs text-rose-400 min-h-[1rem]"></div>
-        <form class="js-image-url-form space-y-4">
+        <div class="js-image-url-form space-y-4">
           <div>
             <label for={`${id}-image-url-field`} class="block text-xs font-medium text-slate-300 mb-1">
               URL Gambar <span class="text-rose-400">*</span>
@@ -520,19 +520,19 @@ const codeLanguages = [
               Batal
             </button>
             <button
-              type="submit"
-              class="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
+              type="button"
+              class="js-image-url-submit-btn px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
             >
               Sisipkan Gambar
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
       <!-- Tab Panel 2: Cloudinary Upload -->
       <div role="tabpanel" class="js-panel-upload space-y-4 hidden">
         <div class="js-image-upload-error text-xs text-rose-400 min-h-[1rem]"></div>
-        <form class="js-image-upload-form space-y-4">
+        <div class="js-image-upload-form space-y-4">
           <!-- File Dropzone -->
           <div
             tabindex="0"
@@ -584,13 +584,13 @@ const codeLanguages = [
               Batal
             </button>
             <button
-              type="submit"
-              class="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
+              type="button"
+              class="js-image-upload-submit-btn px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shadow-lg shadow-cyan-900/30"
             >
               Upload & Sisipkan
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>

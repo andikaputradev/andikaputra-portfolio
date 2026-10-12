@@ -219,3 +219,79 @@ describe('Strict schema validation across mutation models (OWASP ASVS V5.1)', ()
   });
 });
 
+describe('ArticleInputSchema — Field and SEO Validations', () => {
+  const validArticle = {
+    slug: 'analisis-reentrancy',
+    title: 'Analisis Reentrancy Smart Contract',
+    category: 'SECURITY' as const,
+    summary: 'Pembahasan mendalam kerentanan reentrancy pada Solidity.',
+    bodyMarkdown: '# Analisis Reentrancy\n\nPenjelasan detail...',
+    tags: ['web3', 'security', 'solidity'],
+    readingTimeMinutes: 7,
+    displayOrder: 2,
+    published: true,
+    metaTitle: 'Analisis Reentrancy Smart Contract | Keamanan Web3',
+    metaDescription: 'Pelajari mekanisme eksploitasi reentrancy attack dan cara mitigasi pola checks-effects-interactions.',
+    canonicalUrlOverride: 'https://example.com/original-article',
+    ogImageOverride: 'https://example.com/custom-og.png',
+  };
+
+  it('menerima payload artikel lengkap yang valid', () => {
+    const result = ArticleInputSchema.safeParse(validArticle);
+    expect(result.success).toBe(true);
+  });
+
+  it('menerima tags sebagai string JSON dari form HTMX json-enc', () => {
+    const result = ArticleInputSchema.safeParse({
+      ...validArticle,
+      tags: JSON.stringify(['solidity', 'audit']),
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.tags).toEqual(['solidity', 'audit']);
+    }
+  });
+
+  it('menerima published sebagai string "true", "false", atau "on"', () => {
+    const resOn = ArticleInputSchema.safeParse({ ...validArticle, published: 'on' });
+    expect(resOn.success).toBe(true);
+    if (resOn.success) expect(resOn.data.published).toBe(true);
+
+    const resFalse = ArticleInputSchema.safeParse({ ...validArticle, published: 'false' });
+    expect(resFalse.success).toBe(true);
+    if (resFalse.success) expect(resFalse.data.published).toBe(false);
+  });
+
+  it('menerima canonicalUrlOverride kosong (string literal "")', () => {
+    const result = ArticleInputSchema.safeParse({
+      ...validArticle,
+      canonicalUrlOverride: '',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('menolak canonicalUrlOverride dengan format URL tidak valid', () => {
+    const result = ArticleInputSchema.safeParse({
+      ...validArticle,
+      canonicalUrlOverride: 'bukan-url-valid',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('menolak metaTitle melebihi 60 karakter', () => {
+    const result = ArticleInputSchema.safeParse({
+      ...validArticle,
+      metaTitle: 'x'.repeat(61),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('menolak metaDescription melebihi 160 karakter', () => {
+    const result = ArticleInputSchema.safeParse({
+      ...validArticle,
+      metaDescription: 'x'.repeat(161),
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
