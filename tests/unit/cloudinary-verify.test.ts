@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   verifyCloudinaryResource,
+  verifyAndResolveCloudinaryResource,
   ALLOWED_IMAGE_FORMATS,
   ALLOWED_RAW_FORMATS,
   MAX_IMAGE_BYTES,
@@ -77,5 +78,50 @@ describe('verifyCloudinaryResource security checks (ASVS V12)', () => {
 
     const valid = await verifyCloudinaryResource('portfolio/not-found', 'image');
     expect(valid).toBe(false);
+  });
+
+  it('menerima dokumen raw PDF meskipun Cloudinary API tidak menyertakan field format', async () => {
+    vi.spyOn(cloudinary.api, 'resource').mockResolvedValueOnce({
+      public_id: 'portfolio/profile/cv/dwoa630n25phmcaqgffc.pdf',
+      bytes: 6278,
+    } as any);
+
+    const valid = await verifyCloudinaryResource(
+      'portfolio/profile/cv/dwoa630n25phmcaqgffc.pdf',
+      'raw',
+    );
+    expect(valid).toBe(true);
+  });
+
+  it('menolak dokumen raw dengan ekstensi non-PDF jika format undefined', async () => {
+    vi.spyOn(cloudinary.api, 'resource').mockResolvedValueOnce({
+      public_id: 'portfolio/profile/cv/malware.exe',
+      bytes: 1024,
+    } as any);
+
+    const valid = await verifyCloudinaryResource(
+      'portfolio/profile/cv/malware.exe',
+      'raw',
+    );
+    expect(valid).toBe(false);
+  });
+
+  it('meresolusi candidate public ID dengan defaultFolder dan ekstensi .pdf secara otomatis', async () => {
+    vi.spyOn(cloudinary.api, 'resource').mockImplementation(async (id: string) => {
+      if (id === 'portfolio/profile/cv/dwoa630n25phmcaqgffc.pdf') {
+        return {
+          public_id: 'portfolio/profile/cv/dwoa630n25phmcaqgffc.pdf',
+          bytes: 6278,
+        } as any;
+      }
+      throw new Error('Not found');
+    });
+
+    const result = await verifyAndResolveCloudinaryResource('dwoa630n25phmcaqgffc', 'raw', {
+      defaultFolder: 'portfolio/profile/cv',
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.resolvedPublicId).toBe('portfolio/profile/cv/dwoa630n25phmcaqgffc.pdf');
   });
 });

@@ -6,7 +6,7 @@ import { siteProfile } from '../../../../db/schema';
 import { ProfileInputSchema } from '../../../../lib/admin-schemas';
 import { isCsrfValid, csrfError } from '../../../../lib/require-csrf';
 import { recordAudit, getClientIp } from '../../../../lib/audit';
-import { verifyCloudinaryResource } from '../../../../lib/cloudinary';
+import { verifyAndResolveCloudinaryResource } from '../../../../lib/cloudinary';
 
 export const prerender = false;
 
@@ -50,22 +50,32 @@ export const PUT: APIRoute = async (context) => {
   }
 
   if (parsed.data.photoPublicId) {
-    const valid = await verifyCloudinaryResource(parsed.data.photoPublicId, 'image');
-    if (!valid) {
+    const photoResult = await verifyAndResolveCloudinaryResource(
+      parsed.data.photoPublicId,
+      'image',
+      { defaultFolder: 'portfolio/profile/photo' },
+    );
+    if (!photoResult.valid || !photoResult.resolvedPublicId) {
       return new Response(
         JSON.stringify({ error: 'Foto profil tidak ditemukan di akun Cloudinary' }),
         { status: 422 },
       );
     }
+    parsed.data.photoPublicId = photoResult.resolvedPublicId;
   }
 
   if (parsed.data.cvPublicId) {
-    const valid = await verifyCloudinaryResource(parsed.data.cvPublicId, 'raw');
-    if (!valid) {
+    const cvResult = await verifyAndResolveCloudinaryResource(
+      parsed.data.cvPublicId,
+      'raw',
+      { defaultFolder: 'portfolio/profile/cv' },
+    );
+    if (!cvResult.valid || !cvResult.resolvedPublicId) {
       return new Response(JSON.stringify({ error: 'CV tidak ditemukan di akun Cloudinary' }), {
         status: 422,
       });
     }
+    parsed.data.cvPublicId = cvResult.resolvedPublicId;
   }
 
   const current = await getOrCreateProfileRow();

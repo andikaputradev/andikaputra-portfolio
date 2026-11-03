@@ -19,7 +19,16 @@ if (!profile) {
         <p class="field__hint">Public ID saat ini: <code>{profile.photoPublicId}</code></p>
       )}
       <input type="file" id="photo-file" accept="image/*" />
-      <input type="hidden" id="photoPublicId" name="photoPublicId" value={profile.photoPublicId ?? ''} />
+      <div class="field-public-id">
+        <label for="photoPublicId">Public ID Cloudinary</label>
+        <input
+          type="text"
+          id="photoPublicId"
+          name="photoPublicId"
+          value={profile.photoPublicId ?? ''}
+          placeholder="portfolio/profile/photo/..."
+        />
+      </div>
       <p id="photo-upload-status" class="field__hint"></p>
     </section>
 
@@ -32,7 +41,16 @@ if (!profile) {
         </p>
       )}
       <input type="file" id="cv-file" accept="application/pdf" />
-      <input type="hidden" id="cvPublicId" name="cvPublicId" value={profile.cvPublicId ?? ''} />
+      <div class="field-public-id">
+        <label for="cvPublicId">Public ID Cloudinary</label>
+        <input
+          type="text"
+          id="cvPublicId"
+          name="cvPublicId"
+          value={profile.cvPublicId ?? ''}
+          placeholder="portfolio/profile/cv/... atau nama file di Cloudinary"
+        />
+      </div>
       <p id="cv-upload-status" class="field__hint"></p>
     </section>
 
@@ -86,6 +104,29 @@ if (!profile) {
     width: 100%;
     color: var(--color-text-primary);
     font-size: 0.85rem;
+  }
+
+  .field-public-id {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .field-public-id label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .field-public-id input[type='text'] {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.8rem;
+    font-family: var(--font-mono), monospace;
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
   }
 
   .field__hint {
